@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: email-service
+
+  kafka:
+    bootstrap-servers: localhost:9094
+    consumer:
+      auto-offset-reset: earliest
+      group-id: email-group
+
+  mail:
+    from-address: ${message.email.from}
+    username: ${message.email.username}
+    password: ${message.email.password}
+    host: ${message.email.host}
+    port: ${message.email.port}
+    properties:
+      mail:
+        protocol: ${message.email.protocol}
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+message:
+  email:
+    protocol: smtp
+    from:
+    username:
+    password:
+    host: smtp-mail.outlook.com
+    port: 587
+
+

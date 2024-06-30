@@ -1,0 +1,129 @@
+# server
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+# write all specific info about activities related Spring security
+logging:
+  level:
+    org.springframework.security: trace
+
+spring:
+  application:
+    name: My app
+
+  # Database
+  datasource:
+    url: jdbc:mysql://localhost:3306/user_service
+    username: root
+    password:
+
+  # A option in springboot framework is used to define Hibernate behavior in creating and updating database
+  # Hibernate will create and update tables in database, corresponding to object in your app.
+  # if table don't exist, Hibernate will create it. Else, Hibernate will update changes
+  jpa:
+    generate-ddl: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+  lombok:
+    enabled: true
+
+  open-in-view: false
+
+  # Validation
+  mvc:
+    throw-exception-if-no-handler-found: true
+
+  data:
+    # redis cache
+    redis:
+      host: localhost
+      port: 6379
+
+  kafka:
+    bootstrap-servers: localhost:9094
+    template:
+      default-topic: email
+
+  # Config for JavaMailSender
+  mail:
+    from-address: ${message.email.from}
+    username: ${message.email.username}
+    password: ${message.email.password}
+    host: ${message.email.host}
+    port: ${message.email.port}
+    properties:
+      mail:
+        protocol: ${message.email.protocol}
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  security:
+    oauth2:
+      client:
+        registration:
+          facebook:
+            provider: facebook
+            client-id:
+            client-secret:
+#            redirect-uri: http://localhost:8080/api/auth/user
+            scope:
+              - openid
+              - public_profile
+              - email
+        provider:
+          facebook:
+            authorization-uri: https://www.facebook.com/v15.0/dialog/oauth
+            token-uri: https://graph.facebook.com/v15.0/oauth/access_token
+            user-info-uri: https://graph.facebook.com/me
+            user-name-attribute: name
+
+# Mail
+message:
+  email:
+    protocol: smtp
+    from:
+    username:
+    password:
+    host: smtp-mail.outlook.com
+    port: 587
+
+# JWT
+access-token:
+  private: keypair/access-token-private.key
+  public: keypair/access-token-public.key
+
+refresh-token:
+  private: keypair/refresh-token-private.key
+  public: keypair/refresh-token-public.key
+
+oauth:
+  grant-type: shop-secure
+  client:
+    default:
+      access-token-lifespan: 1440 # in minutes
+      refresh-token-lifespan: 1440 # in minutes
+#  cookie-token:
+#    enable: false
+#    secure: false
+#    same-site: None # None/Lax/Strict
+
+# Cloudinary
+cloudinary:
+  cloudName:
+  apiKey:
+  apiSecret:
+
+tempUser:
+  lifespan: 12
+
+# Swagger: http://localhost:8080/api/swagger-ui/index.html
+
+app:
+  services:
+    product: http://localhost:9000/api
