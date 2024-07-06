@@ -129,10 +129,14 @@
 		</dependency>
 
 		<!--		sử dụng javax.xml.bind.DatatypeConverter-->
+<!--		<dependency>-->
+<!--			<groupId>javax.xml.bind</groupId>-->
+<!--			<artifactId>jaxb-api</artifactId>-->
+<!--			<version>${jaxb-api.version}</version>-->
+<!--		</dependency>-->
 		<dependency>
-			<groupId>javax.xml.bind</groupId>
-			<artifactId>jaxb-api</artifactId>
-			<version>${jaxb-api.version}</version>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
 		</dependency>
 
 		<!--		swagger (spring boot 3.)-->

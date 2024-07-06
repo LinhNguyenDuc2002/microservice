@@ -12,7 +12,6 @@ import com.example.userservice.exception.NotFoundException;
 import com.example.userservice.exception.UnauthorizedException;
 import com.example.userservice.exception.ValidationException;
 import com.example.userservice.mapper.UserMapper;
-import com.example.userservice.message.EmailService;
 import com.example.userservice.message.email.EmailConstant;
 import com.example.userservice.message.email.EmailMessage;
 import com.example.userservice.payload.CustomerRequest;
@@ -23,6 +22,8 @@ import com.example.userservice.repository.httpclient.ProductServiceClient;
 import com.example.userservice.service.UserService;
 import com.example.userservice.util.OtpUtil;
 import com.example.userservice.util.SecurityUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -48,7 +49,7 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
 
     @Autowired
-    private EmailService emailService;
+    private KafkaEmailService messagingService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -64,6 +65,8 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private ApplicationConfig applicationConfig;
+
+    private ObjectMapper mapper = new ObjectMapper();
 
     @Override
     public UserDto getLoggedInUser() throws NotFoundException {
@@ -84,7 +87,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Map<String, String> createTempUser(UserRequest newUserRequest) throws ValidationException {
+    public Map<String, String> createTempUser(UserRequest newUserRequest) throws ValidationException, JsonProcessingException {
         log.info("Save registration information temporarily");
 
         if (!StringUtils.hasText(newUserRequest.getEmail())) {
@@ -118,7 +121,7 @@ public class UserServiceImpl implements UserService {
                 .locale(LocaleContextHolder.getLocale())
                 .build();
         log.info("Sending OTP to authenticate ...");
-//        emailService.sendMessage(email);
+        messagingService.sendEmail(mapper.writeValueAsString(email));
         log.info("OTP code is sent successfully");
 
         userCacheManager.storeUserCache(userCache);

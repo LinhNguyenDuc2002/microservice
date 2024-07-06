@@ -8,7 +8,6 @@ public class BasePredicate {
 
     /**
      * Get the combination of query criteria
-     *
      * @return
      */
     public Predicate getCriteria() {

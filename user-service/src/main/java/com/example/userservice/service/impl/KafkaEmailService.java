@@ -1,6 +1,5 @@
 package com.example.userservice.service.impl;
 
-import com.example.userservice.message.email.EmailMessage;
 import com.example.userservice.service.OrderMessagingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -11,7 +10,7 @@ public class KafkaEmailService implements OrderMessagingService {
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
     @Override
-    public void sendEmail(EmailMessage emailMessage) {
-        kafkaTemplate.sendDefault("hello");
+    public void sendEmail(String emailMessage) {
+        kafkaTemplate.sendDefault(emailMessage);
     }
 }

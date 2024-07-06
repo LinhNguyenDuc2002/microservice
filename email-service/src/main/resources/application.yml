@@ -7,6 +7,12 @@ spring:
     consumer:
       auto-offset-reset: earliest
       group-id: email-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+#      properties:
+#        spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+#        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+#        spring.json.trusted.packages: "*"
 
   mail:
     from-address: ${message.email.from}
@@ -25,9 +31,9 @@ spring:
 message:
   email:
     protocol: smtp
-    from:
-    username:
-    password:
+    from: linhnd.b20at109@stu.ptit.edu.vn
+    username: linhnd.b20at109@stu.ptit.edu.vn
+    password: Sero2002@
     host: smtp-mail.outlook.com
     port: 587
 

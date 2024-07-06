@@ -2,6 +2,8 @@ package com.example.emailservice.message.impl;
 
 import com.example.emailservice.message.EmailService;
 import com.example.emailservice.message.email.EmailMessage;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
@@ -25,9 +27,13 @@ public class EmailServiceImpl implements EmailService<EmailMessage> {
     @Autowired
     private SpringTemplateEngine templateEngine;
 
+    @KafkaListener(topics = "email")
     @Override
-    public void sendMessage(EmailMessage message) {
+    public void sendMessage(String payload) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        EmailMessage message = mapper.readValue(payload, EmailMessage.class);
         Map<String, String> args = message.getArgs();
+
         try {
             MimeMessage mimeMessage = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, StandardCharsets.UTF_8.name());
@@ -48,11 +54,5 @@ public class EmailServiceImpl implements EmailService<EmailMessage> {
         } catch (MessagingException messagingException) {
             log.error("Failed to send the email", messagingException);
         }
-    }
-
-    @KafkaListener(topics = "email")
-    @Override
-    public void sendMessage(String message) {
-        System.out.println(message);
     }
 }
