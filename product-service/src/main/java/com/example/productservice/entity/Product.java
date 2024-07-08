@@ -1,8 +1,10 @@
 package com.example.productservice.entity;
 
+import com.example.productservice.listener.ProductListener;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -26,6 +28,8 @@ import java.util.Collection;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+
+@EntityListeners(ProductListener.class)
 public class Product extends Auditor {
     @Id
     @UuidGenerator

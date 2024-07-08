@@ -2,12 +2,12 @@ package com.example.productservice.service.impl;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.example.productservice.cache.ProductCacheManager;
 import com.example.productservice.constant.ExceptionMessage;
 import com.example.productservice.dto.ProductDTO;
 import com.example.productservice.entity.Category;
 import com.example.productservice.entity.Image;
 import com.example.productservice.entity.Product;
-import com.example.productservice.entity.Shop;
 import com.example.productservice.exception.InvalidException;
 import com.example.productservice.exception.NotFoundException;
 import com.example.productservice.mapper.ProductMapper;
@@ -21,6 +21,7 @@ import com.example.productservice.repository.predicate.ProductPredicate;
 import com.example.productservice.service.ProductService;
 import com.example.productservice.util.DateUtil;
 import com.example.productservice.util.PageUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +57,12 @@ public class ProductServiceImpl implements ProductService {
 
     @Autowired
     private ShopRepository shopRepository;
+
+    @Autowired
+    private ProductCacheManager productCacheManager;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Override
     public ProductDTO add(String productRequest, List<MultipartFile> files) throws InvalidException, NotFoundException {
@@ -109,7 +116,6 @@ public class ProductServiceImpl implements ProductService {
 
         Product product = check.get();
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
             ProductRequest request = objectMapper.readValue(productRequest, ProductRequest.class);
 
             if (request == null ||
@@ -155,7 +161,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public PageResponse<ProductDTO> getAll(Integer page, Integer size, String shop, String search, String category) throws NotFoundException {
+    public PageResponse<ProductDTO> getAll(Integer page, Integer size, String shop, String search, String category) throws NotFoundException, JsonProcessingException {
+        PageResponse<ProductDTO> productCache = productCacheManager.getAllProducts(page, size, shop, category);
+
+        if(productCache != null) return productCache;
+
         Pageable pageable = PageUtil.getPage(page, size);
 
         ProductPredicate productPredicate = new ProductPredicate()
@@ -169,7 +179,7 @@ public class ProductServiceImpl implements ProductService {
                 .totalPage(products.getTotalPages())
                 .elements(productMapper.toDtoList(products.getContent()))
                 .build();
-
+        productCacheManager.saveAllProducts(pageResponse, page, size, shop, category);
         return pageResponse;
     }
 

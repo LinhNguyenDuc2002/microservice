@@ -8,6 +8,7 @@ import com.example.productservice.payload.response.CommonResponse;
 import com.example.productservice.payload.response.PageResponse;
 import com.example.productservice.service.ProductService;
 import com.example.productservice.util.ResponseUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -53,7 +54,7 @@ public class ProductController {
             @RequestParam(name = ParameterConstant.Page.SIZE, defaultValue = ParameterConstant.Page.DEFAULT_SIZE) Integer size,
             @RequestParam(name = "shop", required = false) String shop,
             @RequestParam(name = "search", required = false) String search,
-            @RequestParam(name = "category", required = false) String category) throws NotFoundException {
+            @RequestParam(name = "category", required = false) String category) throws NotFoundException, JsonProcessingException {
         return ResponseEntity.ok(productService.getAll(page, size, shop, search, category));
     }
 

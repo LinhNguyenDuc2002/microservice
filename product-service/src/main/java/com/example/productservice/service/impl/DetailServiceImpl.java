@@ -21,6 +21,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Service
 public class DetailServiceImpl implements DetailService {
@@ -55,7 +57,7 @@ public class DetailServiceImpl implements DetailService {
         }
 
         Product product = checkProduct.get();
-        if(quantity > product.getQuantity()) {
+        if (quantity > product.getQuantity()) {
             throw new InvalidException(ExceptionMessage.ERROR_PRODUCT_INVALID_INPUT);
         }
 

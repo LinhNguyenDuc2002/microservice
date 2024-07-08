@@ -31,6 +31,8 @@ import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Service
 public class BillServiceImpl implements BillService {
@@ -52,45 +54,53 @@ public class BillServiceImpl implements BillService {
     @Autowired
     private BillMapper billMapper;
 
+    private Lock lock = new ReentrantLock();
+
     @Override
     public BillDTO create(BillRequest billRequest) throws InvalidException {
-        List<Detail> details = detailRepository.findAllById(billRequest.getDetails());
+        lock.lock();
+        try {
+            List<Detail> details = detailRepository.findAllById(billRequest.getDetails());
 
-        if(details.isEmpty()) {
-            throw new InvalidException(ExceptionMessage.ERROR_PRODUCT_INVALID_INPUT);
-        }
-
-        for(Detail detail : details) {
-            Product product = detail.getProduct();
-
-            if(detail.getQuantity() > product.getQuantity()) {
+            if (details.isEmpty()) {
                 throw new InvalidException(ExceptionMessage.ERROR_PRODUCT_INVALID_INPUT);
             }
 
-            product.setQuantity(product.getQuantity() - detail.getQuantity());
-            product.setSold(product.getSold() + detail.getQuantity());
-            productRepository.save(product);
-        }
+            for (Detail detail : details) {
+                Product product = detail.getProduct();
 
-        Bill bill = Bill.builder()
-                .phone(billRequest.getPhone())
-                .status(BillStatus.PROCESSING)
-                .address(Address.builder()
-                        .country(billRequest.getAddress().getCountry())
-                        .city(billRequest.getAddress().getCity())
-                        .district(billRequest.getAddress().getDistrict())
-                        .ward(billRequest.getAddress().getWard())
-                        .detail(billRequest.getAddress().getDetail())
-                        .build())
-                .build();
-        billRepository.save(bill);
+                if (detail.getQuantity() > product.getQuantity()) {
+                    throw new InvalidException(ExceptionMessage.ERROR_PRODUCT_INVALID_INPUT);
+                }
 
-        for(Detail detail : details) {
-            detail.setBill(bill);
-            detail.setStatus(true);
+                product.setQuantity(product.getQuantity() - detail.getQuantity());
+                product.setSold(product.getSold() + detail.getQuantity());
+                productRepository.save(product);
+            }
+
+            Bill bill = Bill.builder()
+                    .phone(billRequest.getPhone())
+                    .status(BillStatus.PROCESSING)
+                    .address(Address.builder()
+                            .country(billRequest.getAddress().getCountry())
+                            .city(billRequest.getAddress().getCity())
+                            .district(billRequest.getAddress().getDistrict())
+                            .ward(billRequest.getAddress().getWard())
+                            .detail(billRequest.getAddress().getDetail())
+                            .build())
+                    .build();
+            billRepository.save(bill);
+
+            for (Detail detail : details) {
+                detail.setBill(bill);
+                detail.setStatus(true);
+            }
+            detailRepository.saveAll(details);
+            return billMapper.toDto(bill);
         }
-        detailRepository.saveAll(details);
-        return billMapper.toDto(bill);
+        finally {
+            lock.unlock();
+        }
     }
 
     @Override

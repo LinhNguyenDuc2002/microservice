@@ -2,7 +2,6 @@ package com.example.productservice.exception;
 
 import com.example.productservice.payload.response.BaseError;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
