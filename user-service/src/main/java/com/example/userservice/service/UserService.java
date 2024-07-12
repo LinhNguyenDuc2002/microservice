@@ -4,6 +4,7 @@ import com.example.userservice.dto.UserDto;
 import com.example.userservice.dto.request.UserRequest;
 import com.example.userservice.exception.NotFoundException;
 import com.example.userservice.exception.ValidationException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.util.List;
 import java.util.Map;
@@ -11,7 +12,7 @@ import java.util.Map;
 public interface UserService {
     UserDto getLoggedInUser() throws NotFoundException;
 
-    Map<String, String> createTempUser(UserRequest newUserRequest) throws ValidationException;
+    Map<String, String> createTempUser(UserRequest newUserRequest) throws ValidationException, JsonProcessingException;
 
     void delete(String id) throws NotFoundException;
 
@@ -21,5 +22,5 @@ public interface UserService {
 
     UserDto update(String id, UserRequest userRequest) throws NotFoundException, ValidationException;
 
-    UserDto createUser(String id, String otp, String secret) throws ValidationException, NotFoundException;
+    UserDto createUser(String id, String otp, String secret) throws ValidationException, NotFoundException, JsonProcessingException;
 }

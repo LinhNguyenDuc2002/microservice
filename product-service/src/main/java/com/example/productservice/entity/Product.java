@@ -1,8 +1,10 @@
 package com.example.productservice.entity;
 
+import com.example.productservice.listener.ProductListener;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -26,6 +28,7 @@ import java.util.Collection;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EntityListeners(ProductListener.class)
 public class Product extends Auditor {
     @Id
     @UuidGenerator
@@ -58,10 +61,6 @@ public class Product extends Auditor {
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @EqualsAndHashCode.Exclude
     private Collection<Comment> comments;
-
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @EqualsAndHashCode.Exclude
-    private Collection<Detail> details;
 
     @ManyToOne
     @JoinColumn(name = "shop_id")

@@ -7,11 +7,11 @@ import com.example.userservice.dto.request.UserRequest;
 import com.example.userservice.dto.response.CommonResponse;
 import com.example.userservice.exception.NotFoundException;
 import com.example.userservice.exception.ValidationException;
-import com.example.userservice.message.email.EmailMessage;
 import com.example.userservice.service.OrderMessagingService;
 import com.example.userservice.service.UserService;
 import com.example.userservice.util.HandleBindingResult;
 import com.example.userservice.util.ResponseUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.sql.DataSource;
 import java.util.List;
 
 @RestController
@@ -38,6 +39,9 @@ public class UserController {
     @Autowired
     private OrderMessagingService messagingService;
 
+    @Autowired
+    private DataSource dataSource;
+
     @GetMapping("/me")
     public ResponseEntity<CommonResponse<UserDto>> getLoggedInUser() throws NotFoundException {
         return ResponseUtil.wrapResponse(userService.getLoggedInUser(), ResponseMessage.GET_USER_SUCCESS.getMessage());
@@ -46,14 +50,14 @@ public class UserController {
     @PostMapping("/verify")
     public ResponseEntity<CommonResponse<UserDto>> verifyOTPToCreateUser(@RequestParam(name = "id") String id,
                                                                          @RequestParam(name = "code") String otp,
-                                                                         @RequestParam(name = "secret") String secret) throws ValidationException, NotFoundException {
+                                                                         @RequestParam(name = "secret") String secret) throws ValidationException, NotFoundException, JsonProcessingException {
         return ResponseUtil.wrapResponse(userService.createUser(id, otp, secret), ResponseMessage.CREATE_USER_SUCCESS.getMessage());
     }
 
     @PostMapping
     public ResponseEntity<CommonResponse<Object>> createTempUser(
             @Valid @RequestBody UserRequest newUserRequest,
-            BindingResult bindingResult) throws ValidationException {
+            BindingResult bindingResult) throws ValidationException, JsonProcessingException {
         HandleBindingResult.handle(bindingResult, newUserRequest);
         return ResponseUtil.wrapResponse(userService.createTempUser(newUserRequest), ResponseMessage.WAIT_ENTER_OTP.getMessage());
     }
@@ -81,10 +85,5 @@ public class UserController {
                                                           BindingResult bindingResult) throws NotFoundException, ValidationException {
         HandleBindingResult.handle(bindingResult, userRequest);
         return ResponseUtil.wrapResponse(userService.update(id, userRequest), ResponseMessage.UPDATE_USER_SUCCESS.getMessage());
-    }
-
-    @GetMapping("/test")
-    public void send() throws NotFoundException, ValidationException {
-        messagingService.sendEmail(new EmailMessage());
     }
 }

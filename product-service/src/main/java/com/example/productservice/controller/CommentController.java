@@ -26,10 +26,11 @@ import java.util.List;
 public class CommentController {
     @Autowired
     private CommentService commentService;
+
     @PostMapping("/detail/{id}")
     public ResponseEntity<CommonResponse<CommentDTO>> create(
             @PathVariable String id,
-            @RequestBody CommentRequest commentRequest) throws NotFoundException, InvalidException {
+            @RequestBody CommentRequest commentRequest) throws Exception {
         return ResponseUtil.wrapResponse(commentService.create(id, commentRequest), ResponseMessage.CREATE_COMMENT_SUCCESS);
     }
 

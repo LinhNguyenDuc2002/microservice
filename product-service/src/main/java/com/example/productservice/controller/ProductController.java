@@ -1,6 +1,7 @@
 package com.example.productservice.controller;
 
 import com.example.productservice.constant.ParameterConstant;
+import com.example.productservice.dto.ExistingProductCheckDTO;
 import com.example.productservice.dto.ProductDTO;
 import com.example.productservice.exception.InvalidException;
 import com.example.productservice.exception.NotFoundException;
@@ -8,6 +9,7 @@ import com.example.productservice.payload.response.CommonResponse;
 import com.example.productservice.payload.response.PageResponse;
 import com.example.productservice.service.ProductService;
 import com.example.productservice.util.ResponseUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -53,13 +55,20 @@ public class ProductController {
             @RequestParam(name = ParameterConstant.Page.SIZE, defaultValue = ParameterConstant.Page.DEFAULT_SIZE) Integer size,
             @RequestParam(name = "shop", required = false) String shop,
             @RequestParam(name = "search", required = false) String search,
-            @RequestParam(name = "category", required = false) String category) throws NotFoundException {
+            @RequestParam(name = "category", required = false) String category) throws NotFoundException, JsonProcessingException {
         return ResponseEntity.ok(productService.getAll(page, size, shop, search, category));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<CommonResponse<ProductDTO>> get(@PathVariable String id) throws NotFoundException {
         return ResponseUtil.wrapResponse(productService.get(id));
+    }
+
+    @GetMapping("/{id}/exist")
+    public ResponseEntity<ExistingProductCheckDTO> checkProductExist(
+            @PathVariable String id,
+            @RequestParam("quantity") Integer quantity) throws NotFoundException, InvalidException {
+        return ResponseEntity.ok(productService.checkProductExist(id, quantity));
     }
 
     @DeleteMapping("/{id}")

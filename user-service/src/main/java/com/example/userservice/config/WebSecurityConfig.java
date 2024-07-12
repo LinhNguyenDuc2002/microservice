@@ -193,6 +193,7 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/user").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth").permitAll()
                         .requestMatchers( "/user/verify").permitAll()
+                        .requestMatchers( "/actuator/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().permitAll());
 //                .oauth2Login(Customizer.withDefaults()); //OAuth2 Login handles the redirect to the OAuth 2.0 Login endpoint

@@ -2,12 +2,13 @@ package com.example.productservice.service.impl;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.example.productservice.cache.ProductCacheManager;
 import com.example.productservice.constant.ExceptionMessage;
+import com.example.productservice.dto.ExistingProductCheckDTO;
 import com.example.productservice.dto.ProductDTO;
 import com.example.productservice.entity.Category;
 import com.example.productservice.entity.Image;
 import com.example.productservice.entity.Product;
-import com.example.productservice.entity.Shop;
 import com.example.productservice.exception.InvalidException;
 import com.example.productservice.exception.NotFoundException;
 import com.example.productservice.mapper.ProductMapper;
@@ -21,6 +22,7 @@ import com.example.productservice.repository.predicate.ProductPredicate;
 import com.example.productservice.service.ProductService;
 import com.example.productservice.util.DateUtil;
 import com.example.productservice.util.PageUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +58,15 @@ public class ProductServiceImpl implements ProductService {
 
     @Autowired
     private ShopRepository shopRepository;
+
+    @Autowired
+    private ProductCacheManager productCacheManager;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    private KafkaOrderService orderService;
 
     @Override
     public ProductDTO add(String productRequest, List<MultipartFile> files) throws InvalidException, NotFoundException {
@@ -109,7 +120,6 @@ public class ProductServiceImpl implements ProductService {
 
         Product product = check.get();
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
             ProductRequest request = objectMapper.readValue(productRequest, ProductRequest.class);
 
             if (request == null ||
@@ -125,10 +135,13 @@ public class ProductServiceImpl implements ProductService {
                     });
 
             product.setName(request.getName());
-            product.setPrice(request.getPrice());
             product.setQuantity(request.getQuantity());
             product.setNote(request.getNote());
             product.setCategory(category);
+            if(product.getPrice() != request.getPrice()) {
+                product.setPrice(request.getPrice());
+                orderService.updateUnitPrice(Map.of(product.getId(), product.getPrice()));
+            }
 
             if(files != null && !files.isEmpty()) {
                 List<Image> images = product.getImages().stream().toList();
@@ -155,7 +168,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public PageResponse<ProductDTO> getAll(Integer page, Integer size, String shop, String search, String category) throws NotFoundException {
+    public PageResponse<ProductDTO> getAll(Integer page, Integer size, String shop, String search, String category) throws NotFoundException, JsonProcessingException {
+        PageResponse<ProductDTO> productCache = productCacheManager.getAllProducts(page, size, shop, category);
+
+        if(productCache != null) return productCache;
+
         Pageable pageable = PageUtil.getPage(page, size);
 
         ProductPredicate productPredicate = new ProductPredicate()
@@ -169,7 +186,7 @@ public class ProductServiceImpl implements ProductService {
                 .totalPage(products.getTotalPages())
                 .elements(productMapper.toDtoList(products.getContent()))
                 .build();
-
+        productCacheManager.saveAllProducts(pageResponse, page, size, shop, category);
         return pageResponse;
     }
 
@@ -182,6 +199,25 @@ public class ProductServiceImpl implements ProductService {
         }
 
         return productMapper.toDto(product.get());
+    }
+
+    @Override
+    public ExistingProductCheckDTO checkProductExist(String id, Integer quantity) throws NotFoundException, InvalidException {
+        Optional<Product> checkProduct = productRepository.findById(id);
+
+        if(!checkProduct.isPresent()) {
+            throw new NotFoundException(ExceptionMessage.ERROR_PRODUCT_NOT_FOUND);
+        }
+
+        Product product = checkProduct.get();
+        if(quantity > product.getQuantity()) {
+            throw new InvalidException(ExceptionMessage.ERROR_PRODUCT_SOLD_OUT);
+        }
+
+        return ExistingProductCheckDTO.builder()
+                .exist(true)
+                .price(product.getPrice())
+                .build();
     }
 
     @Override

@@ -14,7 +14,7 @@ public class CommentMapper extends AbstractMapper<Comment, CommentDTO> {
     public CommentDTO toDto(Comment comment) {
         CommentDTO ret = super.toDto(comment);
 
-        ret.setCustomer(customerMapper.toDto(comment.getDetail().getCustomer()));
+//        ret.setCustomer(customerMapper.toDto(comment.getDetail().getCustomer()));
         return ret;
     }
 

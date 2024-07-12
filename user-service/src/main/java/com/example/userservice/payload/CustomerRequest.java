@@ -21,6 +21,9 @@ public class CustomerRequest {
     @JsonProperty("fullname")
     private String fullname;
 
+    @JsonProperty("nickname")
+    private String nickname;
+
     @JsonProperty("email")
     private String email;
 

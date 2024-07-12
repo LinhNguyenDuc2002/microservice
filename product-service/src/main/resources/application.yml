@@ -1,6 +1,6 @@
 #server
 server:
-  port: 9000
+  port: 8082
   servlet:
     context-path: /api
 
@@ -30,6 +30,22 @@ spring:
   lombok:
     enabled: true
 
+  kafka:
+    bootstrap-servers: localhost:9094
+    template:
+      default-topic: update-detail
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      auto-offset-reset: earliest
+      group-id: create-customer-service
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      partition:
+        assignment:
+          strategy: org.apache.kafka.clients.consumer.RangeAssignor
+
 # Cloudinary
 cloudinary:
   cloudName:
@@ -40,3 +56,8 @@ cloudinary:
 access-token:
   private: keypair/access-token-private.key
   public: keypair/access-token-public.key
+
+order-service:
+  endpoint: http://localhost:8083
+
+

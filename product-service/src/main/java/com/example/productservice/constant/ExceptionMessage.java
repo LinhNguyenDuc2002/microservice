@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 public final class ExceptionMessage {
     public final static String ERROR_PRODUCT_INVALID_INPUT = "The request is invalid";
     public final static String ERROR_PRODUCT_NOT_FOUND = "The product does not exist";
+    public final static String ERROR_PRODUCT_SOLD_OUT = "The product is sold out";
 
     public final static String ERROR_CATEGORY_NOT_FOUND = "The request is invalid";
 
@@ -15,7 +16,6 @@ public final class ExceptionMessage {
 
     public final static String ERROR_SHOP_NOT_FOUND = "";
 
-    public final static String ERROR_DETAIL_NOT_FOUND = "";
-
-    public final static String ERROR_COMMENT_NOT_FOUND = "";
+    public final static String ERROR_COMMENT_NOT_FOUND = "The comment is not found";
+    public final static String ERROR_COMMENT_EDIT = "Couldn't edit this comment";
 }
