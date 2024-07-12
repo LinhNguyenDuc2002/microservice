@@ -49,7 +49,7 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
 
     @Autowired
-    private KafkaEmailService messagingService;
+    private OrderMessagingServiceImpl messagingService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -132,7 +132,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto createUser(String id, String otp, String secret) throws ValidationException, NotFoundException {
+    public UserDto createUser(String id, String otp, String secret) throws ValidationException, NotFoundException, JsonProcessingException {
         log.info("Verifying otp ...");
 
         if (!StringUtils.hasText(otp)) {
@@ -161,14 +161,17 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
 
-        productServiceClient.createCustomer(
-                CustomerRequest.builder()
-                        .accountId(user.getId())
-                        .email(user.getEmail())
-                        .fullname(user.getFullname())
-                        .phone(user.getPhone())
-                        .role(RoleType.CUSTOMER.name())
-                        .build()
+        messagingService.createCustomer(
+                mapper.writeValueAsString(
+                        CustomerRequest.builder()
+                                .accountId(user.getId())
+                                .email(user.getEmail())
+                                .nickname(user.getNickname())
+                                .fullname(user.getFullname())
+                                .phone(user.getPhone())
+                                .role(RoleType.CUSTOMER.name())
+                                .build()
+                )
         );
         return userMapper.toDto(user);
     }

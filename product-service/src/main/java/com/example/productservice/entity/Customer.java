@@ -28,9 +28,15 @@ public class Customer extends Auditor {
     @Column(name = "fullname")
     private String fullname;
 
+    @Column(name = "nickname")
+    private String nickname;
+
     @Column(name = "email")
     private String email;
 
     @Column(name = "phone")
     private String phone;
+
+    @Column(name = "avatar")
+    private String avatar;
 }

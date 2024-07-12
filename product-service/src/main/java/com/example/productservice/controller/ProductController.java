@@ -1,6 +1,7 @@
 package com.example.productservice.controller;
 
 import com.example.productservice.constant.ParameterConstant;
+import com.example.productservice.dto.ExistingProductCheckDTO;
 import com.example.productservice.dto.ProductDTO;
 import com.example.productservice.exception.InvalidException;
 import com.example.productservice.exception.NotFoundException;
@@ -61,6 +62,13 @@ public class ProductController {
     @GetMapping("/{id}")
     public ResponseEntity<CommonResponse<ProductDTO>> get(@PathVariable String id) throws NotFoundException {
         return ResponseUtil.wrapResponse(productService.get(id));
+    }
+
+    @GetMapping("/{id}/exist")
+    public ResponseEntity<ExistingProductCheckDTO> checkProductExist(
+            @PathVariable String id,
+            @RequestParam("quantity") Integer quantity) throws NotFoundException, InvalidException {
+        return ResponseEntity.ok(productService.checkProductExist(id, quantity));
     }
 
     @DeleteMapping("/{id}")

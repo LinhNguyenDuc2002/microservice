@@ -28,7 +28,6 @@ import java.util.Collection;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-
 @EntityListeners(ProductListener.class)
 public class Product extends Auditor {
     @Id
@@ -62,10 +61,6 @@ public class Product extends Auditor {
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @EqualsAndHashCode.Exclude
     private Collection<Comment> comments;
-
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @EqualsAndHashCode.Exclude
-    private Collection<Detail> details;
 
     @ManyToOne
     @JoinColumn(name = "shop_id")

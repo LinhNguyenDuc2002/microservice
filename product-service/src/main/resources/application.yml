@@ -9,7 +9,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/product_service
     username: root
-    password: 16042002
+    password:
 
   cache:
     type: redis
@@ -30,13 +30,34 @@ spring:
   lombok:
     enabled: true
 
+  kafka:
+    bootstrap-servers: localhost:9094
+    template:
+      default-topic: update-detail
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      auto-offset-reset: earliest
+      group-id: create-customer-service
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      partition:
+        assignment:
+          strategy: org.apache.kafka.clients.consumer.RangeAssignor
+
 # Cloudinary
 cloudinary:
-  cloudName: dwlokgoam
-  apiKey: 976349327572747
-  apiSecret: xMr3J7-geMUqeQNpcwHTZD4Aook
+  cloudName:
+  apiKey:
+  apiSecret:
 
 # JWT
 access-token:
   private: keypair/access-token-private.key
   public: keypair/access-token-public.key
+
+order-service:
+  endpoint: http://localhost:8083
+
+

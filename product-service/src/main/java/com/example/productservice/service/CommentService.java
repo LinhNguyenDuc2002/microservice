@@ -8,7 +8,7 @@ import com.example.productservice.payload.CommentRequest;
 import java.util.List;
 
 public interface CommentService {
-    CommentDTO create(String id, CommentRequest commentRequest) throws NotFoundException, InvalidException;
+    CommentDTO create(String id, CommentRequest commentRequest) throws Exception;
 
     List<CommentDTO> getAll(String id) throws NotFoundException;
 

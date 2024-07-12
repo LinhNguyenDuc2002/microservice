@@ -22,5 +22,5 @@ public interface UserService {
 
     UserDto update(String id, UserRequest userRequest) throws NotFoundException, ValidationException;
 
-    UserDto createUser(String id, String otp, String secret) throws ValidationException, NotFoundException;
+    UserDto createUser(String id, String otp, String secret) throws ValidationException, NotFoundException, JsonProcessingException;
 }

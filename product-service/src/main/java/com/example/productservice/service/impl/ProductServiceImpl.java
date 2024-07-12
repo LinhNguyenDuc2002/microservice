@@ -4,6 +4,7 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.example.productservice.cache.ProductCacheManager;
 import com.example.productservice.constant.ExceptionMessage;
+import com.example.productservice.dto.ExistingProductCheckDTO;
 import com.example.productservice.dto.ProductDTO;
 import com.example.productservice.entity.Category;
 import com.example.productservice.entity.Image;
@@ -63,6 +64,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private KafkaOrderService orderService;
 
     @Override
     public ProductDTO add(String productRequest, List<MultipartFile> files) throws InvalidException, NotFoundException {
@@ -131,10 +135,13 @@ public class ProductServiceImpl implements ProductService {
                     });
 
             product.setName(request.getName());
-            product.setPrice(request.getPrice());
             product.setQuantity(request.getQuantity());
             product.setNote(request.getNote());
             product.setCategory(category);
+            if(product.getPrice() != request.getPrice()) {
+                product.setPrice(request.getPrice());
+                orderService.updateUnitPrice(Map.of(product.getId(), product.getPrice()));
+            }
 
             if(files != null && !files.isEmpty()) {
                 List<Image> images = product.getImages().stream().toList();
@@ -192,6 +199,25 @@ public class ProductServiceImpl implements ProductService {
         }
 
         return productMapper.toDto(product.get());
+    }
+
+    @Override
+    public ExistingProductCheckDTO checkProductExist(String id, Integer quantity) throws NotFoundException, InvalidException {
+        Optional<Product> checkProduct = productRepository.findById(id);
+
+        if(!checkProduct.isPresent()) {
+            throw new NotFoundException(ExceptionMessage.ERROR_PRODUCT_NOT_FOUND);
+        }
+
+        Product product = checkProduct.get();
+        if(quantity > product.getQuantity()) {
+            throw new InvalidException(ExceptionMessage.ERROR_PRODUCT_SOLD_OUT);
+        }
+
+        return ExistingProductCheckDTO.builder()
+                .exist(true)
+                .price(product.getPrice())
+                .build();
     }
 
     @Override

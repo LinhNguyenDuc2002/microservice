@@ -50,7 +50,7 @@ public class UserController {
     @PostMapping("/verify")
     public ResponseEntity<CommonResponse<UserDto>> verifyOTPToCreateUser(@RequestParam(name = "id") String id,
                                                                          @RequestParam(name = "code") String otp,
-                                                                         @RequestParam(name = "secret") String secret) throws ValidationException, NotFoundException {
+                                                                         @RequestParam(name = "secret") String secret) throws ValidationException, NotFoundException, JsonProcessingException {
         return ResponseUtil.wrapResponse(userService.createUser(id, otp, secret), ResponseMessage.CREATE_USER_SUCCESS.getMessage());
     }
 
@@ -86,10 +86,4 @@ public class UserController {
         HandleBindingResult.handle(bindingResult, userRequest);
         return ResponseUtil.wrapResponse(userService.update(id, userRequest), ResponseMessage.UPDATE_USER_SUCCESS.getMessage());
     }
-
-//    @GetMapping("/test")
-//    public void send() throws JsonProcessingException {
-//        ObjectMapper mapper = new ObjectMapper();
-//        messagingService.sendEmail(mapper.writeValueAsString(new EmailMessage()));
-//    }
 }

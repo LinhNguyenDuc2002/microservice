@@ -40,10 +40,10 @@ public class Comment extends Auditor{
     @Column(name = "allow_edit")
     private boolean allowEdit;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "detail_id")
+    @ManyToOne
+    @JoinColumn(name = "customer_id")
     @EqualsAndHashCode.Exclude
-    private Detail detail;
+    private Customer customer;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "product_id")

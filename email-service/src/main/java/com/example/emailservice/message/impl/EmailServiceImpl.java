@@ -27,7 +27,7 @@ public class EmailServiceImpl implements EmailService<EmailMessage> {
     @Autowired
     private SpringTemplateEngine templateEngine;
 
-    @KafkaListener(topics = "email")
+    @KafkaListener(topics = "send-email")
     @Override
     public void sendMessage(String payload) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
