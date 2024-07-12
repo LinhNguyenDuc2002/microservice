@@ -17,7 +17,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/user_service
     username: root
-    password:
+    password: 16042002
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari: # connection pooling library
       maximum-pool-size: 5 # maximum number of connection pooling at the same time
@@ -101,9 +101,9 @@ spring:
 message:
   email:
     protocol: smtp
-    from:
-    username:
-    password:
+    from: linhnd.b20at109@stu.ptit.edu.vn
+    username: linhnd.b20at109@stu.ptit.edu.vn
+    password: Sero2002@
     host: smtp-mail.outlook.com
     port: 587
 
@@ -129,9 +129,9 @@ oauth:
 
 # Cloudinary
 cloudinary:
-  cloudName:
-  apiKey:
-  apiSecret:
+  cloudName: dwlokgoam
+  apiKey: 976349327572747
+  apiSecret: xMr3J7-geMUqeQNpcwHTZD4Aook
 
 tempUser:
   lifespan: 12
