@@ -1,13 +1,6 @@
 package com.example.userservice.security.token;
 
-import com.example.userservice.config.JwtConfig;
 import com.example.userservice.constant.SecurityConstant;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureException;
-import io.jsonwebtoken.UnsupportedJwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
@@ -35,15 +28,12 @@ import java.util.UUID;
  */
 @Slf4j
 public class TokenGenerator implements OAuth2TokenGenerator<Jwt> {
-    private final JwtEncoder jwtAccessTokenEncoder;
-
-    private final JwtEncoder jwtRefreshTokenEncoder;
+    private final JwtEncoder jwtEncoder;
 
     private OAuth2TokenCustomizer<JwtEncodingContext> customizer;
 
-    public TokenGenerator(JwtEncoder jwtAccessTokenEncoder, JwtEncoder jwtRefreshTokenEncoder) {
-        this.jwtAccessTokenEncoder = jwtAccessTokenEncoder;
-        this.jwtRefreshTokenEncoder = jwtRefreshTokenEncoder;
+    public TokenGenerator(JwtEncoder jwtEncoder) {
+        this.jwtEncoder = jwtEncoder;
     }
 
     @Override
@@ -56,16 +46,17 @@ public class TokenGenerator implements OAuth2TokenGenerator<Jwt> {
             return null;
         }
 
+        // Get registered client in context
         final RegisteredClient registeredClient = context.getRegisteredClient();
 
-        // Initialize token builder
+        // Initialize token builder with jti, sub (subject), aud (audience), cli
         JwtClaimsSet.Builder claimsBuilder = JwtClaimsSet.builder()
                 .id(UUID.randomUUID().toString())
                 .subject(registeredClient.getId()) //owner object
                 .audience(Collections.singletonList(registeredClient.getClientId()));
         claimsBuilder.claim(SecurityConstant.TOKEN_CLAIM_CLIENT_ID, registeredClient.getClientId());
 
-        // Get issuer
+        // Get issuer and add claim iss (issuer)
         String issuer = null;
         if (context.getAuthorizationServerContext() != null) {
             issuer = context.getAuthorizationServerContext().getIssuer();
@@ -74,7 +65,7 @@ public class TokenGenerator implements OAuth2TokenGenerator<Jwt> {
             claimsBuilder.issuer(issuer); //release source
         }
 
-        // Jwt algorithm
+        // Jwt algorithm in header: typ (type), alg (algorithm)
         JwsHeader.Builder jwsHeaderBuilder = JwsHeader.with(SignatureAlgorithm.RS256)
                 .type("JWT");
 
@@ -100,7 +91,7 @@ public class TokenGenerator implements OAuth2TokenGenerator<Jwt> {
             this.customizer.customize(jwtContext);
         }
 
-        // define the token claims based on token type
+        // Define the token claims based on token type
         Instant issuedAt = Instant.now();
         if (OAuth2TokenType.ACCESS_TOKEN.equals(tokenType)) {
             Duration lifespanInMinute = registeredClient.getTokenSettings().getAccessTokenTimeToLive(); //represents a period of time
@@ -118,19 +109,20 @@ public class TokenGenerator implements OAuth2TokenGenerator<Jwt> {
 
             JwsHeader jwsHeader = jwsHeaderBuilder.build();
             JwtClaimsSet claims = claimsBuilder.build();
-            return jwtAccessTokenEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims));
-        } else {
+            return jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims));
+        }
+        else {
             Duration lifespanInMinute = registeredClient.getTokenSettings().getRefreshTokenTimeToLive();
             claimsBuilder.claim(SecurityConstant.TOKEN_CLAIM_TYPE, SecurityConstant.TOKEN_CLAIM_REFRESH_VALUE);
 
             Instant expiresAt = issuedAt.plus(lifespanInMinute);
             claimsBuilder.issuedAt(issuedAt)
                     .expiresAt(expiresAt)
-                    .notBefore(issuedAt); //the moment when JWT can be used
+                    .notBefore(issuedAt); // The moment when JWT can be used
 
             JwsHeader jwsHeader = jwsHeaderBuilder.build();
             JwtClaimsSet claims = claimsBuilder.build();
-            return jwtRefreshTokenEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims));
+            return jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims));
         }
     }
 
@@ -141,39 +133,4 @@ public class TokenGenerator implements OAuth2TokenGenerator<Jwt> {
     public void setJwtCustomizer(OAuth2TokenCustomizer<JwtEncodingContext> customizer) {
         this.customizer = customizer;
     }
-
-//    public boolean validateJwtToken(String token) {
-//        try {
-//            Jwts.parser()
-//                    .setSigningKey(JwtConfig.secretKey)
-//                    .parseClaimsJws(token);
-//            return true;
-//        } catch (UnsupportedJwtException exp) {
-//            System.out.println("claimsJws argument does not represent Claims JWS" + exp.getMessage());
-//        } catch (MalformedJwtException exp) {
-//            System.out.println("claimsJws string is not a valid JWS" + exp.getMessage());
-//        } catch (SignatureException exp) {
-//            System.out.println("claimsJws JWS signature validation failed" + exp.getMessage());
-//        } catch (ExpiredJwtException exp) {
-//            System.out.println("Claims has an expiration time before the method is invoked" + exp.getMessage());
-//        } catch (IllegalArgumentException exp) {
-//            System.out.println("claimsJws string is null or empty or only whitespace" + exp.getMessage());
-//        }
-//        return false;
-//    }
-//
-//    /**
-//     * Get user information from token
-//     *
-//     * @param token
-//     * @return
-//     */
-//    public String getUserNameFromJwtToken(String token) {
-//        Claims claims = Jwts.parser()
-//                .setSigningKey(JwtConfig.secretKey)
-//                .parseClaimsJws(token)
-//                .getBody();
-//
-//        return claims.getSubject();
-//    }
 }

@@ -14,6 +14,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -48,7 +49,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public boolean checkWarehouse(Map<String, Integer> productList) throws Exception {
+    public Map<String, List<String>> checkWarehouse(Map<String, Integer> productList) throws Exception {
         String url = productConfiguration.getCheckWarehouseUrl();
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(url);
 
@@ -59,7 +60,7 @@ public class ProductServiceImpl implements ProductService {
                 uriBuilder.toUriString(),
                 header,
                 productList,
-                Boolean.class
+                Map.class
         );
     }
 }

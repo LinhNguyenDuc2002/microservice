@@ -3,6 +3,7 @@ package com.example.userservice.service.impl;
 import com.example.userservice.cache.UserCacheManager;
 import com.example.userservice.config.ApplicationConfig;
 import com.example.userservice.constant.ExceptionMessage;
+import com.example.userservice.constant.KafkaTopic;
 import com.example.userservice.constant.RoleType;
 import com.example.userservice.dto.UserDto;
 import com.example.userservice.dto.request.UserRequest;
@@ -121,7 +122,7 @@ public class UserServiceImpl implements UserService {
                 .locale(LocaleContextHolder.getLocale())
                 .build();
         log.info("Sending OTP to authenticate ...");
-        messagingService.sendEmail(mapper.writeValueAsString(email));
+        messagingService.sendMessage(KafkaTopic.SEND_EMAIL, mapper.writeValueAsString(email));
         log.info("OTP code is sent successfully");
 
         userCacheManager.storeUserCache(userCache);
@@ -161,7 +162,8 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
 
-        messagingService.createCustomer(
+        messagingService.sendMessage(
+                KafkaTopic.CREATE_CUSTOMER,
                 mapper.writeValueAsString(
                         CustomerRequest.builder()
                                 .accountId(user.getId())

@@ -1,0 +1,24 @@
+version: '3'
+
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0.1
+    environment:
+      - KEYCLOAK_USER=admin
+      - KEYCLOAK_PASSWORD=admin
+      - DB_VENDOR=mysql
+      - DB_ADDR=localhost
+      - DB_DATABASE=user-service
+      - DB_USER=root
+      - DB_PASSWORD=16042002
+    ports:
+      - 8080:8080
+    networks:
+      - keycloak
+
+volumes:
+  keycloak:
+
+networks:
+  keycloak:
+    driver: bridge

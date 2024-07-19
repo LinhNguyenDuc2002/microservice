@@ -10,6 +10,7 @@ import com.example.orderservice.payload.response.CommonResponse;
 import com.example.orderservice.payload.response.PageResponse;
 import com.example.orderservice.service.BillService;
 import com.example.orderservice.util.ResponseUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Date;
+import java.util.List;
 
 @RestController
 @RequestMapping("/bill")
@@ -33,7 +35,7 @@ public class BillController {
     private BillService billService;
 
     @PostMapping
-    public ResponseEntity<CommonResponse<BillDTO>> create(@RequestBody BillRequest billRequest) throws Exception {
+    public ResponseEntity<CommonResponse<List<BillDTO>>> create(@RequestBody BillRequest billRequest) throws Exception {
         return ResponseUtil.wrapResponse(billService.create(billRequest));
     }
 
@@ -50,7 +52,7 @@ public class BillController {
             @RequestParam(name = ParameterConstant.Page.PAGE, defaultValue = ParameterConstant.Page.DEFAULT_PAGE) Integer page,
             @RequestParam(name = ParameterConstant.Page.SIZE, defaultValue = ParameterConstant.Page.DEFAULT_SIZE) Integer size,
             @RequestParam(name = "start") Date startAt,
-            @RequestParam(name = "end") Date endAt) throws InvalidException {
+            @RequestParam(name = "end") Date endAt) {
         return ResponseEntity.ok(billService.getAll(page, size, startAt, endAt));
     }
 
@@ -71,7 +73,7 @@ public class BillController {
     @PreAuthorize("hasAnyRole('EMPLOYEE')")
     public ResponseEntity<CommonResponse<BillDTO>> changeStatus(
             @PathVariable String id,
-            @RequestParam(name = "status") String status) throws NotFoundException, InvalidException {
+            @RequestParam(name = "status") String status) throws NotFoundException, InvalidException, JsonProcessingException {
         return ResponseUtil.wrapResponse(billService.changeStatus(id, status));
     }
 

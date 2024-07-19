@@ -31,7 +31,7 @@ public class ShopController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CommonResponse<ShopDTO>> create(@PathVariable String id) throws NotFoundException {
+    public ResponseEntity<CommonResponse<ShopDTO>> get(@PathVariable String id) throws NotFoundException {
         return ResponseUtil.wrapResponse(shopService.get(id));
     }
 

@@ -1,5 +1,6 @@
 package com.example.productservice.service.impl;
 
+import com.example.productservice.constant.KafkaTopic;
 import com.example.productservice.exception.InvalidException;
 import com.example.productservice.payload.CustomerRequest;
 import com.example.productservice.service.CustomerService;
@@ -28,10 +29,10 @@ public class KafkaOrderService implements OrderMessagingService {
 
     @Override
     public void updateUnitPrice(Map<String, Double> productList) throws JsonProcessingException {
-        kafkaTemplate.sendDefault(mapper.writeValueAsString(productList));
+        kafkaTemplate.send(KafkaTopic.UPDATE_UNIT_PRICE_DETAIL, mapper.writeValueAsString(productList));
     }
 
-    @KafkaListener(topics = "create-customer")
+    @KafkaListener(topics = KafkaTopic.CREATE_CUSTOMER)
     @Override
     public void createCustomer(String customerRequest) throws JsonProcessingException, InvalidException {
         CustomerRequest customer = mapper.readValue(customerRequest, CustomerRequest.class);

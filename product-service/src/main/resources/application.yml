@@ -6,6 +6,9 @@ server:
 
 # Database
 spring:
+  application:
+    name: product-service
+
   datasource:
     url: jdbc:mysql://localhost:3306/product_service
     username: root
@@ -30,6 +33,17 @@ spring:
   lombok:
     enabled: true
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8081/api
+          jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/oauth2/jwks
+#      resourceserver:
+#        jwt:
+#          issuer-uri: http://localhost:8080/realms/blue_shop
+#          jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
+
   kafka:
     bootstrap-servers: localhost:9094
     template:
@@ -52,12 +66,20 @@ cloudinary:
   apiKey:
   apiSecret:
 
-# JWT
-access-token:
-  private: keypair/access-token-private.key
-  public: keypair/access-token-public.key
+# Keycloak settings
+#keycloak:
+#  realm: blue_shop
+#  auth-server-url: http://localhost:8080/auth/ # authorization server url
+#  ssl-required: none # require SSL/TLS
+#  resource: client_id
+#  use-resource-role-mappings: true # use role mappings defined in Keycloak
+#  bearer-only: true # only accept token
+#  cors: true # support CORS
+#  principal-attribute: preferred_username # determine attribute used to authen
+#  enabled: true
+#  credentials:
+#    client-secret: 9WJsGoYoE10EhiBeSnbiZCLchGXJQSlI
 
 order-service:
   endpoint: http://localhost:8083
-
 

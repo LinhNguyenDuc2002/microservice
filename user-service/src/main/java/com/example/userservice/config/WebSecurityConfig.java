@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -90,9 +91,6 @@ public class WebSecurityConfig {
     @Autowired
     private CustomAuthenticationSuccessHandler authenticationSuccessHandler;
 
-//    @Autowired
-//    private JwtAuthenticationFilter jwtAuthenticationFilter;
-
     /**
      * Authenticate user when login
      *
@@ -119,8 +117,18 @@ public class WebSecurityConfig {
 
     /**
      * OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http)
-     * When call this method, it will apply default security for endpoints such as:
-     * /oauth2/authorize, /oauth2/token, /oauth2/check_token, /oauth2/error
+     * When call this method, it will apply default security for endpoints:
+     * ----------------
+     * Default Endpoints
+     * ----------------
+     *
+     * Authorization Endpoint           /oauth2/authorize
+     * Token Endpoint                   /oauth2/token
+     * Token Revocation                 /oauth2/revoke
+     * Token Introspection              /oauth2/introspect
+     * JWK Set Endpoint                 /oauth2/jwks
+     * Authorization Server Metadata    /.well-known/oauth-authorization-server
+     * OIDC Provider Configuration      /.well-known/openid-configuration
      * @param http
      * @return
      * @throws Exception
@@ -137,34 +145,51 @@ public class WebSecurityConfig {
                 .sessionManagement((session) -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(new BasicAuthenticationEntryPoint())
                         .accessDeniedHandler(new BearerTokenAccessDeniedHandler())
-                        .defaultAuthenticationEntryPointFor( //authentication exception
-                                new LoginUrlAuthenticationEntryPoint("/oauth2/authorization/facebook"),
+                        // Redirect to the login page when not authenticated from the authorization endpoint
+                        .defaultAuthenticationEntryPointFor(
+                                new LoginUrlAuthenticationEntryPoint("/login"),
                                 new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
                         )
                 )
+
+                // Accept access tokens for User Info and/or Client Registration
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwtResourceServerCustomize) //handle JWT token
                         .bearerTokenResolver(tokenResolver) //how to get token
                 )
-                //return OAuth2AuthorizationServerConfigurer, allow to customize configs regarding Authorization Server
-                //examples: client, token store, token endpoint, authorization endpoint, ...
+
+                // Returning OAuth2AuthorizationServerConfigurer allows to customize configs regarding Authorization Server
+                // examples: client, token store, token endpoint, authorization endpoint, ...
                 .getConfigurer(OAuth2AuthorizationServerConfigurer.class)
-                .oidc(Customizer.withDefaults()) //enable and customize OpenID Connect (OIDC)
+                .oidc(Customizer.withDefaults()) // Enable OpenID Connect (OIDC) 1.0
+
+                // Customize the logic for client authentication requests
                 .clientAuthentication(clientAuth -> clientAuth //config client authentication
+                        // Pre-processor
                         .authenticationConverters(initConverter(clientAuthenticationConverter))
+                        // Main-processor
                         .authenticationProviders(initProvider(publicClientAuthenticationProvider, clientSecretAuthenticationProvider))
                         .errorResponseHandler(authorizationExceptionHandler)
                 )
-                .tokenEndpoint(tokenEndpoint -> tokenEndpoint //handle token request in OAuth2
+
+                // Customize the logic for OAuth2 access token requests
+                .tokenEndpoint(tokenEndpoint -> tokenEndpoint
+                        // Pre-processor
                         .accessTokenRequestConverters(initConverter(tokenAuthenticationConverter, refreshTokenAuthenticationConverter))
+                        // Main-processor: used for authenticating the OAuth2AuthorizationGrantAuthenticationToken
                         .authenticationProviders(initProvider(tokenAuthenticationProvider, refreshTokenAuthenticationProvider))
+                        // Post-processor
                         .accessTokenResponseHandler(authenticationSuccessHandler)
                         .errorResponseHandler(authorizationExceptionHandler)
                 )
-                .tokenRevocationEndpoint(tokenRevocation -> tokenRevocation //handle token revocation requests in OAuth2
+
+                // Customize the logic for OAuth2 revocation requests
+                .tokenRevocationEndpoint(tokenRevocation -> tokenRevocation
+                        // Main-processor: used for authenticating the OAuth2TokenRevocationAuthenticationToken
                         .authenticationProviders(initProvider(tokenRevocationAuthenticationProvider))
                         .errorResponseHandler(authorizationExceptionHandler)
                 );
@@ -178,34 +203,32 @@ public class WebSecurityConfig {
                 .cors(cors -> cors.disable()) //disable CORS
                 .csrf(csrf -> csrf.disable()) //disable CSRF
                 .httpBasic(httpBasic -> httpBasic.disable()) //disable HTTP Basic Authentication
+
                 .oauth2ResourceServer(oauth2 -> oauth2
+                        .bearerTokenResolver(tokenResolver)
                         .jwt(jwtResourceServerCustomize)
-                        .bearerTokenResolver(tokenResolver) //handle and authenticate jwt received from request
-                ) //config Resource server
+                )
+
                 .sessionManagement((session) -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(new BasicAuthenticationEntryPoint()) //handle authentication exception
                         .accessDeniedHandler(new BearerTokenAccessDeniedHandler()) //handle access denied exception
                 )
+
                 .authorizeHttpRequests(authorize -> authorize //config authentication rules for requests
                         .requestMatchers(HttpMethod.POST, "/user").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth").permitAll()
                         .requestMatchers( "/user/verify").permitAll()
                         .requestMatchers( "/actuator/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .anyRequest().permitAll());
-//                .oauth2Login(Customizer.withDefaults()); //OAuth2 Login handles the redirect to the OAuth 2.0 Login endpoint
+                        .anyRequest().authenticated()
+                )
 
-//                .authorizeRequests()
-//                .requestMatchers("/auth/**", "/user/verify").permitAll()
-//                .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
-//                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-//                .anyRequest().permitAll()
-//                .and()
-//                .oauth2Login() //allow user to login by using Oauth2
-//                .defaultSuccessUrl("/auth", true); //redirect url after authenticated successfully
+                // Form login handles the redirect to the login page from the authorization server filter chain
+                .formLogin(Customizer.withDefaults());
 
 //        filter through jwtAuthenticationFilter() before UsernamePasswordAuthenticationFilter
 //        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

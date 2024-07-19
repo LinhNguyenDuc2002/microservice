@@ -44,20 +44,21 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public CommentDTO create(String id, CommentRequest commentRequest) throws Exception {
-        CheckingDetailResponse checkingDetailResponse = orderService.checkDetailExist(id);
-
-        CustomerPredicate customerPredicate = new CustomerPredicate().withAccountId(checkingDetailResponse.getCustomer());
-        Optional<Customer> customer = customerRepository.findOne(customerPredicate.getCriteria());
-        Optional<Product> product = productRepository.findById(checkingDetailResponse.getProduct());
-
-        Comment comment = Comment.builder()
-                .message(commentRequest.getMessage())
-                .allowEdit(true)
-                .customer(customer.get())
-                .product(product.get())
-                .build();
-
-        return commentMapper.toDto(commentRepository.save(comment));
+//        CheckingDetailResponse checkingDetailResponse = orderService.checkDetailExist(id);
+//
+//        CustomerPredicate customerPredicate = new CustomerPredicate().withAccountId(checkingDetailResponse.getCustomer());
+//        Optional<Customer> customer = customerRepository.findOne(customerPredicate.getCriteria());
+//        Optional<Product> product = productRepository.findById(checkingDetailResponse.getProduct());
+//
+//        Comment comment = Comment.builder()
+//                .message(commentRequest.getMessage())
+//                .allowEdit(true)
+//                .customer(customer.get())
+//                .product(product.get())
+//                .build();
+//
+//        return commentMapper.toDto(commentRepository.save(comment));
+        return null;
     }
 
     @Override

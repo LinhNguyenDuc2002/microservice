@@ -1,6 +1,5 @@
 package com.example.userservice.security.resourceserver;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -8,6 +7,9 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenResolv
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+/**
+ * Extract Bearer token from an HTTP request
+ */
 @Component
 @Slf4j
 public class TokenResolver implements BearerTokenResolver {

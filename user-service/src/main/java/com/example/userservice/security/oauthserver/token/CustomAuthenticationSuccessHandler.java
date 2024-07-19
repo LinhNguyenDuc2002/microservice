@@ -58,11 +58,12 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
             parameters.putAll(additionalParameters);
         }
 
+        // Write json data into response
         byte[] bytes = objectMapper.writeValueAsString(parameters).getBytes(StandardCharsets.UTF_8);
-        response.resetBuffer();
+        response.resetBuffer(); // reset response
         response.setStatus(HttpServletResponse.SC_OK);
         response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-        response.getOutputStream().print(new String(bytes, StandardCharsets.ISO_8859_1));
+        response.getOutputStream().print(new String(bytes, StandardCharsets.ISO_8859_1)); // transfer bytes into string
         response.flushBuffer();
     }
 

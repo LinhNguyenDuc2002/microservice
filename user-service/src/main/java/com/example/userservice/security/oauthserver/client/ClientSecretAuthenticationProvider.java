@@ -25,7 +25,7 @@ public class ClientSecretAuthenticationProvider implements AuthenticationProvide
     private RegisteredClientRepository registeredClientRepository;
 
     /**
-     *
+     * Authenticate client
      * @param authentication
      * @return
      * @throws AuthenticationException
@@ -57,7 +57,7 @@ public class ClientSecretAuthenticationProvider implements AuthenticationProvide
     }
 
     /**
-     * Kiểm tra Authentication có thể gán cho OAuth2ClientAuthenticationToken hay không?
+     * check if the passed Authentication is supported by the class implementing this interface.
      * @param authentication
      * @return
      */

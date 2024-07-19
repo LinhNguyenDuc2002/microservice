@@ -19,6 +19,12 @@ public class PublicClientAuthenticationProvider implements AuthenticationProvide
     @Autowired
     private RegisteredClientRepository registeredClientRepository;
 
+    /**
+     * Authenticate client
+     * @param authentication
+     * @return
+     * @throws AuthenticationException
+     */
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         OAuth2ClientAuthenticationToken clientAuthentication = (OAuth2ClientAuthenticationToken) authentication;
@@ -43,6 +49,11 @@ public class PublicClientAuthenticationProvider implements AuthenticationProvide
         }
     }
 
+    /**
+     * check if the passed Authentication is supported by the class implementing this interface.
+     * @param authentication
+     * @return
+     */
     @Override
     public boolean supports(Class<?> authentication) {
         return OAuth2ClientAuthenticationToken.class.isAssignableFrom(authentication);

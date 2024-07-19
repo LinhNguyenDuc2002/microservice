@@ -1,4 +1,4 @@
-package com.example.productservice.dto.statistic;
+package com.example.orderservice.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -9,6 +9,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @Builder
@@ -16,14 +18,12 @@ import lombok.Setter;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class DetailProductStatisticsDTO {
+public class ShopDetailDTO {
     private String id;
 
-    private String name;
+    private boolean status;
 
-    private Long quantity;
+    private String shop;
 
-    private Long sold;
-
-    private Double sales;
+    private List<DetailDTO> details;
 }

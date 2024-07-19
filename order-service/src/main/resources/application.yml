@@ -6,6 +6,9 @@ server:
 
 # Database
 spring:
+  application:
+    name: order-service
+
   datasource:
     url: jdbc:mysql://localhost:3306/order_service
     username: root
@@ -32,6 +35,11 @@ spring:
 
   kafka:
     bootstrap-servers: localhost:9094
+    template:
+      default-topic: send-email
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
     consumer:
       auto-offset-reset: earliest
       group-id: create-customer-service
@@ -40,6 +48,16 @@ spring:
       partition:
         assignment:
           strategy: org.apache.kafka.clients.consumer.RangeAssignor
+
+# Mail
+message:
+  email:
+    protocol: smtp
+    from:
+    username:
+    password:
+    host: smtp-mail.outlook.com
+    port: 587
 
 # JWT
 access-token:

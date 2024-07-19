@@ -1,5 +1,6 @@
 package com.example.orderservice.service.impl;
 
+import com.example.orderservice.constant.KafkaTopic;
 import com.example.orderservice.entity.Detail;
 import com.example.orderservice.exception.InvalidException;
 import com.example.orderservice.payload.CustomerRequest;
@@ -31,7 +32,7 @@ public class KafkaListenerServiceImpl implements KafkaListenerService {
     @Autowired
     private ObjectMapper mapper;
 
-    @KafkaListener(topics = "update-detail")
+    @KafkaListener(topics = KafkaTopic.UPDATE_UNIT_PRICE_DETAIL)
     @Override
     public void updateUnitPrice(String products) throws JsonProcessingException {
         Map<String, Double> productList = mapper.readValue(products, new TypeReference<Map<String, Double>>() {});
@@ -39,7 +40,7 @@ public class KafkaListenerServiceImpl implements KafkaListenerService {
 
         DetailPredicate detailPredicate = new DetailPredicate()
                 .withProductIds(keyProduct.stream().toList())
-                .status(false);
+                .withStatus(false);
         List<Detail> details = detailRepository.findAll(detailPredicate.getCriteria());
 
         for(Detail detail : details) {
@@ -49,7 +50,7 @@ public class KafkaListenerServiceImpl implements KafkaListenerService {
         detailRepository.saveAll(details);
     }
 
-    @KafkaListener(topics = "create-customer")
+    @KafkaListener(topics = KafkaTopic.CREATE_CUSTOMER)
     @Override
     public void createCustomer(String customerRequest) throws JsonProcessingException, InvalidException {
         CustomerRequest customer = mapper.readValue(customerRequest, CustomerRequest.class);

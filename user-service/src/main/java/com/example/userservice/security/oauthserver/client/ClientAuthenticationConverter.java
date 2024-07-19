@@ -2,7 +2,6 @@ package com.example.userservice.security.oauthserver.client;
 
 import com.example.userservice.config.OauthClientConfig;
 import com.example.userservice.constant.OAuthError;
-import com.example.userservice.constant.SecurityConstant;
 import com.example.userservice.security.util.RequestUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +28,7 @@ import java.util.Map;
 public class ClientAuthenticationConverter implements AuthenticationConverter {
     @Autowired
     private OauthClientConfig oauthClientConfig;
+
     @Override
     public Authentication convert(HttpServletRequest request) {
         MultiValueMap<String, String> parameters = RequestUtils.getParameters(request);

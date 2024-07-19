@@ -18,4 +18,6 @@ public final class ExceptionMessage {
 
     public final static String ERROR_COMMENT_NOT_FOUND = "The comment is not found";
     public final static String ERROR_COMMENT_EDIT = "Couldn't edit this comment";
+
+    public final static String ERROR_DATE_INVALID_INPUT = "The date is invalid";
 }

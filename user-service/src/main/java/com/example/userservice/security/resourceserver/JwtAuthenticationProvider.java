@@ -27,7 +27,7 @@ import java.util.List;
 @Slf4j
 public class JwtAuthenticationProvider implements AuthenticationProvider {
     @Autowired
-    private JwtDecoder jwtAccessTokenDecoder;
+    private JwtDecoder jwtDecoder;
 
     /**
      * Authenticate info provided in authentication
@@ -41,7 +41,7 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
 
         Jwt jwt;
         try {
-            jwt = jwtAccessTokenDecoder.decode(token.getToken()); //decode token
+            jwt = jwtDecoder.decode(token.getToken());
         }
         catch (Exception e) {
             log.error("Invalid token: {}", e.getMessage());

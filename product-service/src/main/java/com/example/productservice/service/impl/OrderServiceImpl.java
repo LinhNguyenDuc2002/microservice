@@ -11,6 +11,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -38,6 +39,22 @@ public class OrderServiceImpl implements OrderService {
                 header,
                 null,
                 CheckingDetailResponse.class
+        );
+    }
+
+    @Override
+    public Map<String, Double> calculateSales(List<String> productList) throws Exception {
+        String url = orderConfiguration.getCalculateSalesUrl();
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(url);
+
+        Map<String, String> header = new LinkedHashMap<>();
+
+        // send request to product service
+        return webClientProcessor.post(
+                uriBuilder.toUriString(),
+                header,
+                productList,
+                Map.class
         );
     }
 }

@@ -4,6 +4,8 @@ import com.example.orderservice.constant.BillStatus;
 import com.example.orderservice.constant.ExceptionMessage;
 import com.example.orderservice.dto.CheckingDetailDTO;
 import com.example.orderservice.dto.DetailDTO;
+import com.example.orderservice.dto.ShopDetailDTO;
+import com.example.orderservice.entity.Bill;
 import com.example.orderservice.entity.Customer;
 import com.example.orderservice.entity.Detail;
 import com.example.orderservice.exception.InvalidException;
@@ -11,16 +13,14 @@ import com.example.orderservice.exception.NotFoundException;
 import com.example.orderservice.mapper.DetailMapper;
 import com.example.orderservice.payload.productservice.response.ProductCheckingResponse;
 import com.example.orderservice.payload.response.PageResponse;
+import com.example.orderservice.repository.BillRepository;
 import com.example.orderservice.repository.CustomerRepository;
 import com.example.orderservice.repository.DetailRepository;
+import com.example.orderservice.repository.predicate.BillPredicate;
 import com.example.orderservice.repository.predicate.DetailPredicate;
 import com.example.orderservice.service.DetailService;
 import com.example.orderservice.service.ProductService;
-import com.example.orderservice.util.PageUtil;
-import com.example.orderservice.webclient.WebClientProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -39,30 +39,32 @@ public class DetailServiceImpl implements DetailService {
     @Autowired
     private ProductService productService;
 
+    @Autowired
+    private BillRepository billRepository;
+
     @Override
     public DetailDTO create(String productId, String customerId, Integer quantity) throws Exception {
-        Optional<Customer> checkCustomer = customerRepository.findById(customerId);
-
-        if (!checkCustomer.isPresent()) {
-            throw new NotFoundException(ExceptionMessage.ERROR_PRODUCT_INVALID_INPUT);
-        }
-
         if (quantity <= 0) {
             throw new InvalidException(ExceptionMessage.ERROR_PRODUCT_INVALID_INPUT);
         }
 
-        ProductCheckingResponse productCheckingResponse = productService.checkProductExist(productId, quantity);
+        Optional<Customer> checkCustomer = customerRepository.findByAccountId(customerId);
+        if (!checkCustomer.isPresent()) {
+            throw new NotFoundException(ExceptionMessage.ERROR_CUSTOMER_NOT_FOUND);
+        }
 
+        ProductCheckingResponse productCheckingResponse = productService.checkProductExist(productId, quantity);
         if(!productCheckingResponse.isExist()) {
             throw new NotFoundException(ExceptionMessage.ERROR_PRODUCT_INVALID_INPUT);
         }
 
         Detail detail = Detail.builder()
-                .customer(checkCustomer.get())
                 .product(productId)
                 .quantity(quantity)
                 .unitPrice(productCheckingResponse.getPrice())
+                .customer(checkCustomer.get())
                 .status(false)
+                .commentStatus(false)
                 .build();
         detailRepository.save(detail);
 
@@ -94,17 +96,20 @@ public class DetailServiceImpl implements DetailService {
     }
 
     @Override
-    public PageResponse<DetailDTO> getAll(Integer page, Integer size, Boolean status) {
-        Pageable pageable = PageUtil.getPage(page, size);
-
-        DetailPredicate detailPredicate = new DetailPredicate().status(status);
-        Page<Detail> details = detailRepository.findAll(detailPredicate.getCriteria(), pageable);
-
-        return PageResponse.<DetailDTO>builder()
-                .index(page)
-                .totalPage(details.getTotalPages())
-                .elements(detailMapper.toDtoList(details.getContent()))
-                .build();
+    public PageResponse<ShopDetailDTO> getAll(Integer page, Integer size, String customerId, Boolean status) {
+//        Pageable pageable = PageUtil.getPage(page, size);
+//
+//        ShopDetailPredicate shopDetailPredicate = new ShopDetailPredicate()
+//                .status(status)
+//                .withCustomerId(customerId);
+//        Page<ShopDetail> shopDetails = shopDetailRepository.findAll(shopDetailPredicate.getCriteria(), pageable);
+//
+//        return PageResponse.<ShopDetailDTO>builder()
+//                .index(page)
+//                .totalPage(shopDetails.getTotalPages())
+//                .elements(shopDetailMapper.toDtoList(shopDetails.getContent()))
+//                .build();
+        return null;
     }
 
     @Override
@@ -131,15 +136,21 @@ public class DetailServiceImpl implements DetailService {
 
     @Override
     public CheckingDetailDTO checkDetailExist(String id) throws NotFoundException, InvalidException {
-        Detail detail = detailRepository.findById(id)
-                .orElseThrow(() -> {
-                    return new NotFoundException(ExceptionMessage.ERROR_DETAIL_NOT_FOUND);
-                });
-
-        if(!detail.isStatus() || !detail.getBill().getStatus().equals(BillStatus.PAID)) {
-            throw new InvalidException("");
+        DetailPredicate detailPredicate = new DetailPredicate()
+                .withId(id)
+                .withCommentStatus(false)
+                .withStatus(true);
+        Optional<Detail> checkDetail = detailRepository.findOne(detailPredicate.getCriteria());
+        if(!checkDetail.isPresent()) {
+            throw new NotFoundException(ExceptionMessage.ERROR_DETAIL_NOT_FOUND);
         }
 
-        return new CheckingDetailDTO(detail.getCustomer().getAccountId(), detail.getProduct());
+        Detail detail = checkDetail.get();
+        Bill bill = detail.getBill();
+        if(!bill.getStatus().equals(BillStatus.PAID)) {
+            throw new NotFoundException(ExceptionMessage.ERROR_BILL_STATUS_INVALID);
+        }
+
+        return new CheckingDetailDTO(checkDetail.get().getProduct());
     }
 }

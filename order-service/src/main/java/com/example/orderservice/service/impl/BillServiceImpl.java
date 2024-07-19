@@ -1,7 +1,9 @@
 package com.example.orderservice.service.impl;
 
+import com.example.orderservice.config.ApplicationConfig;
 import com.example.orderservice.constant.BillStatus;
 import com.example.orderservice.constant.ExceptionMessage;
+import com.example.orderservice.constant.KafkaTopic;
 import com.example.orderservice.dto.BillDTO;
 import com.example.orderservice.entity.Address;
 import com.example.orderservice.entity.Bill;
@@ -10,10 +12,10 @@ import com.example.orderservice.entity.Detail;
 import com.example.orderservice.exception.InvalidException;
 import com.example.orderservice.exception.NotFoundException;
 import com.example.orderservice.mapper.BillMapper;
+import com.example.orderservice.message.email.EmailConstant;
+import com.example.orderservice.message.email.EmailMessage;
 import com.example.orderservice.payload.BillRequest;
 import com.example.orderservice.payload.UpdateBillRequest;
-import com.example.orderservice.payload.productservice.response.ProductCheckingResponse;
-import com.example.orderservice.payload.productservice.response.WarehouseCheckingResponse;
 import com.example.orderservice.payload.response.PageResponse;
 import com.example.orderservice.repository.AddressRepository;
 import com.example.orderservice.repository.BillRepository;
@@ -21,27 +23,32 @@ import com.example.orderservice.repository.CustomerRepository;
 import com.example.orderservice.repository.DetailRepository;
 import com.example.orderservice.repository.predicate.BillPredicate;
 import com.example.orderservice.service.BillService;
+import com.example.orderservice.service.OrderMessagingService;
 import com.example.orderservice.service.ProductService;
 import com.example.orderservice.util.PageUtil;
+import com.example.orderservice.util.StringFormatUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class BillServiceImpl implements BillService {
     @Autowired
     private BillRepository billRepository;
@@ -61,50 +68,60 @@ public class BillServiceImpl implements BillService {
     @Autowired
     private ProductService productService;
 
+    @Autowired
+    private ApplicationConfig applicationConfig;
+
+    @Autowired
+    private OrderMessagingService messagingService;
+
+    @Autowired
+    private ObjectMapper mapper;
+
     private Lock lock = new ReentrantLock();
 
     @Override
-    public BillDTO create(BillRequest billRequest) throws Exception {
-        lock.lock();
-        try {
-            List<Detail> details = detailRepository.findAllById(billRequest.getDetails());
+    public List<BillDTO> create(BillRequest billRequest) throws Exception {
+        List<Detail> details = detailRepository.findAllById(billRequest.getDetails());
+        if (details.isEmpty()) {
+            throw new NotFoundException(ExceptionMessage.ERROR_DETAIL_NOT_FOUND);
+        }
 
-            if (details.isEmpty()) {
-                throw new NotFoundException(ExceptionMessage.ERROR_DETAIL_NOT_FOUND);
-            }
+        Map<String, Integer> productList = new LinkedHashMap<>();
+        details.stream().forEach(detail -> {
+            productList.put(detail.getProduct(), detail.getQuantity());
+        });
 
-            Map<String, Integer> productList = new HashMap<>();
-            details.stream().forEach(detail -> {
-                productList.put(detail.getProduct(), detail.getQuantity());
-            });
+        Map<String, List<String>> response = productService.checkWarehouse(productList);
 
-            if(!productService.checkWarehouse(productList)) {
-                throw new InvalidException(ExceptionMessage.ERROR_DETAIL_INVALID_INPUT);
-            }
+        Address address = Address.builder()
+                .country(billRequest.getAddress().getCountry())
+                .city(billRequest.getAddress().getCity())
+                .district(billRequest.getAddress().getDistrict())
+                .ward(billRequest.getAddress().getWard())
+                .detail(billRequest.getAddress().getDetail())
+                .build();
+        addressRepository.save(address);
 
+        List<Bill> bills = new ArrayList<>();
+        for(String key : response.keySet()) {
             Bill bill = Bill.builder()
                     .phone(billRequest.getPhone())
                     .status(BillStatus.PROCESSING)
-                    .address(Address.builder()
-                            .country(billRequest.getAddress().getCountry())
-                            .city(billRequest.getAddress().getCity())
-                            .district(billRequest.getAddress().getDistrict())
-                            .ward(billRequest.getAddress().getWard())
-                            .detail(billRequest.getAddress().getDetail())
-                            .build())
+                    .address(address)
                     .build();
             billRepository.save(bill);
+            bills.add(bill);
 
-            for (Detail detail : details) {
-                detail.setBill(bill);
-                detail.setStatus(true);
-            }
-            detailRepository.saveAll(details);
-            return billMapper.toDto(bill);
+            details.stream().forEach(detail -> {
+                if(response.get(key).contains(detail.getProduct())) {
+                    detail.setBill(bill);
+                    detail.setStatus(true);
+                }
+            });
         }
-        finally {
-            lock.unlock();
-        }
+        detailRepository.saveAll(details);
+
+        return billMapper.toDtoList(bills);
     }
 
     @Override
@@ -165,9 +182,8 @@ public class BillServiceImpl implements BillService {
     @Override
     public PageResponse<BillDTO> getByCustomerId(Integer page, Integer size, String id) throws NotFoundException {
         Optional<Customer> check = customerRepository.findById(id);
-
         if(!check.isPresent()) {
-            throw new NotFoundException(ExceptionMessage.ERROR_PRODUCT_INVALID_INPUT);
+            throw new NotFoundException(ExceptionMessage.ERROR_CUSTOMER_NOT_FOUND);
         }
 
         Pageable pageable = PageUtil.getPage(page, size);
@@ -182,20 +198,42 @@ public class BillServiceImpl implements BillService {
     }
 
     @Override
-    public BillDTO changeStatus(String id, String status) throws NotFoundException, InvalidException {
+    public BillDTO changeStatus(String id, String status) throws NotFoundException, InvalidException, JsonProcessingException {
         Optional<Bill> check = billRepository.findById(id);
-
         if(!check.isPresent()) {
-            throw new NotFoundException(ExceptionMessage.ERROR_PRODUCT_INVALID_INPUT);
-        }
-
-        if(!EnumSet.allOf(BillStatus.class).contains(BillStatus.valueOf(status))) {
-            throw new InvalidException(ExceptionMessage.ERROR_PRODUCT_INVALID_INPUT);
+            log.error("Bill {} is not found", id);
+            throw new NotFoundException(ExceptionMessage.ERROR_BILL_NOT_FOUND);
         }
 
         Bill bill = check.get();
+        if(bill.getStatus().equals(BillStatus.PAID) || !EnumSet.allOf(BillStatus.class).contains(BillStatus.valueOf(status))) {
+            log.error("{} status is invalid", status);
+            throw new InvalidException(ExceptionMessage.ERROR_PRODUCT_INVALID_INPUT);
+        }
+
         bill.setStatus(BillStatus.valueOf(status));
         billRepository.save(bill);
+
+        if(bill.getStatus().equals(BillStatus.APPROVED)) {
+            Customer customer = new ArrayList<Detail>(bill.getDetails()).get(0).getCustomer();
+            Map<String, String> emailArgs = new HashMap<>();
+            emailArgs.put(EmailConstant.ARG_LOGO_URI, "");
+            emailArgs.put(EmailConstant.ARG_BILL_ID, StringFormatUtil.formatBillId("B-", bill.getBillId()));
+            emailArgs.put(EmailConstant.ARG_RECEIVER_NAME, customer.getFullname());
+            emailArgs.put(EmailConstant.ARG_RECEIVER_PHONE, bill.getPhone());
+            emailArgs.put(EmailConstant.ARG_DELIVERY_ADDRESS, formatAddress(bill.getAddress()));
+            emailArgs.put(EmailConstant.ARG_SUPPORT_EMAIL, applicationConfig.getSenderEmail());
+
+            EmailMessage email = EmailMessage.builder()
+                    .template(EmailConstant.TEMPLATE_EMAIL_CONFIRM_ORDER)
+                    .receiver(customer.getEmail())
+                    .sender(applicationConfig.getSenderEmail())
+                    .subject(EmailConstant.ARG_CONFIRM_ORDER_SUBJECT)
+                    .args(emailArgs)
+                    .locale(LocaleContextHolder.getLocale())
+                    .build();
+            messagingService.sendMessage(KafkaTopic.SEND_EMAIL, mapper.writeValueAsString(email));
+        }
         return billMapper.toDto(bill);
     }
 
@@ -208,5 +246,12 @@ public class BillServiceImpl implements BillService {
         }
 
         billRepository.deleteById(id);
+    }
+
+    private String formatAddress(Address address) {
+        String detail = address.getDetail();
+
+        return detail + "\n" +
+                address.getWard() + " - " + address.getDistrict() + " - " + address.getCity() + " - " + address.getCountry();
     }
 }

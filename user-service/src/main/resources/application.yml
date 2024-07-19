@@ -77,26 +77,6 @@ spring:
           starttls:
             enable: true
 
-#  security:
-#    oauth2:
-#      client:
-#        registration:
-#          facebook:
-#            provider: facebook
-#            client-id:
-#            client-secret:
-##            redirect-uri: http://localhost:8080/api/auth/user
-#            scope:
-#              - openid
-#              - public_profile
-#              - email
-#        provider:
-#          facebook:
-#            authorization-uri: https://www.facebook.com/v15.0/dialog/oauth
-#            token-uri: https://graph.facebook.com/v15.0/oauth/access_token
-#            user-info-uri: https://graph.facebook.com/me
-#            user-name-attribute: name
-
 # Mail
 message:
   email:
@@ -108,13 +88,11 @@ message:
     port: 587
 
 # JWT
-access-token:
-  private: keypair/access-token-private.key
-  public: keypair/access-token-public.key
-
-refresh-token:
-  private: keypair/refresh-token-private.key
-  public: keypair/refresh-token-public.key
+jwt:
+  secret-key: 123456
+  keypair:
+    private:
+    public:
 
 oauth:
   grant-type: shop-secure
@@ -122,10 +100,6 @@ oauth:
     default:
       access-token-lifespan: 1440 # in minutes
       refresh-token-lifespan: 1440 # in minutes
-#  cookie-token:
-#    enable: false
-#    secure: false
-#    same-site: None # None/Lax/Strict
 
 # Cloudinary
 cloudinary:
