@@ -1,6 +1,7 @@
 package com.example.productservice.oauth2;
 
 import com.example.productservice.constant.SecurityConstant;
+import com.example.productservice.security.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.core.GrantedAuthority;

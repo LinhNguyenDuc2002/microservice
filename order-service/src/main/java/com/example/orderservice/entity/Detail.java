@@ -26,16 +26,19 @@ public class Detail extends Auditor {
     @Column(name = "unit_price")
     private Double unitPrice;
 
-    @Column(name = "status")
-    private boolean status;
+    @Column(name = "product_id")
+    private String product;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @Column(name = "comment_status")
+    private Boolean commentStatus;
+
+    @Column(name = "status")
+    private Boolean status;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id")
     @EqualsAndHashCode.Exclude
     private Customer customer;
-
-    @Column(name = "product_id")
-    private String product;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bill_id")

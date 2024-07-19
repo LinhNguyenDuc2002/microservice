@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html
+        xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1" name="viewport"/>
+    <meta name="x-apple-disable-message-reformatting"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta content="telephone=no" name="format-detection"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>Blue Shop</title>
+
+    <style>
+        body {
+            font-family: Arial;
+        }
+
+        div.custom {
+            margin-top: 30px;
+            text-align: left;
+            font-size: 14px;
+            font-style: normal;
+            font-weight: normal;
+        }
+
+        div.my-button {
+            border-radius: 5px;
+            display: inline-block;
+            text-align: center;
+            color: #ffffff;
+            background-color: #5188f1;
+            padding:15px;
+            font-size: 16px
+        }
+
+        a:link {
+            color: #ffffff;
+            background-color: transparent;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div
+            class="es-wrapper-color"
+            style="background-color: #f0f4f2; padding-top: 50px; padding-bottom: 50px"
+            align="center">
+        <div
+                class="es-content-body"
+                width="100%"
+                cellspacing="0"
+                cellpadding="0"
+                style="
+              padding: 30px;
+              mso-table-lspace: 0pt;
+              mso-table-rspace: 0pt;
+              border-collapse: collapse;
+              background-color: #ffffff;
+              width: 600px;
+              background-repeat: repeat;
+            ">
+
+            <p align=center class="logo">
+                <img th:src="${ARG_LOGO_URI}" alt="Blue shop logo"/>
+            </p>
+
+            <div class="container custom">
+                <h1 style="text-align:center">Confirmed you order</h1>
+
+                <div>
+                    <p th:text="'Dear ' + ${ARG_RECEIVER_NAME} + ','"></p>
+                    <br/>
+                    <p>Thank you for choosing our services. Your order at Blue shop has been confirmed, some detailed information is below:</p>
+                    <p th:text="'Bill ID: ' + ${ARG_BILL_ID}"></p>
+                    <p th:text="'Customer: ' + ${ARG_RECEIVER_NAME}"></p>
+                    <p th:text="'Phone number: ' + ${ARG_RECEIVER_PHONE}"></p>
+                    <p th:text="'Delivery address: ' + ${ARG_DELIVERY_ADDRESS}"></p>
+                    <br/>
+                    <p style="font-style: italic">This is an automated email, please do not reply!</p>
+                    <p style="font-style: italic" th:text="'If you have any request or need any assistance, please contact our support team at ' + ${ARG_SUPPORT_EMAIL}"></p>
+                </div>
+                <br/>
+            </div>
+
+            <div class="custom">
+                <p>Best regards,</p>
+                <p style='font-weight:bold'>Blue Shop supports</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

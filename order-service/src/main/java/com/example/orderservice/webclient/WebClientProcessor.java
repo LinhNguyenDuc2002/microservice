@@ -18,18 +18,18 @@ public interface WebClientProcessor {
               final MultiValueMap<String, String> queryParam,
               final Class<T> clazz) throws Exception;
 
-//    /**
-//     * @param uri    The request url
-//     * @param header The request header
-//     * @param body   The request body
-//     * @param clazz  The response class type
-//     * @param <T>    The response class type
-//     * @return
-//     */
-//    <T> T post(@NotNull final String uri,
-//               final Map<String, String> header,
-//               final Object body,
-//               final Class<T> clazz) throws Exception;
+    /**
+     * @param uri    The request url
+     * @param header The request header
+     * @param body   The request body
+     * @param clazz  The response class type
+     * @param <T>    The response class type
+     * @return
+     */
+    <T> T post(@NotNull final String uri,
+               final Map<String, String> header,
+               final Object body,
+               final Class<T> clazz) throws Exception;
 
 //    /**
 //     * @param uri      The request url

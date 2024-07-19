@@ -69,7 +69,7 @@ public class UserController {
     }
 
     @GetMapping
-    @Secured({SecurityConstant.ADMIN, SecurityConstant.EMPLOYEE})
+    @Secured({SecurityConstant.ADMIN, SecurityConstant.CUSTOMER})
     public ResponseEntity<CommonResponse<List<UserDto>>> getAll() {
         return ResponseUtil.wrapResponse(userService.getAll(), ResponseMessage.GET_ALL_USER_SUCCESS.getMessage());
     }

@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 public final class DateUtil {
     public static Date convertStringToDate(String date) throws DateTimeParseException {
@@ -25,5 +26,11 @@ public final class DateUtil {
         calendar.add(unit, number);
 
         return calendar.getTime();
+    }
+
+    public static Integer daysBetween(Date start, Date end) throws Exception {
+        long diffInMillis = Math.abs(end.getTime() - start.getTime());
+
+        return (int) TimeUnit.DAYS.convert(diffInMillis, TimeUnit.MILLISECONDS);
     }
 }

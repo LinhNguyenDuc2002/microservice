@@ -1,16 +1,23 @@
 package com.example.productservice.service.impl;
 
-import com.example.productservice.constant.ExceptionMessage;
 import com.example.productservice.dto.statistic.ProductStatisticsDTO;
-import com.example.productservice.entity.Shop;
-import com.example.productservice.exception.NotFoundException;
+import com.example.productservice.entity.Product;
+import com.example.productservice.payload.response.PageResponse;
+import com.example.productservice.repository.CategoryRepository;
 import com.example.productservice.repository.ProductRepository;
 import com.example.productservice.repository.ShopRepository;
+import com.example.productservice.repository.predicate.ProductPredicate;
 import com.example.productservice.service.DashboardService;
+import com.example.productservice.service.OrderService;
+import com.example.productservice.util.PageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class DashboardServiceImpl implements DashboardService {
@@ -18,31 +25,47 @@ public class DashboardServiceImpl implements DashboardService {
     private ShopRepository shopRepository;
 
     @Autowired
+    private CategoryRepository categoryRepository;
+
+    @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private OrderService orderService;
+
     @Override
-    public ProductStatisticsDTO productStatistics(String id) throws NotFoundException {
-        Shop shop = shopRepository.findById(id)
-                .orElseThrow(() -> {
-                    return new NotFoundException(ExceptionMessage.ERROR_SHOP_NOT_FOUND);
-                });
+    public PageResponse<ProductStatisticsDTO> productStatistics(Integer page, Integer size, String shopId, String categoryId) throws Exception {
+        Pageable pageable = PageUtil.getPage(page, size);
 
-        ProductStatisticsDTO productStatisticsDTO = new ProductStatisticsDTO();
-        productStatisticsDTO.setPurchasedProduct(Long.valueOf(shop.getProducts().size()));
-        productStatisticsDTO.setProducts(new ArrayList<>());
+        ProductPredicate productPredicate = new ProductPredicate()
+                .shop(shopId)
+                .category(categoryId);
+        Page<Product> products = productRepository.findAll(productPredicate.getCriteria(), pageable);
 
-//        for(Product product : shop.getProducts()) {
-//            DetailProductStatisticsDTO detailProduct = DetailProductStatisticsDTO.builder()
-//                    .id(product.getId())
-//                    .name(product.getName())
-//                    .quantity(product.getQuantity())
-//                    .sold(product.getSold())
-//                    .sales(detailRepository.getSales(product.getId()))
-//                    .build();
-//
-//            productStatisticsDTO.getProducts().add(detailProduct);
-//        }
+        List<String> idProductList = products.getContent().stream().map(Product::getId).toList();
+        Map<String, Double> sales = orderService.calculateSales(idProductList);
 
-        return productStatisticsDTO;
+        List<ProductStatisticsDTO> productStatisticsDTOS = new ArrayList<>();
+        for(Product product : products.getContent()) {
+            String id = product.getId();
+            productStatisticsDTOS.add(
+                    ProductStatisticsDTO.builder()
+                            .id(id)
+                            .name(product.getName())
+                            .currentPrice(product.getPrice())
+                            .available(product.getQuantity())
+                            .sold(product.getSold())
+                            .sales(sales.get(id))
+                            .build()
+            );
+        }
+
+        PageResponse pageResponse = PageResponse.<ProductStatisticsDTO>builder()
+                .index(page)
+                .totalPage(products.getTotalPages())
+                .elements(productStatisticsDTOS)
+                .build();
+
+        return pageResponse;
     }
 }

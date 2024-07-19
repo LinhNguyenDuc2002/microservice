@@ -15,8 +15,11 @@ public class OrderConfiguration {
 
     private String checkDetailUrl;
 
+    private String calculateSalesUrl;
+
     @PostConstruct
     public void init() {
         checkDetailUrl = String.format("%s/api/detail/{%s}/exist", baseUrl, PATH_UUID);
+        calculateSalesUrl = String.format("%s/api/dashboard/sales", baseUrl);
     }
 }

@@ -2,6 +2,7 @@ package com.example.orderservice.service;
 
 import com.example.orderservice.dto.CheckingDetailDTO;
 import com.example.orderservice.dto.DetailDTO;
+import com.example.orderservice.dto.ShopDetailDTO;
 import com.example.orderservice.exception.InvalidException;
 import com.example.orderservice.exception.NotFoundException;
 import com.example.orderservice.payload.response.PageResponse;
@@ -11,7 +12,7 @@ public interface DetailService {
 
     DetailDTO update(String id, Integer quantity) throws Exception;
 
-    PageResponse<DetailDTO> getAll(Integer page, Integer size, Boolean status);
+    PageResponse<ShopDetailDTO> getAll(Integer page, Integer size, String customerId, Boolean status);
 
     DetailDTO get(String id) throws NotFoundException;
 

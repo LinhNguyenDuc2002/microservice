@@ -49,6 +49,30 @@ public class WebClientProcessorImpl implements WebClientProcessor {
     }
 
     @Override
+    public <T> T post(String uri, Map<String, String> header, Object body, Class<T> clazz) throws Exception {
+        final Map<String, String> requestHeader = header == null ? Collections.emptyMap() : header;
+
+        try {
+            return webClient.post()
+                    .uri(uri)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .headers(h -> h.setAll(requestHeader))
+                    .body(Mono.just(body), Object.class)
+                    .retrieve()
+                    .bodyToMono(clazz)
+                    .doOnError(e -> log.error("Failed to initialize the data: " + e.getMessage()))
+                    .block();
+        } catch (WebClientResponseException e) {
+            handleWebClientException(e);
+        } catch (Exception e) {
+            log.error("Exception occurred: " + e.getMessage());
+            throw new Exception("Could not initialize the data");
+        }
+
+        return null;
+    }
+
+    @Override
     public <T> T patch(String uri, Map<String, String> header, Object body, Class<T> clazz) throws Exception {
         final Map<String, String> requestHeader = header == null ? Collections.emptyMap() : header;
 

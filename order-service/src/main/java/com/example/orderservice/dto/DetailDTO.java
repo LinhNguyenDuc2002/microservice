@@ -25,7 +25,7 @@ public class DetailDTO {
 
     private boolean status;
 
-    private CustomerDTO customer;
+    private boolean commentStatus;
 
     private String product;
 }

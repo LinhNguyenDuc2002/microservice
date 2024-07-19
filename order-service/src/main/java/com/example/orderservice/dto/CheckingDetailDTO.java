@@ -13,7 +13,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class CheckingDetailDTO {
-    private String customer;
-
     private String product;
 }

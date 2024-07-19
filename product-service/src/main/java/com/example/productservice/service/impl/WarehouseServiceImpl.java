@@ -10,9 +10,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Service
 @Slf4j
@@ -20,13 +24,14 @@ public class WarehouseServiceImpl implements WarehouseService {
     @Autowired
     private ProductRepository productRepository;
 
+    private Lock lock = new ReentrantLock();
+
     @Override
-    public Boolean checkWarehouse(Map<String, Integer> productList) throws InvalidException {
+    public Map<String, List<String>> checkWarehouse(Map<String, Integer> productList) throws InvalidException {
         Set<String> productKey = productList.keySet();
 
         ProductPredicate productPredicate = new ProductPredicate().withIds(productKey.stream().toList());
         List<Product> products = productRepository.findAll(productPredicate.getCriteria());
-
 
         for(Product product : products) {
             if (productList.get(product.getId()) > product.getQuantity()) {
@@ -34,11 +39,18 @@ public class WarehouseServiceImpl implements WarehouseService {
             }
         }
 
+        Map<String, List<String>> response = new LinkedHashMap<>();
         for(Product product : products) {
             product.setQuantity(product.getQuantity() - productList.get(product.getId()));
-        }
-        productRepository.saveAll(products);
+            product.setSold(product.getSold() + productList.get(product.getId()));
 
-        return true;
+            String shopId = product.getShop().getId();
+            if(!response.containsKey(shopId)) {
+                response.put(shopId, new ArrayList<>());
+            }
+            response.get(shopId).add(product.getId());
+        }
+
+        return response;
     }
 }

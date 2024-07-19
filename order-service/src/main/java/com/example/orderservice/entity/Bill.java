@@ -7,6 +7,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
@@ -33,6 +35,10 @@ public class Bill extends Auditor {
     @Column(name = "id")
     private String id;
 
+    @Column(name = "bill_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long billId;
+
     @Column(name = "phone")
     private String phone;
 
@@ -44,7 +50,7 @@ public class Bill extends Auditor {
     @JoinColumn(name = "address_id")
     private Address address;
 
-    @OneToMany(mappedBy = "bill", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "bill")
     @EqualsAndHashCode.Exclude
     private Collection<Detail> details;
 }

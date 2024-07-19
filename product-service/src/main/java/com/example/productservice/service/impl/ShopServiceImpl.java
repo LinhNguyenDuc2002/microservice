@@ -10,6 +10,7 @@ import com.example.productservice.exception.NotFoundException;
 import com.example.productservice.mapper.ShopMapper;
 import com.example.productservice.payload.AddressRequest;
 import com.example.productservice.payload.ShopRequest;
+import com.example.productservice.repository.AddressRepository;
 import com.example.productservice.repository.CustomerRepository;
 import com.example.productservice.repository.ShopRepository;
 import com.example.productservice.service.ShopService;
@@ -27,7 +28,11 @@ public class ShopServiceImpl implements ShopService {
     private ShopRepository shopRepository;
 
     @Autowired
+    private AddressRepository addressRepository;
+
+    @Autowired
     private ShopMapper shopMapper;
+
     @Override
     public ShopDTO create(String id, ShopRequest shopRequest) throws InvalidException, NotFoundException {
         Optional<Customer> check = customerRepository.findById(id);
@@ -37,15 +42,25 @@ public class ShopServiceImpl implements ShopService {
         }
 
         Customer customer = check.get();
+        AddressRequest addressRequest = shopRequest.getAddress();
+        Address address = Address.builder()
+                .detail(addressRequest.getDetail())
+                .ward(addressRequest.getWard())
+                .district(addressRequest.getDistrict())
+                .city(addressRequest.getCity())
+                .country(addressRequest.getCountry())
+                .build();
+        addressRepository.save(address);
+
         Shop shop = Shop.builder()
                 .name(shopRequest.getName())
                 .hotline(shopRequest.getHotline())
                 .email(shopRequest.getEmail())
-                .address(Address.builder().build())
+                .address(address)
                 .customer(customer)
                 .build();
 
-        shopRepository.save(shop);
+        shopRepository.saveAndFlush(shop);
         return shopMapper.toDto(shop);
     }
 

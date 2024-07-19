@@ -13,12 +13,12 @@ public class OauthClientConfig {
     /**
      * In minutes
      */
-    @Value("${oauth.client.default.access-token-lifespan:1440}")
+    @Value("${oauth.client.default.access-token-lifespan:300}")
     private long accessTokenLifeSpanInMin;
 
     /**
      * In minutes
      */
-    @Value("${oauth.client.default.refresh-token-lifespan:1440}")
+    @Value("${oauth.client.default.refresh-token-lifespan:1800}")
     private long refreshTokenLifeSpanInMin;
 }

@@ -15,7 +15,5 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = false)
 @Builder
 public class CheckingDetailResponse {
-    private String customer;
-
     private String product;
 }

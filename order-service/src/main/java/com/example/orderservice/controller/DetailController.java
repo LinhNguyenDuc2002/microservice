@@ -3,6 +3,7 @@ package com.example.orderservice.controller;
 import com.example.orderservice.constant.ParameterConstant;
 import com.example.orderservice.dto.CheckingDetailDTO;
 import com.example.orderservice.dto.DetailDTO;
+import com.example.orderservice.dto.ShopDetailDTO;
 import com.example.orderservice.exception.InvalidException;
 import com.example.orderservice.exception.NotFoundException;
 import com.example.orderservice.payload.response.CommonResponse;
@@ -42,11 +43,12 @@ public class DetailController {
     }
 
     @GetMapping
-    public ResponseEntity<PageResponse<DetailDTO>> getAll(
+    public ResponseEntity<PageResponse<ShopDetailDTO>> getAll(
             @RequestParam(name = ParameterConstant.Page.PAGE, defaultValue = ParameterConstant.Page.DEFAULT_PAGE) Integer page,
             @RequestParam(name = ParameterConstant.Page.SIZE, defaultValue = ParameterConstant.Page.DEFAULT_SIZE) Integer size,
-            @RequestParam(name = "status") Boolean status) {
-        return ResponseEntity.ok(detailService.getAll(page, size, status));
+            @RequestParam(name = "customer", required = false) String customerId,
+            @RequestParam(name = "status", required = false) Boolean status) {
+        return ResponseEntity.ok(detailService.getAll(page, size, customerId, status));
     }
 
     @GetMapping("/{id}")

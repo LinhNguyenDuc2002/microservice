@@ -20,6 +20,9 @@ import org.springframework.security.oauth2.server.authorization.authentication.O
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.stereotype.Component;
 
+/**
+ *
+ */
 @Component
 @Slf4j
 public class TokenAuthenticationProvider implements AuthenticationProvider {
@@ -74,6 +77,11 @@ public class TokenAuthenticationProvider implements AuthenticationProvider {
         throw new OAuth2AuthenticationException(OAuthError.INVALID_CLIENT);
     }
 
+    /**
+     * Verify logged in user
+     * @param clientAuthentication
+     * @return
+     */
     private AuthUser verifyLoggedInUser(CustomAuthenticationRequest clientAuthentication) {
         String username = clientAuthentication.getAdditionalParameters().get(OAuth2ParameterNames.USERNAME).toString();
         AuthUser user = (AuthUser) userDetailsService.loadUserByUsername(username);

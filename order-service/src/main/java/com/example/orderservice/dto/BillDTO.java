@@ -21,6 +21,8 @@ import java.util.List;
 public class BillDTO {
     private String id;
 
+    private String billId;
+
     private String phone;
 
     private boolean active;
