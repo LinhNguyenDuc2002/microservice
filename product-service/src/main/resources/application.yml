@@ -82,4 +82,6 @@ cloudinary:
 
 order-service:
   endpoint: http://localhost:8083
+user-service:
+  endpoint: http://localhost:8081
 

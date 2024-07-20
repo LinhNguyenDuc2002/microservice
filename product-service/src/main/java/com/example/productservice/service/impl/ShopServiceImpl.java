@@ -1,6 +1,7 @@
 package com.example.productservice.service.impl;
 
 import com.example.productservice.constant.ExceptionMessage;
+import com.example.productservice.constant.RoleType;
 import com.example.productservice.dto.ShopDTO;
 import com.example.productservice.entity.Address;
 import com.example.productservice.entity.Customer;
@@ -13,7 +14,9 @@ import com.example.productservice.payload.ShopRequest;
 import com.example.productservice.repository.AddressRepository;
 import com.example.productservice.repository.CustomerRepository;
 import com.example.productservice.repository.ShopRepository;
+import com.example.productservice.repository.predicate.ShopPredicate;
 import com.example.productservice.service.ShopService;
+import com.example.productservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,15 +36,22 @@ public class ShopServiceImpl implements ShopService {
     @Autowired
     private ShopMapper shopMapper;
 
-    @Override
-    public ShopDTO create(String id, ShopRequest shopRequest) throws InvalidException, NotFoundException {
-        Optional<Customer> check = customerRepository.findById(id);
+    @Autowired
+    private UserService userService;
 
-        if (!check.isPresent()) {
-            throw new NotFoundException(ExceptionMessage.ERROR_CUSTOMER_NOT_FOUND);
+    @Override
+    public ShopDTO create(String id, ShopRequest shopRequest) throws Exception {
+        ShopPredicate shopPredicate = new ShopPredicate().withCustomerId(id);
+        Optional<Shop> checkShop = shopRepository.findOne(shopPredicate.getCriteria());
+        if(checkShop.isPresent()) {
+            throw new InvalidException(ExceptionMessage.ERROR_SHOP_EXIST);
         }
 
-        Customer customer = check.get();
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> {
+                    return new NotFoundException(ExceptionMessage.ERROR_CUSTOMER_NOT_FOUND);
+                });
+
         AddressRequest addressRequest = shopRequest.getAddress();
         Address address = Address.builder()
                 .detail(addressRequest.getDetail())
@@ -59,8 +69,10 @@ public class ShopServiceImpl implements ShopService {
                 .address(address)
                 .customer(customer)
                 .build();
-
         shopRepository.saveAndFlush(shop);
+
+        // Assign role
+        userService.assignRole(String.valueOf(RoleType.SELLER), customer.getAccountId());
         return shopMapper.toDto(shop);
     }
 
@@ -94,5 +106,19 @@ public class ShopServiceImpl implements ShopService {
         address.setCountry(addressRequest.getCountry());
 
         return shopMapper.toDto(shopRepository.save(shop));
+    }
+
+    @Override
+    public void delete(String id) throws Exception {
+        Shop shop = shopRepository.findById(id)
+                .orElseThrow(() -> {
+                    return new NotFoundException(ExceptionMessage.ERROR_SHOP_NOT_FOUND);
+                });
+
+        Customer customer = shop.getCustomer();
+        shopRepository.deleteById(id);
+
+        // Unassign role
+        userService.unassignRole(String.valueOf(RoleType.SELLER), customer.getAccountId());
     }
 }

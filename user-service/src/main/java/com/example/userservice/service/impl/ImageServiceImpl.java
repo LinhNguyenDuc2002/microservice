@@ -10,9 +10,9 @@ import com.example.userservice.exception.NotFoundException;
 import com.example.userservice.exception.UnauthorizedException;
 import com.example.userservice.repository.ImageRepository;
 import com.example.userservice.repository.UserRepository;
+import com.example.userservice.security.util.SecurityUtils;
 import com.example.userservice.service.ImageService;
 import com.example.userservice.util.DateUtil;
-import com.example.userservice.util.SecurityUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,7 +40,7 @@ public class ImageServiceImpl implements ImageService {
     public String setAvatar(MultipartFile file) throws IOException {
         log.info("Get info of logged in user");
 
-        Optional<String> userId = SecurityUtil.getLoggedInUserId();
+        Optional<String> userId = SecurityUtils.getLoggedInUserId();
         if (userId.isEmpty()) {
             throw new UnauthorizedException(ExceptionMessage.ERROR_USER_UNKNOWN);
         }

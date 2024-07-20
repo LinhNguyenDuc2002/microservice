@@ -20,9 +20,9 @@ import com.example.userservice.redis.model.UserCache;
 import com.example.userservice.repository.RoleRepository;
 import com.example.userservice.repository.UserRepository;
 import com.example.userservice.repository.httpclient.ProductServiceClient;
+import com.example.userservice.security.util.SecurityUtils;
 import com.example.userservice.service.UserService;
 import com.example.userservice.util.OtpUtil;
-import com.example.userservice.util.SecurityUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -73,7 +73,7 @@ public class UserServiceImpl implements UserService {
     public UserDto getLoggedInUser() throws NotFoundException {
         log.info("Get info of logged in user");
 
-        Optional<String> userId = SecurityUtil.getLoggedInUserId();
+        Optional<String> userId = SecurityUtils.getLoggedInUserId();
         if (userId.isEmpty()) {
             throw new UnauthorizedException(ExceptionMessage.ERROR_USER_UNKNOWN);
         }

@@ -70,13 +70,27 @@ public interface WebClientProcessor {
                 final Object body,
                 final Class<T> clazz) throws Exception;
 
-//    /**
-//     * @param uri    The request url
-//     * @param header The request header
-//     */
-//    void delete(@NotNull final String uri,
-//                final Map<String, String> header);
-//
+    /**
+     * @param uri       The request url
+     * @param header    The request header
+     * @param formData  The request form data
+     * @param clazz     The response class type
+     * @param <T>       The response class type
+     * @return
+     */
+    <T> T patch(@NotNull final String uri,
+                final Map<String, String> header,
+                final MultiValueMap<String, String> formData,
+                final Class<T> clazz) throws Exception;
+
+    /**
+     * @param uri    The request url
+     * @param header The request header
+     */
+    void delete(@NotNull final String uri,
+                final Map<String, String> header,
+                final MultiValueMap<String, String> queryParam) throws Exception;
+
 //    /**
 //     * @param uri    The request url
 //     * @param header The request header

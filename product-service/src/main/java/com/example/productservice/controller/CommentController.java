@@ -51,5 +51,4 @@ public class CommentController {
         commentService.delete(id);
         return ResponseUtil.wrapResponse(null, ResponseMessage.DELETE_COMMENT_SUCCESS);
     }
-
 }

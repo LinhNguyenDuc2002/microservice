@@ -76,7 +76,6 @@ spring:
           auth: true
           starttls:
             enable: true
-
 # Mail
 message:
   email:
