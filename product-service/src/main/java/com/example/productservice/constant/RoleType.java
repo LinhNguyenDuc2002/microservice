@@ -1,4 +1,4 @@
-package com.example.userservice.constant;
+package com.example.productservice.constant;
 
 public enum RoleType {
     CUSTOMER,

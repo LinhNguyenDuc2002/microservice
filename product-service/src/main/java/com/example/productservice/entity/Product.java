@@ -62,7 +62,7 @@ public class Product extends Auditor {
     @EqualsAndHashCode.Exclude
     private Collection<Comment> comments;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shop_id")
     private Shop shop;
 }

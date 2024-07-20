@@ -9,16 +9,20 @@ import com.example.productservice.dto.ProductDTO;
 import com.example.productservice.entity.Category;
 import com.example.productservice.entity.Image;
 import com.example.productservice.entity.Product;
+import com.example.productservice.entity.Shop;
 import com.example.productservice.exception.InvalidException;
 import com.example.productservice.exception.NotFoundException;
 import com.example.productservice.mapper.ProductMapper;
 import com.example.productservice.payload.ProductRequest;
 import com.example.productservice.payload.response.PageResponse;
 import com.example.productservice.repository.CategoryRepository;
+import com.example.productservice.repository.CustomerRepository;
 import com.example.productservice.repository.ImageRepository;
 import com.example.productservice.repository.ProductRepository;
 import com.example.productservice.repository.ShopRepository;
 import com.example.productservice.repository.predicate.ProductPredicate;
+import com.example.productservice.repository.predicate.ShopPredicate;
+import com.example.productservice.security.SecurityUtils;
 import com.example.productservice.service.ProductService;
 import com.example.productservice.util.DateUtil;
 import com.example.productservice.util.PageUtil;
@@ -70,8 +74,14 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductDTO add(String productRequest, List<MultipartFile> files) throws InvalidException, NotFoundException {
+        Optional<String> userId = SecurityUtils.getLoggedInUserId();
+        ShopPredicate shopPredicate = new ShopPredicate().withAccountId(userId.get());
+        Shop shop = shopRepository.findOne(shopPredicate.getCriteria())
+                .orElseThrow(() -> {
+                    return new NotFoundException(ExceptionMessage.ERROR_SHOP_NOT_FOUND);
+                });
+
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
             ProductRequest newProduct = objectMapper.readValue(productRequest, ProductRequest.class);
 
             if (newProduct == null ||
@@ -86,21 +96,22 @@ public class ProductServiceImpl implements ProductService {
                         return new NotFoundException(ExceptionMessage.ERROR_CATEGORY_NOT_FOUND);
                     });
 
-//            Shop shop = shopRepository.
             Product product = Product.builder()
                     .name(newProduct.getName())
                     .price(newProduct.getPrice())
                     .quantity(newProduct.getQuantity())
                     .note(newProduct.getNote())
                     .category(category)
+                    .shop(shop)
+                    .sold(0L)
                     .build();
-
-            product.setSold(0L);
             productRepository.save(product);
 
-            List<Image> images = uploadFile(files);
-            images.stream().forEach(image -> image.setProduct(product));
-            imageRepository.saveAll(images);
+            if(!files.isEmpty()) {
+                List<Image> images = uploadFile(files);
+                images.stream().forEach(image -> image.setProduct(product));
+                imageRepository.saveAll(images);
+            }
 
             log.info("Added a product");
             return productMapper.toDto(product);
@@ -112,13 +123,11 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductDTO update(String id, String productRequest, List<MultipartFile> files) throws InvalidException, NotFoundException {
-        Optional<Product> check = productRepository.findById(id);
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> {
+                    return new NotFoundException(ExceptionMessage.ERROR_PRODUCT_NOT_FOUND);
+                });
 
-        if(!check.isPresent()) {
-            throw new NotFoundException(ExceptionMessage.ERROR_PRODUCT_NOT_FOUND);
-        }
-
-        Product product = check.get();
         try {
             ProductRequest request = objectMapper.readValue(productRequest, ProductRequest.class);
 

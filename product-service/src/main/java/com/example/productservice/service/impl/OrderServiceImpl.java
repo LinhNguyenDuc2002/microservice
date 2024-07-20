@@ -1,6 +1,6 @@
 package com.example.productservice.service.impl;
 
-import com.example.productservice.config.OrderConfiguration;
+import com.example.productservice.config.OrderServiceConfiguration;
 import com.example.productservice.payload.orderservice.response.CheckingDetailResponse;
 import com.example.productservice.service.OrderService;
 import com.example.productservice.webclient.WebClientProcessor;
@@ -18,17 +18,18 @@ import java.util.Map;
 @Slf4j
 public class OrderServiceImpl implements OrderService {
     @Autowired
-    private OrderConfiguration orderConfiguration;
+    private OrderServiceConfiguration orderServiceConfiguration;
 
     @Autowired
     private WebClientProcessor webClientProcessor;
+
     @Override
     public CheckingDetailResponse checkDetailExist(String id) throws Exception {
-        String url = orderConfiguration.getCheckDetailUrl();
+        String url = orderServiceConfiguration.getCheckDetailUrl();
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(url);
 
         Map<String, Object> pathVariable = new HashMap<>();
-        pathVariable.put(OrderConfiguration.PATH_UUID, id);
+        pathVariable.put(OrderServiceConfiguration.PATH_UUID, id);
         uriBuilder.uriVariables(pathVariable);
 
         Map<String, String> header = new LinkedHashMap<>();
@@ -44,7 +45,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Map<String, Double> calculateSales(List<String> productList) throws Exception {
-        String url = orderConfiguration.getCalculateSalesUrl();
+        String url = orderServiceConfiguration.getCalculateSalesUrl();
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(url);
 
         Map<String, String> header = new LinkedHashMap<>();

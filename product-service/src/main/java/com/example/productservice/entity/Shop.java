@@ -30,7 +30,7 @@ public class Shop extends Auditor {
     @Column(name = "hotline")
     private String hotline;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "address_id")
     private Address address;
 
@@ -38,6 +38,6 @@ public class Shop extends Auditor {
     @JoinColumn(name = "customer_id")
     private Customer customer;
 
-    @OneToMany(mappedBy = "shop")
+    @OneToMany(mappedBy = "shop", cascade = CascadeType.REMOVE)
     private Collection<Product> products;
 }

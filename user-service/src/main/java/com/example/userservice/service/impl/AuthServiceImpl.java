@@ -8,8 +8,8 @@ import com.example.userservice.exception.NotFoundException;
 import com.example.userservice.exception.UnauthorizedException;
 import com.example.userservice.exception.ValidationException;
 import com.example.userservice.repository.UserRepository;
+import com.example.userservice.security.util.SecurityUtils;
 import com.example.userservice.service.AuthService;
-import com.example.userservice.util.SecurityUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,6 +21,7 @@ import java.util.Optional;
 @Slf4j
 @Service
 public class AuthServiceImpl implements AuthService {
+    private final Integer PASSWORD_LENGTH = 6;
     @Autowired
     private JwtConfig jwtConfig;
 
@@ -37,7 +38,7 @@ public class AuthServiceImpl implements AuthService {
     public void changePwd(PasswordRequest passwordRequest) throws NotFoundException, ValidationException {
         log.info("Change password");
 
-        Optional<String> userId = SecurityUtil.getLoggedInUserId();
+        Optional<String> userId = SecurityUtils.getLoggedInUserId();
         if (userId.isEmpty()) {
             throw new UnauthorizedException(ExceptionMessage.ERROR_USER_UNKNOWN);
         }
@@ -67,7 +68,7 @@ public class AuthServiceImpl implements AuthService {
     public void resetPwd(String id, String password) throws NotFoundException, ValidationException {
         log.info("Reset password of user {}", id);
 
-        if (password.length() < 6 || password.isEmpty()) {
+        if (password.length() < PASSWORD_LENGTH || password.isEmpty()) {
             log.error("New password is invalid");
             throw new ValidationException(password, ExceptionMessage.ERROR_INPUT_PASSWORD_INVALID);
         }

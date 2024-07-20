@@ -2,21 +2,14 @@ package com.example.productservice.controller;
 
 import com.example.productservice.constant.ParameterConstant;
 import com.example.productservice.dto.statistic.ProductStatisticsDTO;
-import com.example.productservice.exception.NotFoundException;
-import com.example.productservice.payload.response.CommonResponse;
 import com.example.productservice.payload.response.PageResponse;
 import com.example.productservice.service.DashboardService;
-import com.example.productservice.util.ResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Date;
-import java.util.List;
 
 @RestController
 @RequestMapping("/dashboard")

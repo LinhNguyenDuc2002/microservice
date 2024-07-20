@@ -9,6 +9,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
@@ -93,6 +94,54 @@ public class WebClientProcessorImpl implements WebClientProcessor {
         }
 
         return null;
+    }
+
+    @Override
+    public <T> T patch(String uri, Map<String, String> header, MultiValueMap<String, String> formData, Class<T> clazz) throws Exception {
+        final Map<String, String> requestHeader = header == null ? Collections.emptyMap() : header;
+
+        try {
+            return webClient.patch()
+                    .uri(uri)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .headers(h -> h.setAll(requestHeader))
+                    .body(BodyInserters.fromFormData(formData))
+                    .retrieve()
+                    .bodyToMono(clazz)
+                    .doOnError(e -> log.error("Failed to initialize the data: " + e.getMessage()))
+                    .block();
+        } catch (WebClientResponseException e) {
+            handleWebClientException(e);
+        } catch (Exception e) {
+            log.error("Exception occurred: " + e.getMessage());
+            throw new Exception("Could not initialize the data");
+        }
+
+        return null;
+    }
+
+    @Override
+    public void delete(String uri, Map<String, String> header, MultiValueMap<String, String> queryParam) throws Exception {
+        final Map<String, String> requestHeader = header == null ? Collections.emptyMap() : header;
+        final MultiValueMap<String, String> requestParam = queryParam == null ? new LinkedMultiValueMap<>() : queryParam;
+
+        try {
+            webClient.delete()
+                    .uri(uri, uriBuilder -> uriBuilder
+                            .queryParams(requestParam)
+                            .build())
+                    .accept(MediaType.APPLICATION_JSON)
+                    .headers(h -> h.setAll(requestHeader))
+                    .retrieve()
+                    .bodyToMono(Object.class)
+                    .doOnError(e -> log.error("Failed to delete the data: " + e.getMessage()))
+                    .block();
+        } catch (WebClientResponseException e) {
+            handleWebClientException(e);
+        } catch (Exception e) {
+            log.error("Exception occurred: " + e.getMessage());
+            throw new Exception("Could not initialize the data");
+        }
     }
 
     private void handleWebClientException(WebClientResponseException e) throws Exception {

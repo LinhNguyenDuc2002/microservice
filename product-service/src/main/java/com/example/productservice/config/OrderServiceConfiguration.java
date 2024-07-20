@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @Getter
-public class OrderConfiguration {
+public class OrderServiceConfiguration {
     public static final String PATH_UUID = "id";
 
     @Value("${order-service.endpoint}")

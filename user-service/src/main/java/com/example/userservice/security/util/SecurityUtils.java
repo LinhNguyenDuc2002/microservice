@@ -1,4 +1,4 @@
-package com.example.userservice.util;
+package com.example.userservice.security.util;
 
 import com.example.userservice.constant.SecurityConstant;
 import org.springframework.security.core.Authentication;
@@ -7,7 +7,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.util.Optional;
 
-public final class SecurityUtil {
+public final class SecurityUtils {
     /**
      * Get UserId current
      * @return

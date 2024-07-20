@@ -33,15 +33,15 @@ public class ProductController {
     private ProductService productService;
 
     @PostMapping(value = "", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('SELLER')")
     public ResponseEntity<CommonResponse<ProductDTO>> add(
-            @RequestParam("images") List<MultipartFile> files,
-            @RequestParam("product") String productRequest) throws InvalidException, NotFoundException {
+            @RequestParam(name = "images", required = false) List<MultipartFile> files,
+            @RequestParam(name = "product", required = false) String productRequest) throws InvalidException, NotFoundException {
         return ResponseUtil.wrapResponse(productService.add(productRequest, files));
     }
 
     @PutMapping(value = "/{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('SELLER')")
     public ResponseEntity<CommonResponse<ProductDTO>> update(
             @PathVariable String id,
             @RequestParam("images") List<MultipartFile> files,
@@ -72,7 +72,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     public ResponseEntity<CommonResponse<Void>> delete(@PathVariable String id) throws NotFoundException {
         productService.delete(id);
         return ResponseUtil.wrapResponse(null);
