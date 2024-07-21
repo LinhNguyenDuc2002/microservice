@@ -28,7 +28,7 @@ public class Category extends Auditor{
     @Column(name = "note")
     private String note;
 
-    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @EqualsAndHashCode.Exclude
     private Collection<Product> products;
 }

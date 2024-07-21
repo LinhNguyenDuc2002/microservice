@@ -27,10 +27,4 @@ public final class DateUtil {
 
         return calendar.getTime();
     }
-
-    public static Integer daysBetween(Date start, Date end) throws Exception {
-        long diffInMillis = Math.abs(end.getTime() - start.getTime());
-
-        return (int) TimeUnit.DAYS.convert(diffInMillis, TimeUnit.MILLISECONDS);
-    }
 }

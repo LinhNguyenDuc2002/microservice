@@ -13,8 +13,8 @@ import java.util.Date;
 
 @Getter
 @Setter
-@MappedSuperclass
-//@EntityListeners(AuditingEntityListener.class)
+@MappedSuperclass // The fields will be added sub-class table
+@EntityListeners(AuditingEntityListener.class) // implement EntityListener to follow changes
 public class InitializationInfo {
 
     @CreatedBy
