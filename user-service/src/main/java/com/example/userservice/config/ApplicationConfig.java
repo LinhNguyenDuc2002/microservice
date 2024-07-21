@@ -44,15 +44,6 @@ public class ApplicationConfig {
         return new BCryptPasswordEncoder();
     }
 
-//    /**
-//     * filter jwt
-//     * @return
-//     */
-//    @Bean
-//    public JwtAuthenticationFilter jwtAuthenticationFilter() {
-//        return new JwtAuthenticationFilter();
-//    }
-
     /**
      *  Create and config  SpringTemplateEngine (implementation of ITemplateEngine in Thymeleaf)
      *  It's used to handle template Thymeleaf
@@ -91,7 +82,7 @@ public class ApplicationConfig {
     public GroupedOpenApi controllerApi() {
         return GroupedOpenApi.builder()
                 .group("Api")
-                .packagesToScan("com.example.shop.controller") // Specify the package to scan
+                .packagesToScan("com.example.userservice.controller") // Specify the package to scan
                 .build();
     }
 }

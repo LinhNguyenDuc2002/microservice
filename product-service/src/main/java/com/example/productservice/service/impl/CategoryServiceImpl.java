@@ -26,7 +26,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryDTO add(CategoryRequest categoryRequest) throws InvalidException {
-        if (categoryRequest == null || StringUtils.hasText(categoryRequest.getName())) {
+        if (categoryRequest == null || !StringUtils.hasText(categoryRequest.getName())) {
             throw new InvalidException(ExceptionMessage.ERROR_PRODUCT_INVALID_INPUT);
         }
 

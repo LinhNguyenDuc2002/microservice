@@ -107,7 +107,7 @@ public class ProductServiceImpl implements ProductService {
                     .build();
             productRepository.save(product);
 
-            if(!files.isEmpty()) {
+            if(files != null || !files.isEmpty()) {
                 List<Image> images = uploadFile(files);
                 images.stream().forEach(image -> image.setProduct(product));
                 imageRepository.saveAll(images);
