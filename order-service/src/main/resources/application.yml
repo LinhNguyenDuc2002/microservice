@@ -33,6 +33,13 @@ spring:
   lombok:
     enabled: true
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8081/api
+          jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/oauth2/jwks
+
   kafka:
     bootstrap-servers: localhost:9094
     template:
@@ -58,11 +65,6 @@ message:
     password:
     host: smtp-mail.outlook.com
     port: 587
-
-# JWT
-access-token:
-  private: keypair/access-token-private.key
-  public: keypair/access-token-public.key
 
 product-service:
   endpoint: http://localhost:8082
