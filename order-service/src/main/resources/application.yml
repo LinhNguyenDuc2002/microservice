@@ -12,7 +12,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/order_service
     username: root
-    password: 16042002
+    password:
 
   cache:
     type: redis
@@ -60,9 +60,9 @@ spring:
 message:
   email:
     protocol: smtp
-    from: linhnd.b20at109@stu.ptit.edu.vn
-    username: linhnd.b20at109@stu.ptit.edu.vn
-    password: Sero2002@
+    from:
+    username:
+    password:
     host: smtp-mail.outlook.com
     port: 587
 
