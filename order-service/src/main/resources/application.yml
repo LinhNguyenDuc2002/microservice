@@ -12,7 +12,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/order_service
     username: root
-    password:
+    password: 16042002
 
   cache:
     type: redis
@@ -32,6 +32,13 @@ spring:
 
   lombok:
     enabled: true
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8081/api
+          jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/oauth2/jwks
 
   kafka:
     bootstrap-servers: localhost:9094
@@ -53,16 +60,11 @@ spring:
 message:
   email:
     protocol: smtp
-    from:
-    username:
-    password:
+    from: linhnd.b20at109@stu.ptit.edu.vn
+    username: linhnd.b20at109@stu.ptit.edu.vn
+    password: Sero2002@
     host: smtp-mail.outlook.com
     port: 587
-
-# JWT
-access-token:
-  private: keypair/access-token-private.key
-  public: keypair/access-token-public.key
 
 product-service:
   endpoint: http://localhost:8082

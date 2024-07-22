@@ -1,11 +1,12 @@
 package com.example.orderservice.config;
 
 import com.example.orderservice.oauth2.JwtGrantedAuthorityConverter;
-import com.example.orderservice.oauth2.KeyUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
@@ -13,8 +14,11 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtDecoders;
+import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
@@ -26,12 +30,14 @@ import org.springframework.util.StringUtils;
 @EnableWebSecurity
 @Slf4j
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
+@Profile("!test")
 public class WebSecurityConfig {
+    @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
+    private String issuerUri;
+
     @Autowired
     private JwtGrantedAuthorityConverter jwtGrantedAuthorityConverter;
 
-    @Autowired
-    private KeyUtil keyUtil;
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -52,7 +58,7 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize //config authentication rules for requests
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/dashboard/**").permitAll()
-                        .anyRequest().permitAll()
+                        .anyRequest().authenticated()
                 );
 
         return http.build();
@@ -60,7 +66,10 @@ public class WebSecurityConfig {
 
     @Bean
     public JwtDecoder jwtDecoder() {
-        return NimbusJwtDecoder.withPublicKey(keyUtil.getAccessTokenPublicKey()).build();
+        NimbusJwtDecoder jwtDecoder = JwtDecoders.fromOidcIssuerLocation(issuerUri);
+        OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuerUri);
+        jwtDecoder.setJwtValidator(withIssuer);
+        return jwtDecoder;
     }
 
     @Bean
