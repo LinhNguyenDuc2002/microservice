@@ -12,11 +12,11 @@ import com.example.userservice.security.oauthserver.token.TokenAuthenticationPro
 import com.example.userservice.security.oauthserver.token.TokenRevocationAuthenticationProvider;
 import com.example.userservice.security.resourceserver.JwtResourceServerCustomize;
 import com.example.userservice.security.resourceserver.TokenResolver;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -49,6 +49,9 @@ import java.util.function.Consumer;
 @Slf4j
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true) //allow use @PreAuthorize, @Secured
 public class WebSecurityConfig {
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @Autowired
     private UserDetailsService userDetailsService;
 
@@ -99,7 +102,7 @@ public class WebSecurityConfig {
      * @throws Exception
      */
     @Bean
-    public AuthenticationManager authenticationManagerBean(HttpSecurity http) throws Exception {
+    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
         authenticationManagerBuilder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
         return authenticationManagerBuilder.build();
@@ -221,14 +224,14 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize //config authentication rules for requests
                         .requestMatchers(HttpMethod.POST, "/user").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth").permitAll()
-                        .requestMatchers( "/user/verify").permitAll()
+                        .requestMatchers( HttpMethod.POST, "/user/verify").permitAll()
                         .requestMatchers( "/actuator/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated()
-                )
+                );
 
-                // Form login handles the redirect to the login page from the authorization server filter chain
-                .formLogin(Customizer.withDefaults());
+//                Form login handles the redirect to the login page from the authorization server filter chain
+//                .formLogin(Customizer.withDefaults());
 
 //        filter through jwtAuthenticationFilter() before UsernamePasswordAuthenticationFilter
 //        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

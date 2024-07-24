@@ -1,8 +1,8 @@
 package com.example.userservice.cache;
 
-import com.example.userservice.exception.NotFoundException;
-import com.example.userservice.exception.ValidationException;
 import com.example.userservice.redis.model.UserCache;
+
+import java.util.Optional;
 
 /**
  * Work with redis cache
@@ -15,15 +15,11 @@ public interface UserCacheManager {
     void storeUserCache(UserCache userCache);
 
     /**
-     * Verify user in redis cache
-     * @param id
-     * @param otp
+     *
      * @param secret
      * @return
-     * @throws NotFoundException
-     * @throws ValidationException
      */
-    UserCache verifyUserCache(String id, String otp, String secret) throws NotFoundException, ValidationException;
+    Optional<UserCache> getUserCache(String secret);
 
     /**
      * Clear redis cache (make redis cache empty)

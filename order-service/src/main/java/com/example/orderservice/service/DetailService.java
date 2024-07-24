@@ -12,7 +12,7 @@ public interface DetailService {
 
     DetailDTO update(String id, Integer quantity) throws Exception;
 
-    PageResponse<ShopDetailDTO> getAll(Integer page, Integer size, String customerId, Boolean status);
+    PageResponse<ShopDetailDTO> getAll(Integer page, Integer size, String customerId, Boolean status) throws Exception;
 
     DetailDTO get(String id) throws NotFoundException;
 

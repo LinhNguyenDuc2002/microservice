@@ -46,7 +46,7 @@ public class Bill extends Auditor {
     @Convert(converter = BillStatusConverter.class)
     private BillStatus status;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id")
     private Address address;
 

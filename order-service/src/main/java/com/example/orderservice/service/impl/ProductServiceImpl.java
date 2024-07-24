@@ -1,11 +1,15 @@
 package com.example.orderservice.service.impl;
 
 import com.example.orderservice.config.ProductConfiguration;
+import com.example.orderservice.constant.SecurityConstant;
+import com.example.orderservice.exception.NotFoundException;
 import com.example.orderservice.payload.productservice.response.ProductCheckingResponse;
+import com.example.orderservice.security.SecurityUtils;
 import com.example.orderservice.service.ProductService;
 import com.example.orderservice.webclient.WebClientProcessor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -54,12 +58,30 @@ public class ProductServiceImpl implements ProductService {
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(url);
 
         Map<String, String> header = new LinkedHashMap<>();
+        header.put(HttpHeaders.AUTHORIZATION, String.format(SecurityConstant.ACCESS_TOKEN_FORMAT, SecurityUtils.getCurrentJWT()));
 
         // send request to product service
         return webClientProcessor.patch(
                 uriBuilder.toUriString(),
                 header,
                 productList,
+                Map.class
+        );
+    }
+
+    @Override
+    public Map<String, List<String>> groupDetails(List<String> body) throws Exception {
+        String url = productConfiguration.getGroupDetailsUrl();
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(url);
+
+        Map<String, String> header = new LinkedHashMap<>();
+        header.put(HttpHeaders.AUTHORIZATION, String.format(SecurityConstant.ACCESS_TOKEN_FORMAT, SecurityUtils.getCurrentJWT()));
+
+        // send request to product service
+        return webClientProcessor.post(
+                uriBuilder.toUriString(),
+                header,
+                body,
                 Map.class
         );
     }

@@ -112,12 +112,12 @@ public class BillServiceImpl implements BillService {
             billRepository.save(bill);
             bills.add(bill);
 
-            details.stream().forEach(detail -> {
-                if(response.get(key).contains(detail.getProduct())) {
-                    detail.setBill(bill);
-                    detail.setStatus(true);
-                }
-            });
+            details.stream()
+                    .filter(detail -> response.get(key).contains(detail.getProduct()))
+                    .forEach(detail -> {
+                        detail.setBill(bill);
+                        detail.setStatus(true);
+                    });
         }
         detailRepository.saveAll(details);
 

@@ -38,6 +38,19 @@ public class DetailPredicate extends BasePredicate {
 
     /**
      *
+     * @param customerId
+     * @return
+     */
+    public DetailPredicate withCustomerId(String customerId) {
+        if(StringUtils.hasText(customerId)) {
+            criteria.and(qDetail.customer.id.eq(customerId));
+        }
+
+        return this;
+    }
+
+    /**
+     *
      * @param status
      * @return
      */

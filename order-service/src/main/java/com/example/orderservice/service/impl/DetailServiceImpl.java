@@ -20,9 +20,16 @@ import com.example.orderservice.repository.predicate.BillPredicate;
 import com.example.orderservice.repository.predicate.DetailPredicate;
 import com.example.orderservice.service.DetailService;
 import com.example.orderservice.service.ProductService;
+import com.example.orderservice.util.PageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -96,20 +103,40 @@ public class DetailServiceImpl implements DetailService {
     }
 
     @Override
-    public PageResponse<ShopDetailDTO> getAll(Integer page, Integer size, String customerId, Boolean status) {
-//        Pageable pageable = PageUtil.getPage(page, size);
-//
-//        ShopDetailPredicate shopDetailPredicate = new ShopDetailPredicate()
-//                .status(status)
-//                .withCustomerId(customerId);
-//        Page<ShopDetail> shopDetails = shopDetailRepository.findAll(shopDetailPredicate.getCriteria(), pageable);
-//
-//        return PageResponse.<ShopDetailDTO>builder()
-//                .index(page)
-//                .totalPage(shopDetails.getTotalPages())
-//                .elements(shopDetailMapper.toDtoList(shopDetails.getContent()))
-//                .build();
-        return null;
+    public PageResponse<ShopDetailDTO> getAll(Integer page, Integer size, String customerId, Boolean status) throws Exception {
+        Pageable pageable = PageUtil.getPage(page, size);
+
+        DetailPredicate detailPredicate = new DetailPredicate()
+                .withStatus(status)
+                .withCustomerId(customerId);
+        Page<Detail> details = detailRepository.findAll(detailPredicate.getCriteria(), pageable);
+
+        Map<String, Integer> productList = new LinkedHashMap<>();
+        details.stream().forEach(detail -> {
+            productList.put(detail.getProduct(), detail.getQuantity());
+        });
+        Map<String, List<String>> response = productService.checkWarehouse(productList);
+
+        List<ShopDetailDTO> shopDetailDTOS = new ArrayList<>();
+        for(String key : response.keySet()) {
+            List<Detail> responseDetail = details.stream()
+                    .filter(detail -> response.get(key).contains(detail.getProduct()))
+                    .toList();
+
+            shopDetailDTOS.add(
+                    ShopDetailDTO.builder()
+                            .id(key)
+                            .status(status)
+                            .details(detailMapper.toDtoList(responseDetail))
+                            .build()
+            );
+        }
+
+        return PageResponse.<ShopDetailDTO>builder()
+                .index(page)
+                .totalPage(details.getTotalPages())
+                .elements(shopDetailDTOS)
+                .build();
     }
 
     @Override
