@@ -17,9 +17,12 @@ public class ProductConfiguration {
 
     private String checkWarehouseUrl;
 
+    private String groupDetailsUrl;
+
     @PostConstruct
     public void init() {
         productCheckingUrl = String.format("%s/api/product/{%s}/exist", baseUrl, PATH_UUID);
         checkWarehouseUrl = String.format("%s/api/warehouse", baseUrl);
+        groupDetailsUrl = String.format("%s/api/warehouse/detail-group", baseUrl);
     }
 }

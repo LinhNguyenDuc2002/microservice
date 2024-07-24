@@ -7,4 +7,6 @@ import java.util.Map;
 
 public interface WarehouseService {
     Map<String, List<String>> checkWarehouse (Map<String, Integer> productList) throws InvalidException;
+
+    Map<String, List<String>> groupDetails (List<String> productKey);
 }

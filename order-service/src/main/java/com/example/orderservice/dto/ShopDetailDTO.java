@@ -23,7 +23,5 @@ public class ShopDetailDTO {
 
     private boolean status;
 
-    private String shop;
-
     private List<DetailDTO> details;
 }

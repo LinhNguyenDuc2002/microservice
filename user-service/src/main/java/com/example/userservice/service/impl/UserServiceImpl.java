@@ -6,6 +6,7 @@ import com.example.userservice.constant.ExceptionMessage;
 import com.example.userservice.constant.KafkaTopic;
 import com.example.userservice.constant.RoleType;
 import com.example.userservice.dto.UserDto;
+import com.example.userservice.dto.request.OTPAuthenticationRequest;
 import com.example.userservice.dto.request.UserRequest;
 import com.example.userservice.entity.Role;
 import com.example.userservice.entity.User;
@@ -22,7 +23,7 @@ import com.example.userservice.repository.UserRepository;
 import com.example.userservice.repository.httpclient.ProductServiceClient;
 import com.example.userservice.security.util.SecurityUtils;
 import com.example.userservice.service.UserService;
-import com.example.userservice.util.OtpUtil;
+import com.example.userservice.util.OTPUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +33,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -70,7 +73,7 @@ public class UserServiceImpl implements UserService {
     private ObjectMapper mapper = new ObjectMapper();
 
     @Override
-    public UserDto getLoggedInUser() throws NotFoundException {
+    public UserDto getLoggedInUser() {
         log.info("Get info of logged in user");
 
         Optional<String> userId = SecurityUtils.getLoggedInUserId();
@@ -88,7 +91,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Map<String, String> createTempUser(UserRequest newUserRequest) throws ValidationException, JsonProcessingException {
+    public Map<String, String> createTempUser(UserRequest newUserRequest) throws ValidationException, NoSuchAlgorithmException, InvalidKeyException {
         log.info("Save registration information temporarily");
 
         if (!StringUtils.hasText(newUserRequest.getEmail())) {
@@ -100,12 +103,9 @@ public class UserServiceImpl implements UserService {
             throw new ValidationException(newUserRequest, ExceptionMessage.ERROR_EMAIL_EXISTED);
         }
 
+        String otp = OTPUtil.generateOTP();
         UserCache userCache = convertToUserCache(newUserRequest);
-
-        String otp = OtpUtil.generateOTP();
-        String secretKey = UUID.randomUUID().toString();
         userCache.setOtp(otp);
-        userCache.setSecretKey(secretKey);
 
         Map<String, String> emailArgs = new HashMap<>();
         emailArgs.put(EmailConstant.ARG_LOGO_URI, "");
@@ -122,33 +122,24 @@ public class UserServiceImpl implements UserService {
                 .locale(LocaleContextHolder.getLocale())
                 .build();
         log.info("Sending OTP to authenticate ...");
-        messagingService.sendMessage(KafkaTopic.SEND_EMAIL, mapper.writeValueAsString(email));
+//        messagingService.sendMessage(KafkaTopic.SEND_EMAIL, mapper.writeValueAsString(email));
         log.info("OTP code is sent successfully");
 
         userCacheManager.storeUserCache(userCache);
         return Map.of(
-                "id", userCache.getId(),
-                "secret_key", secretKey
+                "secret_key", userCache.getId()
         );
     }
 
     @Override
-    public UserDto createUser(String id, String otp, String secret) throws ValidationException, NotFoundException, JsonProcessingException {
-        log.info("Verifying otp ...");
+    public UserDto createUser(OTPAuthenticationRequest request) throws ValidationException, NotFoundException, JsonProcessingException {
+        UserCache userCache = userCacheManager.getUserCache(request.getSecret())
+                .orElseThrow(() -> {
+                    return new NotFoundException("");
+                });
 
-        if (!StringUtils.hasText(otp)) {
-            log.error("OTP code is invalid or expired");
-            throw ValidationException.builder()
-                    .errorObject(otp)
-                    .message(ExceptionMessage.ERROR_INVALID_OTP)
-                    .build();
-        }
-
-        UserCache userCache = userCacheManager.verifyUserCache(id, otp, secret);
-        if (userCache == null) {
-            throw NotFoundException.builder()
-                    .message(ExceptionMessage.ERROR_USER_NOT_FOUND)
-                    .build();
+        if (!StringUtils.hasText(request.getOtp()) || !userCache.getOtp().equals(request.getOtp())) {
+            throw new ValidationException(request.getOtp(), "ExceptionMessage.ERROR_INVALID_OTP");
         }
 
         User user = convertToUser(userCache);

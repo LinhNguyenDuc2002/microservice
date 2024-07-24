@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,23 +26,24 @@ public class AuthController {
     private AuthService authService;
 
     /*
-    * /oauth2/token: return token
+     * /oauth2/token: return token
      */
 
     /**
      * https://www.facebook.com/v15.0/dialog/oauth?client_id=1530299457838583&redirect_uri=http://localhost:8080/api/auth/user&scope=public_profile,email&response_type=code
      * https://www.facebook.com/v15.0/dialog/oauth?client_id=1530299457838583&redirect_uri=http://localhost:8080/api/login/oauth2/code/facebook&scope=public_profile,email&response_type=code
-     *  @param
+     *
+     * @param
      * @return
      */
 //    @GetMapping("/auth/user")
 //    public ResponseEntity<String> get(@RequestParam("code") String code, @RequestParam("state") String state) {
 //        return ResponseEntity.ok("ok");
 //    }
-
     @PutMapping("/auth/change-pwd")
-    public ResponseEntity<CommonResponse<Void>> changePassword(@Valid @RequestBody PasswordRequest pwd,
-                                                               BindingResult bindingResult) throws ValidationException, NotFoundException {
+    public ResponseEntity<CommonResponse<Void>> changePassword(
+            @Valid @RequestBody PasswordRequest pwd,
+            BindingResult bindingResult) throws ValidationException, NotFoundException {
         HandleBindingResult.handle(bindingResult, pwd);
         authService.changePwd(pwd);
         return ResponseUtil.wrapResponse(null, ResponseMessage.CHANGE_PASSWORD_SUCCESS.getMessage());
@@ -51,8 +51,9 @@ public class AuthController {
 
     @PutMapping("/auth/{id}/reset-pwd")
     @Secured({SecurityConstant.ADMIN, SecurityConstant.EMPLOYEE})
-    public ResponseEntity<CommonResponse<Void>> resetPassword(@RequestParam(name = "password") String password,
-                                                              @PathVariable String id) throws ValidationException, NotFoundException {
+    public ResponseEntity<CommonResponse<Void>> resetPassword(
+            @RequestParam(name = "password") String password,
+            @PathVariable String id) throws ValidationException, NotFoundException {
         authService.resetPwd(id, password);
         return ResponseUtil.wrapResponse(null, ResponseMessage.RESET_PASSWORD_SUCCESS.getMessage());
     }

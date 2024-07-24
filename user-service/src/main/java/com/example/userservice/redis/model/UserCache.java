@@ -21,8 +21,6 @@ public class UserCache implements Serializable {
     @Indexed
     private String id;
 
-    private String secretKey;
-
     private String nickname;
 
     private String username;

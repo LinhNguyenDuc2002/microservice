@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -28,9 +27,9 @@ public class WarehouseServiceImpl implements WarehouseService {
 
     @Override
     public Map<String, List<String>> checkWarehouse(Map<String, Integer> productList) throws InvalidException {
-        Set<String> productKey = productList.keySet();
+        List<String> productKey = productList.keySet().stream().toList();
 
-        ProductPredicate productPredicate = new ProductPredicate().withIds(productKey.stream().toList());
+        ProductPredicate productPredicate = new ProductPredicate().withIds(productKey);
         List<Product> products = productRepository.findAll(productPredicate.getCriteria());
 
         for(Product product : products) {
@@ -39,11 +38,21 @@ public class WarehouseServiceImpl implements WarehouseService {
             }
         }
 
-        Map<String, List<String>> response = new LinkedHashMap<>();
         for(Product product : products) {
             product.setQuantity(product.getQuantity() - productList.get(product.getId()));
             product.setSold(product.getSold() + productList.get(product.getId()));
+        }
 
+        return groupDetails(productKey);
+    }
+
+    @Override
+    public Map<String, List<String>> groupDetails(List<String> productKey) {
+        ProductPredicate productPredicate = new ProductPredicate().withIds(productKey);
+        List<Product> products = productRepository.findAll(productPredicate.getCriteria());
+
+        Map<String, List<String>> response = new LinkedHashMap<>();
+        for(Product product : products) {
             String shopId = product.getShop().getId();
             if(!response.containsKey(shopId)) {
                 response.put(shopId, new ArrayList<>());
