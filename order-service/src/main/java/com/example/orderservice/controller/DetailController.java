@@ -57,7 +57,7 @@ public class DetailController {
     }
 
     @GetMapping("/{id}/exist")
-    public ResponseEntity<CheckingDetailDTO> checkDetailExist(@PathVariable String id) throws NotFoundException, InvalidException {
+    public ResponseEntity<CheckingDetailDTO> checkDetailExist(@PathVariable String id) throws NotFoundException {
         return ResponseEntity.ok(detailService.checkDetailExist(id));
     }
 

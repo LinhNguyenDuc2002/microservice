@@ -17,10 +17,12 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping("/auth")
 public class AuthController {
     @Autowired
     private AuthService authService;
@@ -36,11 +38,8 @@ public class AuthController {
      * @param
      * @return
      */
-//    @GetMapping("/auth/user")
-//    public ResponseEntity<String> get(@RequestParam("code") String code, @RequestParam("state") String state) {
-//        return ResponseEntity.ok("ok");
-//    }
-    @PutMapping("/auth/change-pwd")
+
+    @PutMapping("/change-pwd")
     public ResponseEntity<CommonResponse<Void>> changePassword(
             @Valid @RequestBody PasswordRequest pwd,
             BindingResult bindingResult) throws ValidationException, NotFoundException {
@@ -49,7 +48,7 @@ public class AuthController {
         return ResponseUtil.wrapResponse(null, ResponseMessage.CHANGE_PASSWORD_SUCCESS.getMessage());
     }
 
-    @PutMapping("/auth/{id}/reset-pwd")
+    @PutMapping("/{id}/reset-pwd")
     @Secured({SecurityConstant.ADMIN, SecurityConstant.EMPLOYEE})
     public ResponseEntity<CommonResponse<Void>> resetPassword(
             @RequestParam(name = "password") String password,

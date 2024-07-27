@@ -248,6 +248,7 @@ public class UserServiceImpl implements UserService {
                 .fullname(userCache.getFullname())
                 .email(userCache.getEmail())
                 .phone(userCache.getPhone())
+                .sex(userCache.getSex())
                 .dob(userCache.getDob())
                 .build();
     }
@@ -262,6 +263,7 @@ public class UserServiceImpl implements UserService {
                 .dob(newUserRequest.getDob())
                 .phone(newUserRequest.getPhone())
                 .email(newUserRequest.getEmail())
+                .sex(newUserRequest.getSex())
                 .role(newUserRequest.getRole())
                 .build();
     }

@@ -62,11 +62,13 @@ public class BillController {
     }
 
     @GetMapping("/customer/{id}")
+    @PreAuthorize("hasAnyRole('CUSTOMER')")
     public ResponseEntity<PageResponse<BillDTO>> getByCustomerId(
             @RequestParam(name = ParameterConstant.Page.PAGE, defaultValue = ParameterConstant.Page.DEFAULT_PAGE) Integer page,
             @RequestParam(name = ParameterConstant.Page.SIZE, defaultValue = ParameterConstant.Page.DEFAULT_SIZE) Integer size,
+            @RequestParam(name = "status", required = false) String status,
             @PathVariable String id) throws NotFoundException {
-        return ResponseEntity.ok(billService.getByCustomerId(page, size, id));
+        return ResponseEntity.ok(billService.getByCustomerId(page, size, status, id));
     }
 
     @PatchMapping("/{id}")

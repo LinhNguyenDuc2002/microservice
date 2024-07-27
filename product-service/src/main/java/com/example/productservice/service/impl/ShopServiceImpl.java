@@ -15,6 +15,7 @@ import com.example.productservice.repository.AddressRepository;
 import com.example.productservice.repository.CustomerRepository;
 import com.example.productservice.repository.ShopRepository;
 import com.example.productservice.repository.predicate.ShopPredicate;
+import com.example.productservice.security.SecurityUtils;
 import com.example.productservice.service.ShopService;
 import com.example.productservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,10 +41,26 @@ public class ShopServiceImpl implements ShopService {
     private UserService userService;
 
     @Override
+    public ShopDTO getMyShop() throws InvalidException, NotFoundException {
+        Optional<String> userId = SecurityUtils.getLoggedInUserId();
+        if (userId.isEmpty()) {
+            throw new InvalidException("");
+        }
+
+        ShopPredicate shopPredicate = new ShopPredicate().withAccountId(userId.get());
+        Shop shop = shopRepository.findOne(shopPredicate.getCriteria())
+                .orElseThrow(() -> {
+                    return new NotFoundException(ExceptionMessage.ERROR_SHOP_NOT_FOUND);
+                });
+
+        return shopMapper.toDto(shop);
+    }
+
+    @Override
     public ShopDTO create(String id, ShopRequest shopRequest) throws Exception {
         ShopPredicate shopPredicate = new ShopPredicate().withCustomerId(id);
         Optional<Shop> checkShop = shopRepository.findOne(shopPredicate.getCriteria());
-        if(checkShop.isPresent()) {
+        if (checkShop.isPresent()) {
             throw new InvalidException(ExceptionMessage.ERROR_SHOP_EXIST);
         }
 

@@ -18,5 +18,5 @@ public interface DetailService {
 
     void delete(String id) throws NotFoundException;
 
-    CheckingDetailDTO checkDetailExist(String id) throws NotFoundException, InvalidException;
+    CheckingDetailDTO checkDetailExist(String id) throws NotFoundException;
 }

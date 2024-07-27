@@ -2,7 +2,7 @@
 server:
   port: 8082
   servlet:
-    context-path: /api
+    context-path: /api/product-service
 
 # Database
 spring:
@@ -37,7 +37,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8081/api
+          issuer-uri: http://localhost:8081/api/user-service
           jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/oauth2/jwks
 #      resourceserver:
 #        jwt:

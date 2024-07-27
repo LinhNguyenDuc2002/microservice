@@ -23,13 +23,16 @@ public class UserDto {
     @JsonProperty("username")
     private String username;
 
+    @JsonProperty("nick_name")
+    private String nickName;
+
     @JsonProperty("fullname")
     private String fullname;
 
     @JsonProperty("birthday")
     private Date dob;
 
-    @JsonProperty("avatar")
+    @JsonProperty("avatar_url")
     private String avatarUrl;
 
     @JsonProperty("email")
@@ -37,6 +40,9 @@ public class UserDto {
 
     @JsonProperty("phone")
     private String phone;
+
+    @JsonProperty("sex")
+    private String sex;
 
     @JsonProperty("note")
     private String note;
