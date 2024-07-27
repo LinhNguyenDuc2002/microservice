@@ -2,8 +2,10 @@ package com.example.productservice.service.impl;
 
 import com.example.productservice.constant.ExceptionMessage;
 import com.example.productservice.dto.CommentDTO;
+import com.example.productservice.dto.MyCommentDTO;
 import com.example.productservice.entity.Comment;
 import com.example.productservice.entity.Customer;
+import com.example.productservice.entity.Image;
 import com.example.productservice.entity.Product;
 import com.example.productservice.exception.InvalidException;
 import com.example.productservice.exception.NotFoundException;
@@ -13,13 +15,16 @@ import com.example.productservice.payload.orderservice.response.CheckingDetailRe
 import com.example.productservice.repository.CommentRepository;
 import com.example.productservice.repository.CustomerRepository;
 import com.example.productservice.repository.ProductRepository;
+import com.example.productservice.repository.predicate.CommentPredicate;
 import com.example.productservice.repository.predicate.CustomerPredicate;
+import com.example.productservice.security.SecurityUtils;
 import com.example.productservice.service.CommentService;
 import com.example.productservice.service.OrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,22 +48,57 @@ public class CommentServiceImpl implements CommentService {
 
 
     @Override
+    public List<MyCommentDTO> getMyComment() throws InvalidException {
+        Optional<String> userId = SecurityUtils.getLoggedInUserId();
+        if (userId.isEmpty()) {
+            throw new InvalidException("");
+        }
+
+        CommentPredicate commentPredicate = new CommentPredicate().withAccountId(userId.get());
+        List<Comment> comments = commentRepository.findAll(commentPredicate.getCriteria());
+
+        List<MyCommentDTO> myCommentDTOS = new ArrayList<>();
+        for (Comment comment : comments) {
+            myCommentDTOS.add(
+                    MyCommentDTO.builder()
+                            .id(comment.getId())
+                            .allowEdit(comment.isAllowEdit())
+                            .message(comment.getMessage())
+                            .images(comment.getImages().stream().map(Image::getUrl).toList())
+                            .product(comment.getProduct().getId())
+                            .build()
+            );
+        }
+        return myCommentDTOS;
+    }
+
+    @Override
     public CommentDTO create(String id, CommentRequest commentRequest) throws Exception {
-//        CheckingDetailResponse checkingDetailResponse = orderService.checkDetailExist(id);
-//
-//        CustomerPredicate customerPredicate = new CustomerPredicate().withAccountId(checkingDetailResponse.getCustomer());
-//        Optional<Customer> customer = customerRepository.findOne(customerPredicate.getCriteria());
-//        Optional<Product> product = productRepository.findById(checkingDetailResponse.getProduct());
-//
-//        Comment comment = Comment.builder()
-//                .message(commentRequest.getMessage())
-//                .allowEdit(true)
-//                .customer(customer.get())
-//                .product(product.get())
-//                .build();
-//
-//        return commentMapper.toDto(commentRepository.save(comment));
-        return null;
+        CheckingDetailResponse checkingDetailResponse = orderService.checkDetailExist(id);
+
+        Optional<String> userId = SecurityUtils.getLoggedInUserId();
+        if (userId.isEmpty() || userId.get() != checkingDetailResponse.getAccountId()) {
+            throw new InvalidException("");
+        }
+
+        CustomerPredicate customerPredicate = new CustomerPredicate().withAccountId(userId.get());
+        Customer customer = customerRepository.findOne(customerPredicate.getCriteria())
+                .orElseThrow(() -> {
+                    return new NotFoundException(ExceptionMessage.ERROR_CUSTOMER_NOT_FOUND);
+                });
+        Product product = productRepository.findById(checkingDetailResponse.getProductId())
+                .orElseThrow(() -> {
+                    return new NotFoundException(ExceptionMessage.ERROR_PRODUCT_NOT_FOUND);
+                });
+
+        Comment comment = Comment.builder()
+                .message(commentRequest.getMessage())
+                .allowEdit(true)
+                .customer(customer)
+                .product(product)
+                .build();
+
+        return commentMapper.toDto(commentRepository.save(comment));
     }
 
     @Override
@@ -79,7 +119,7 @@ public class CommentServiceImpl implements CommentService {
                     return new NotFoundException(ExceptionMessage.ERROR_COMMENT_NOT_FOUND);
                 });
 
-        if(!comment.isAllowEdit()) {
+        if (!comment.isAllowEdit()) {
             throw new InvalidException(ExceptionMessage.ERROR_COMMENT_EDIT);
         }
 
@@ -95,7 +135,7 @@ public class CommentServiceImpl implements CommentService {
                     return new NotFoundException(ExceptionMessage.ERROR_COMMENT_NOT_FOUND);
                 });
 
-        if(!comment.isAllowEdit()) {
+        if (!comment.isAllowEdit()) {
             throw new InvalidException(ExceptionMessage.ERROR_COMMENT_EDIT);
         }
 

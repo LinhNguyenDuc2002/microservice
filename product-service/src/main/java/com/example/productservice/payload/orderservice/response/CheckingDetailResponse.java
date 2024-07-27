@@ -1,5 +1,6 @@
 package com.example.productservice.payload.orderservice.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
@@ -15,5 +16,9 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = false)
 @Builder
 public class CheckingDetailResponse {
-    private String product;
+    @JsonProperty("product_id")
+    private String productId;
+
+    @JsonProperty("account_id")
+    private String accountId;
 }

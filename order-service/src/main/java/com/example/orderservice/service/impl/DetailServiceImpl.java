@@ -16,7 +16,6 @@ import com.example.orderservice.payload.response.PageResponse;
 import com.example.orderservice.repository.BillRepository;
 import com.example.orderservice.repository.CustomerRepository;
 import com.example.orderservice.repository.DetailRepository;
-import com.example.orderservice.repository.predicate.BillPredicate;
 import com.example.orderservice.repository.predicate.DetailPredicate;
 import com.example.orderservice.service.DetailService;
 import com.example.orderservice.service.ProductService;
@@ -61,7 +60,7 @@ public class DetailServiceImpl implements DetailService {
         }
 
         ProductCheckingResponse productCheckingResponse = productService.checkProductExist(productId, quantity);
-        if(!productCheckingResponse.isExist()) {
+        if (!productCheckingResponse.isExist()) {
             throw new NotFoundException(ExceptionMessage.ERROR_PRODUCT_INVALID_INPUT);
         }
 
@@ -82,17 +81,17 @@ public class DetailServiceImpl implements DetailService {
     public DetailDTO update(String id, Integer quantity) throws Exception {
         Optional<Detail> check = detailRepository.findById(id);
 
-        if(!check.isPresent()) {
+        if (!check.isPresent()) {
             throw new NotFoundException(ExceptionMessage.ERROR_DETAIL_NOT_FOUND);
         }
 
-        if(quantity <= 0) {
+        if (quantity <= 0) {
             throw new InvalidException(ExceptionMessage.ERROR_PRODUCT_INVALID_INPUT);
         }
 
         Detail detail = check.get();
         ProductCheckingResponse productCheckingResponse = productService.checkProductExist(detail.getProduct(), quantity);
-        if(!productCheckingResponse.isExist()) {
+        if (!productCheckingResponse.isExist()) {
             throw new NotFoundException(ExceptionMessage.ERROR_PRODUCT_INVALID_INPUT);
         }
 
@@ -118,7 +117,7 @@ public class DetailServiceImpl implements DetailService {
         Map<String, List<String>> response = productService.checkWarehouse(productList);
 
         List<ShopDetailDTO> shopDetailDTOS = new ArrayList<>();
-        for(String key : response.keySet()) {
+        for (String key : response.keySet()) {
             List<Detail> responseDetail = details.stream()
                     .filter(detail -> response.get(key).contains(detail.getProduct()))
                     .toList();
@@ -143,7 +142,7 @@ public class DetailServiceImpl implements DetailService {
     public DetailDTO get(String id) throws NotFoundException {
         Optional<Detail> check = detailRepository.findById(id);
 
-        if(!check.isPresent()) {
+        if (!check.isPresent()) {
             throw new NotFoundException(ExceptionMessage.ERROR_PRODUCT_INVALID_INPUT);
         }
 
@@ -154,7 +153,7 @@ public class DetailServiceImpl implements DetailService {
     public void delete(String id) throws NotFoundException {
         Optional<Detail> check = detailRepository.findById(id);
 
-        if(!check.isPresent()) {
+        if (!check.isPresent()) {
             throw new NotFoundException(ExceptionMessage.ERROR_PRODUCT_INVALID_INPUT);
         }
 
@@ -162,22 +161,21 @@ public class DetailServiceImpl implements DetailService {
     }
 
     @Override
-    public CheckingDetailDTO checkDetailExist(String id) throws NotFoundException, InvalidException {
+    public CheckingDetailDTO checkDetailExist(String id) throws NotFoundException {
         DetailPredicate detailPredicate = new DetailPredicate()
                 .withId(id)
                 .withCommentStatus(false)
                 .withStatus(true);
-        Optional<Detail> checkDetail = detailRepository.findOne(detailPredicate.getCriteria());
-        if(!checkDetail.isPresent()) {
-            throw new NotFoundException(ExceptionMessage.ERROR_DETAIL_NOT_FOUND);
-        }
+        Detail detail = detailRepository.findOne(detailPredicate.getCriteria())
+                .orElseThrow(() -> {
+                    return new NotFoundException(ExceptionMessage.ERROR_DETAIL_NOT_FOUND);
+                });
 
-        Detail detail = checkDetail.get();
         Bill bill = detail.getBill();
-        if(!bill.getStatus().equals(BillStatus.PAID)) {
+        if (!bill.getStatus().equals(BillStatus.PAID)) {
             throw new NotFoundException(ExceptionMessage.ERROR_BILL_STATUS_INVALID);
         }
 
-        return new CheckingDetailDTO(checkDetail.get().getProduct());
+        return new CheckingDetailDTO(detail.getProduct(), detail.getCustomer().getAccountId());
     }
 }

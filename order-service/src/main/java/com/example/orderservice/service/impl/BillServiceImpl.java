@@ -180,14 +180,16 @@ public class BillServiceImpl implements BillService {
     }
 
     @Override
-    public PageResponse<BillDTO> getByCustomerId(Integer page, Integer size, String id) throws NotFoundException {
+    public PageResponse<BillDTO> getByCustomerId(Integer page, Integer size, String status, String id) throws NotFoundException {
         Optional<Customer> check = customerRepository.findById(id);
         if(!check.isPresent()) {
             throw new NotFoundException(ExceptionMessage.ERROR_CUSTOMER_NOT_FOUND);
         }
 
         Pageable pageable = PageUtil.getPage(page, size);
-        BillPredicate billPredicate = new BillPredicate().customer(id);
+        BillPredicate billPredicate = new BillPredicate()
+                .customer(id)
+                .status(status);
         Page<Bill> bills = billRepository.findAll(billPredicate.getCriteria(), pageable);
 
         return PageResponse.<BillDTO>builder()
@@ -241,7 +243,9 @@ public class BillServiceImpl implements BillService {
     public void delete(String id) throws NotFoundException {
         Optional<Bill> bill = billRepository.findById(id);
 
-        if(!bill.isPresent()) {
+        if(!bill.isPresent() ||
+                bill.get().getStatus().equals(BillStatus.APPROVED) ||
+                bill.get().getStatus().equals(BillStatus.PAID)) {
             throw new NotFoundException(ExceptionMessage.ERROR_PRODUCT_INVALID_INPUT);
         }
 

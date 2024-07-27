@@ -53,6 +53,9 @@ public class UserRequest {
     @NotNull(message = "Phone cannot be null")
     private String phone;
 
+    @JsonProperty("sex")
+    private Boolean sex;
+
     @JsonProperty("role")
     @NotNull(message = "Role cannot be null")
     private String role;

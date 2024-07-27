@@ -20,7 +20,7 @@ public interface BillService {
 
     BillDTO get(String id) throws NotFoundException;
 
-    PageResponse<BillDTO> getByCustomerId(Integer page, Integer size, String id) throws NotFoundException;
+    PageResponse<BillDTO> getByCustomerId(Integer page, Integer size, String status, String id) throws NotFoundException;
 
     BillDTO changeStatus(String id, String status) throws NotFoundException, InvalidException, JsonProcessingException;
 

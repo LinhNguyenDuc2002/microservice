@@ -1,0 +1,62 @@
+spring:
+  application:
+    name: api-gateway
+
+  # Config gateway
+  cloud:
+    gateway:
+      routes:
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/user-service/**
+#          filters:
+#            - name: CircuitBreaker
+#              args:
+#                 name: user-service # service name circuitBreaker will monitor
+#                 fallbackuri: forward:/userFallBack # uri as exception
+
+        - id: product-service
+          uri: lb://product-service
+          predicates:
+            - Path=/api/product-service/**
+#          filters:
+#            - name: CircuitBreaker
+#            - args:
+#                name: product-service # service name circuitBreaker will monitor
+
+        - id: order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/api/order-service/**
+
+server:
+  port: 8080
+
+eureka:
+  client:
+    register-with-eureka: true # Allow register with eureka
+    fetch-registry: true # Allow get others from eureka
+    service-url:
+      defaultZone: http://localhost:8761/eureka/ # where services will be registered and found
+    instance:
+      hostname: localhost # hostname
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+
+#hystrix:
+#  command:
+#    fallbackcmd:
+#      execution:
+#        isolation:
+#          thread:
+#            timeoutInMilliseconds: 4000
+
+
+
+
+

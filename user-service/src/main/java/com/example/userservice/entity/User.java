@@ -47,6 +47,8 @@ public class User extends Auditor {
 
     private String note;
 
+    private Boolean sex;
+
     private boolean status;
 
     @OneToOne(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)

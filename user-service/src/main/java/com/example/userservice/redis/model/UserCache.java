@@ -35,6 +35,8 @@ public class UserCache implements Serializable {
 
     private String phone;
 
+    private Boolean sex;
+
     private String otp;
 
     private String role;

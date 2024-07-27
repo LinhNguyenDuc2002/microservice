@@ -1,7 +1,6 @@
 package com.example.userservice.util;
 
 import com.example.userservice.constant.ExceptionMessage;
-import com.example.userservice.constant.ResponseMessage;
 import com.example.userservice.exception.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindingResult;
@@ -19,10 +18,11 @@ public final class HandleBindingResult {
             Map<String, String> map = new HashMap<>();
             for (FieldError fieldError : fieldErrors) {
                 map.put(fieldError.getField(), fieldError.getDefaultMessage());
+                log.error(fieldError.getField() + ": " + fieldError.getDefaultMessage());
             }
 
             log.error("The input of fields is not properly formatted");
-            throw new ValidationException(object, ExceptionMessage.ERROR_INPUT_INVALID);
+            throw new ValidationException(map, ExceptionMessage.ERROR_INPUT_INVALID);
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.example.productservice.controller;
 
 import com.example.productservice.dto.ShopDTO;
+import com.example.productservice.exception.InvalidException;
 import com.example.productservice.exception.NotFoundException;
 import com.example.productservice.payload.ShopRequest;
 import com.example.productservice.payload.response.CommonResponse;
@@ -15,16 +16,19 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/shop")
 public class ShopController {
     @Autowired
     private ShopService shopService;
 
-    @PostMapping("/customer/{id}")
+    @GetMapping("/my-shop")
+    public ResponseEntity<CommonResponse<ShopDTO>> getMyShop() throws NotFoundException, InvalidException {
+        return ResponseUtil.wrapResponse(shopService.getMyShop());
+    }
+
+    @PostMapping("/shop/customer/{id}")
     @PreAuthorize("hasAnyRole('CUSTOMER')")
     public ResponseEntity<CommonResponse<ShopDTO>> create(
             @PathVariable String id,
@@ -32,12 +36,12 @@ public class ShopController {
         return ResponseUtil.wrapResponse(shopService.create(id, shopRequest));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/shop/{id}")
     public ResponseEntity<CommonResponse<ShopDTO>> get(@PathVariable String id) throws NotFoundException {
         return ResponseUtil.wrapResponse(shopService.get(id));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/shop/{id}")
     @PreAuthorize("hasAnyRole('SELLER')")
     public ResponseEntity<CommonResponse<ShopDTO>> update(
             @PathVariable String id,
@@ -45,7 +49,7 @@ public class ShopController {
         return ResponseUtil.wrapResponse(shopService.update(id, shopRequest));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/shop/{id}")
     @PreAuthorize("hasAnyRole('SELLER')")
     public ResponseEntity<CommonResponse<Void>> delete(@PathVariable String id) throws Exception {
         shopService.delete(id);
