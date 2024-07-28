@@ -39,7 +39,7 @@ public class DashboardServiceImpl implements DashboardService {
 
         ProductPredicate productPredicate = new ProductPredicate()
                 .shop(shopId)
-                .category(categoryId);
+                .withCategoryId(categoryId);
         Page<Product> products = productRepository.findAll(productPredicate.getCriteria(), pageable);
 
         List<String> idProductList = products.getContent().stream().map(Product::getId).toList();

@@ -39,7 +39,7 @@ public class CommentController {
     }
 
     @GetMapping("/my-comment")
-    public ResponseEntity<CommonResponse<List<MyCommentDTO>>> getMyComment() throws NotFoundException, InvalidException {
+    public ResponseEntity<CommonResponse<List<MyCommentDTO>>> getMyComment() throws InvalidException {
         return ResponseUtil.wrapResponse(commentService.getMyComment(), ResponseMessage.GET_COMMENT_SUCCESS);
     }
 

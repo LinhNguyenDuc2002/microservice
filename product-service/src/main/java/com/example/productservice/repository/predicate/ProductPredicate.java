@@ -3,7 +3,6 @@ package com.example.productservice.repository.predicate;
 import com.example.productservice.entity.QProduct;
 import org.springframework.util.StringUtils;
 
-import java.util.Date;
 import java.util.List;
 
 public class ProductPredicate extends BasePredicate {
@@ -37,12 +36,12 @@ public class ProductPredicate extends BasePredicate {
 
     /**
      *
-     * @param id
+     * @param categoryId
      * @return
      */
-    public ProductPredicate category(String id) {
-        if(StringUtils.hasText(id)) {
-            criteria.and(qProduct.category.id.eq(id)) ;
+    public ProductPredicate withCategoryId(String categoryId) {
+        if(StringUtils.hasText(categoryId)) {
+            criteria.and(qProduct.category.id.eq(categoryId)) ;
         }
 
         return this;
@@ -60,17 +59,4 @@ public class ProductPredicate extends BasePredicate {
 
         return this;
     }
-
-//    /**
-//     *
-//     * @param id
-//     * @return
-//     */
-//    public ProductPredicate purchasedWithin(Date start, Date end) {
-//        if(start != null && end != null && StringUtils.hasText(id)) {
-//            criteria.and(qProduct.shop.id.eq(id)) ;
-//        }
-//
-//        return this;
-//    }
 }

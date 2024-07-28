@@ -16,7 +16,6 @@ import com.example.productservice.mapper.ProductMapper;
 import com.example.productservice.payload.ProductRequest;
 import com.example.productservice.payload.response.PageResponse;
 import com.example.productservice.repository.CategoryRepository;
-import com.example.productservice.repository.CustomerRepository;
 import com.example.productservice.repository.ImageRepository;
 import com.example.productservice.repository.ProductRepository;
 import com.example.productservice.repository.ShopRepository;
@@ -177,16 +176,16 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public PageResponse<ProductDTO> getAll(Integer page, Integer size, String shop, String search, String category) throws NotFoundException, JsonProcessingException {
+    public PageResponse<ProductDTO> getAll(Integer page, Integer size, String shop, String search, String category, List<String> sortColumns) throws NotFoundException, JsonProcessingException {
 //        PageResponse<ProductDTO> productCache = productCacheManager.getAllProducts(page, size, shop, category);
 //
 //        if(productCache != null) return productCache;
 
-        Pageable pageable = PageUtil.getPage(page, size);
+        Pageable pageable = PageUtil.getPage(page, size, sortColumns.toArray(new String[0]));
 
         ProductPredicate productPredicate = new ProductPredicate()
                 .shop(shop)
-                .category(category)
+                .withCategoryId(category)
                 .search(search);
         Page<Product> products = productRepository.findAll(productPredicate.getCriteria(), pageable);
 

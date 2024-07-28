@@ -14,4 +14,10 @@ public final class ParameterConstant {
         public static final String DEFAULT_PAGE = "0";
         public static final String DEFAULT_SIZE = "10";
     }
+
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class Sort {
+        public static final String DESC = "desc";
+        public static final String ASC = "asc";
+    }
 }

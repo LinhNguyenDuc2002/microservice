@@ -85,3 +85,12 @@ order-service:
 user-service:
   endpoint: http://localhost:8081
 
+eureka:
+  client:
+    register-with-eureka: true # allow register with eureka
+    fetch-registry: true # allow get others from eureka
+    service-url:
+      defaultZone: http://localhost:8761/eureka/ # where services will be registered and found
+    instance:
+      hostname: localhost # hostname
+
