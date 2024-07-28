@@ -26,6 +26,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+import static com.example.productservice.entity.QShop.shop;
+
 @RestController
 @RequestMapping("/product")
 public class ProductController {
@@ -55,8 +57,9 @@ public class ProductController {
             @RequestParam(name = ParameterConstant.Page.SIZE, defaultValue = ParameterConstant.Page.DEFAULT_SIZE) Integer size,
             @RequestParam(name = "shop", required = false) String shop,
             @RequestParam(name = "search", required = false) String search,
-            @RequestParam(name = "category", required = false) String category) throws NotFoundException, JsonProcessingException {
-        return ResponseEntity.ok(productService.getAll(page, size, shop, search, category));
+            @RequestParam(name = "category", required = false) String category,
+            @RequestParam(name = "sort-columns") List<String> sortColumns) throws NotFoundException, JsonProcessingException {
+        return ResponseEntity.ok(productService.getAll(page, size, shop, search, category, sortColumns));
     }
 
     @GetMapping("/{id}")

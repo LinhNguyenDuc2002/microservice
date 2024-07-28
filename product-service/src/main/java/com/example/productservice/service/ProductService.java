@@ -15,7 +15,7 @@ public interface ProductService {
 
     ProductDTO update(String id, String productRequest, List<MultipartFile> files) throws InvalidException, NotFoundException;
 
-    PageResponse<ProductDTO> getAll(Integer page, Integer size, String shop, String search, String category) throws NotFoundException, JsonProcessingException;
+    PageResponse<ProductDTO> getAll(Integer page, Integer size, String shop, String search, String category, List<String> sortColumns) throws NotFoundException, JsonProcessingException;
 
     ProductDTO get(String id) throws NotFoundException;
 
