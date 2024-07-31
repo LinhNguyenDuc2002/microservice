@@ -4,7 +4,7 @@ import com.example.productservice.dto.ExistingProductCheckDTO;
 import com.example.productservice.dto.ProductDTO;
 import com.example.productservice.exception.InvalidException;
 import com.example.productservice.exception.NotFoundException;
-import com.example.productservice.payload.response.PageResponse;
+import com.example.productservice.dto.PageDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,7 +15,7 @@ public interface ProductService {
 
     ProductDTO update(String id, String productRequest, List<MultipartFile> files) throws InvalidException, NotFoundException;
 
-    PageResponse<ProductDTO> getAll(Integer page, Integer size, String shop, String search, String category, List<String> sortColumns) throws NotFoundException, JsonProcessingException;
+    PageDTO<ProductDTO> getAll(Integer page, Integer size, String shop, String search, String category, List<String> sortColumns) throws NotFoundException, JsonProcessingException;
 
     ProductDTO get(String id) throws NotFoundException;
 

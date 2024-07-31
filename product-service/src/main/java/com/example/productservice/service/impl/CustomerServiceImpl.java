@@ -8,7 +8,7 @@ import com.example.productservice.exception.NotFoundException;
 import com.example.productservice.mapper.CustomerMapper;
 import com.example.productservice.mapper.ShopMapper;
 import com.example.productservice.payload.CustomerRequest;
-import com.example.productservice.payload.response.PageResponse;
+import com.example.productservice.dto.PageDTO;
 import com.example.productservice.repository.CustomerRepository;
 import com.example.productservice.repository.ShopRepository;
 import com.example.productservice.service.CustomerService;
@@ -60,12 +60,12 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public PageResponse<CustomerDTO> getAll(Integer page, Integer size) {
+    public PageDTO<CustomerDTO> getAll(Integer page, Integer size) {
         Pageable pageable = PageUtil.getPage(page, size);
 
         Page<Customer> customers = customerRepository.findAll(pageable);
-        return PageResponse.<CustomerDTO>builder()
-                .index(page)
+        return PageDTO.<CustomerDTO>builder()
+                .index(customers.getNumber())
                 .totalPage(customers.getTotalPages())
                 .elements(customerMapper.toDtoList(customers.getContent()))
                 .build();

@@ -23,12 +23,12 @@ public class ProductPredicate extends BasePredicate {
 
     /**
      *
-     * @param ids
+     * @param productIds
      * @return
      */
-    public ProductPredicate withIds(List<String> ids) {
-        if(ids != null && !ids.isEmpty()) {
-            criteria.and(qProduct.id.in(ids)) ;
+    public ProductPredicate inProductIds(List<String> productIds) {
+        if(productIds != null && !productIds.isEmpty()) {
+            criteria.and(qProduct.id.in(productIds)) ;
         }
 
         return this;
@@ -49,12 +49,12 @@ public class ProductPredicate extends BasePredicate {
 
     /**
      *
-     * @param id
+     * @param shopId
      * @return
      */
-    public ProductPredicate shop(String id) {
-        if(StringUtils.hasText(id)) {
-            criteria.and(qProduct.shop.id.eq(id)) ;
+    public ProductPredicate withShopId(String shopId) {
+        if(StringUtils.hasText(shopId)) {
+            criteria.and(qProduct.shop.id.eq(shopId)) ;
         }
 
         return this;

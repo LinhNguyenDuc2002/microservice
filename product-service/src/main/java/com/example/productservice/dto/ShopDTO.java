@@ -1,6 +1,7 @@
 package com.example.productservice.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
@@ -24,6 +25,12 @@ public class ShopDTO {
     private String email;
 
     private String hotline;
+
+    @JsonProperty("number_of_products")
+    private long numberOfProducts;
+
+    @JsonProperty("number_of_reviews")
+    private long numberOfReviews;
 
     private AddressDTO address;
 }

@@ -1,11 +1,10 @@
-package com.example.userservice.scheduler;
+package com.example.orderservice.scheduler;
 
-import com.example.userservice.config.AsyncTaskConfig;
-import com.example.userservice.service.HouseKeepingService;
+import com.example.orderservice.config.AsyncTaskConfig;
+import com.example.orderservice.service.HouseKeepingService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.TaskScheduler;
@@ -16,9 +15,6 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Profile("!test")
 public class SchedulerManager {
-    @Value("${redis.enable:false}")
-    private boolean redisEnabled;
-
     @Autowired
     private SchedulerConfig schedulerConfig;
 
@@ -26,14 +22,13 @@ public class SchedulerManager {
     private HouseKeepingService houseKeepingService;
 
     @Autowired
-    @Qualifier(SchedulerConfig.SCHEDULER_BEAN)
     private TaskScheduler taskScheduler;
 
     @Autowired
     @Qualifier(AsyncTaskConfig.BEAN_ASYNC_EXECUTOR)
     private TaskExecutor taskExecutor;
 
-    public void startHouseKeepingJob() { //create scheduled jobs
+    public void startHouseKeepingJob() {
         CronTrigger cronTrigger;
 
         try {
@@ -44,9 +39,7 @@ public class SchedulerManager {
         }
 
         taskScheduler.schedule(() -> {
-            if (!redisEnabled) {
-                taskExecutor.execute(() -> houseKeepingService.cleanUserCache());
-            }
+            taskExecutor.execute(() -> houseKeepingService.resetBillCode());
         }, cronTrigger);
 
         log.info("Created scheduler for housekeeping: {}", cronTrigger.getExpression());

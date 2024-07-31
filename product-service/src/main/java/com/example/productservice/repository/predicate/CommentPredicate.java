@@ -18,4 +18,30 @@ public class CommentPredicate extends BasePredicate {
 
         return this;
     }
+
+    /**
+     *
+     * @param productId
+     * @return
+     */
+    public CommentPredicate withProductId(String productId) {
+        if(StringUtils.hasText(productId)) {
+            criteria.and(qComment.product.id.eq(productId));
+        }
+
+        return this;
+    }
+
+    /**
+     *
+     * @param shopId
+     * @return
+     */
+    public CommentPredicate withShopId(String shopId) {
+        if(StringUtils.hasText(shopId)) {
+            criteria.and(qComment.product.shop.id.eq(shopId));
+        }
+
+        return this;
+    }
 }

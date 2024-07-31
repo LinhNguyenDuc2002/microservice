@@ -11,5 +11,7 @@ public interface ProductService {
 
     Map<String, List<String>> checkWarehouse(Map<String, Integer> params) throws Exception;
 
+    Boolean checkShopExist(String shopId) throws Exception;
+
     Map<String, List<String>> groupDetails(List<String> body) throws Exception;
 }

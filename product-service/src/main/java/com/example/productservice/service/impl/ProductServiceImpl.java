@@ -14,7 +14,7 @@ import com.example.productservice.exception.InvalidException;
 import com.example.productservice.exception.NotFoundException;
 import com.example.productservice.mapper.ProductMapper;
 import com.example.productservice.payload.ProductRequest;
-import com.example.productservice.payload.response.PageResponse;
+import com.example.productservice.dto.PageDTO;
 import com.example.productservice.repository.CategoryRepository;
 import com.example.productservice.repository.ImageRepository;
 import com.example.productservice.repository.ProductRepository;
@@ -176,26 +176,25 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public PageResponse<ProductDTO> getAll(Integer page, Integer size, String shop, String search, String category, List<String> sortColumns) throws NotFoundException, JsonProcessingException {
+    public PageDTO<ProductDTO> getAll(Integer page, Integer size, String shop, String search, String category, List<String> sortColumns) throws NotFoundException, JsonProcessingException {
 //        PageResponse<ProductDTO> productCache = productCacheManager.getAllProducts(page, size, shop, category);
-//
 //        if(productCache != null) return productCache;
 
-        Pageable pageable = PageUtil.getPage(page, size, sortColumns.toArray(new String[0]));
+        Pageable pageable = (sortColumns == null) ? PageUtil.getPage(page, size) : PageUtil.getPage(page, size, sortColumns.toArray(new String[0]));
 
         ProductPredicate productPredicate = new ProductPredicate()
-                .shop(shop)
+                .withShopId(shop)
                 .withCategoryId(category)
                 .search(search);
         Page<Product> products = productRepository.findAll(productPredicate.getCriteria(), pageable);
 
-        PageResponse pageResponse = PageResponse.<ProductDTO>builder()
-                .index(page)
+        PageDTO pageDTO = PageDTO.<ProductDTO>builder()
+                .index(products.getNumber())
                 .totalPage(products.getTotalPages())
                 .elements(productMapper.toDtoList(products.getContent()))
                 .build();
 //        productCacheManager.saveAllProducts(pageResponse, page, size, shop, category);
-        return pageResponse;
+        return pageDTO;
     }
 
     @Override

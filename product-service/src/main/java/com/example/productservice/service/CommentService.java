@@ -5,14 +5,16 @@ import com.example.productservice.dto.MyCommentDTO;
 import com.example.productservice.exception.InvalidException;
 import com.example.productservice.exception.NotFoundException;
 import com.example.productservice.payload.CommentRequest;
+import com.example.productservice.dto.PageDTO;
 
 import java.util.List;
 
 public interface CommentService {
     List<MyCommentDTO> getMyComment() throws InvalidException;
+
     CommentDTO create(String id, CommentRequest commentRequest) throws Exception;
 
-    List<CommentDTO> getAll(String id) throws NotFoundException;
+    PageDTO<CommentDTO> getAll(String id, Integer page, Integer size, List<String> sortColumns) throws NotFoundException;
 
     CommentDTO update(String id, CommentRequest commentRequest) throws NotFoundException, InvalidException;
 

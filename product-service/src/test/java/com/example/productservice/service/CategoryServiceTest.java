@@ -87,7 +87,7 @@ public class CategoryServiceTest extends BaseTest {
     }
 
     @Test
-    void test_getAll() throws NotFoundException {
+    void test_getAll() {
         mockCategory();
 
         List<CategoryDTO> response = categoryService.getAll();

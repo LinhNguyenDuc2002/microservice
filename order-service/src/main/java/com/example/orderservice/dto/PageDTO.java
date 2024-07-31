@@ -1,4 +1,4 @@
-package com.example.orderservice.payload.response;
+package com.example.orderservice.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -10,7 +10,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class PageResponse<T> {
+public class PageDTO<T> {
     @JsonProperty("page_number")
     private Integer index;
 

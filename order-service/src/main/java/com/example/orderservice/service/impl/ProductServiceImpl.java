@@ -70,6 +70,28 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public Boolean checkShopExist(String shopId) throws Exception {
+        String url = productConfiguration.getCheckShopUrl();
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(url);
+
+        Map<String, Object> pathVariable = new HashMap<>();
+        pathVariable.put(ProductConfiguration.PATH_UUID, shopId);
+        uriBuilder.uriVariables(pathVariable);
+
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+
+        Map<String, String> header = new LinkedHashMap<>();
+        header.put(HttpHeaders.AUTHORIZATION, String.format(SecurityConstant.ACCESS_TOKEN_FORMAT, SecurityUtils.getCurrentJWT()));
+
+        return webClientProcessor.get(
+                uriBuilder.toUriString(),
+                header,
+                params,
+                Boolean.class
+        );
+    }
+
+    @Override
     public Map<String, List<String>> groupDetails(List<String> body) throws Exception {
         String url = productConfiguration.getGroupDetailsUrl();
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(url);

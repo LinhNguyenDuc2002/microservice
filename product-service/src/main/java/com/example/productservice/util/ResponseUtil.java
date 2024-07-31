@@ -4,7 +4,7 @@ import com.example.productservice.payload.response.CommonResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 
-public final class ResponseUtil<T> {
+public final class ResponseUtil {
     public static <T> ResponseEntity<CommonResponse<T>> wrapResponse(T data, String message) {
         CommonResponse<T> response = new CommonResponse<>();
 

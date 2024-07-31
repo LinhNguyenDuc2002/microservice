@@ -7,7 +7,7 @@ import com.example.orderservice.exception.NotFoundException;
 import com.example.orderservice.payload.BillRequest;
 import com.example.orderservice.payload.UpdateBillRequest;
 import com.example.orderservice.payload.response.CommonResponse;
-import com.example.orderservice.payload.response.PageResponse;
+import com.example.orderservice.dto.PageDTO;
 import com.example.orderservice.service.BillService;
 import com.example.orderservice.util.ResponseUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -46,14 +46,17 @@ public class BillController {
         return ResponseUtil.wrapResponse(billService.update(id, updateBillRequest));
     }
 
-    @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
-    public ResponseEntity<PageResponse<BillDTO>> getAll(
+    @GetMapping("/shop/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
+    public ResponseEntity<PageDTO<BillDTO>> getAll(
+            @PathVariable String id,
             @RequestParam(name = ParameterConstant.Page.PAGE, defaultValue = ParameterConstant.Page.DEFAULT_PAGE) Integer page,
             @RequestParam(name = ParameterConstant.Page.SIZE, defaultValue = ParameterConstant.Page.DEFAULT_SIZE) Integer size,
             @RequestParam(name = "start") Date startAt,
-            @RequestParam(name = "end") Date endAt) {
-        return ResponseEntity.ok(billService.getAll(page, size, startAt, endAt));
+            @RequestParam(name = "end") Date endAt,
+            @RequestParam(name = "status") String status,
+            @RequestParam(name = "sort-columns") List<String> sortColumns) throws Exception {
+        return ResponseEntity.ok(billService.getAll(id, page, size, startAt, endAt, status, sortColumns));
     }
 
     @GetMapping("/{id}")
@@ -63,12 +66,13 @@ public class BillController {
 
     @GetMapping("/customer/{id}")
     @PreAuthorize("hasAnyRole('CUSTOMER')")
-    public ResponseEntity<PageResponse<BillDTO>> getByCustomerId(
+    public ResponseEntity<PageDTO<BillDTO>> getByCustomerId(
+            @PathVariable String id,
             @RequestParam(name = ParameterConstant.Page.PAGE, defaultValue = ParameterConstant.Page.DEFAULT_PAGE) Integer page,
             @RequestParam(name = ParameterConstant.Page.SIZE, defaultValue = ParameterConstant.Page.DEFAULT_SIZE) Integer size,
             @RequestParam(name = "status", required = false) String status,
-            @PathVariable String id) throws NotFoundException {
-        return ResponseEntity.ok(billService.getByCustomerId(page, size, status, id));
+            @RequestParam(name = "sort-columns") List<String> sortColumns) throws NotFoundException {
+        return ResponseEntity.ok(billService.getByCustomerId(page, size, status, id, sortColumns));
     }
 
     @PatchMapping("/{id}")

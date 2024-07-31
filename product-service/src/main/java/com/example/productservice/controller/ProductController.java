@@ -6,7 +6,7 @@ import com.example.productservice.dto.ProductDTO;
 import com.example.productservice.exception.InvalidException;
 import com.example.productservice.exception.NotFoundException;
 import com.example.productservice.payload.response.CommonResponse;
-import com.example.productservice.payload.response.PageResponse;
+import com.example.productservice.dto.PageDTO;
 import com.example.productservice.service.ProductService;
 import com.example.productservice.util.ResponseUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -26,15 +26,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-import static com.example.productservice.entity.QShop.shop;
-
 @RestController
 @RequestMapping("/product")
 public class ProductController {
     @Autowired
     private ProductService productService;
 
-    @PostMapping(value = "", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    @PostMapping(value = "", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @PreAuthorize("hasAnyRole('SELLER')")
     public ResponseEntity<CommonResponse<ProductDTO>> add(
             @RequestParam(name = "images", required = false) List<MultipartFile> files,
@@ -42,7 +40,7 @@ public class ProductController {
         return ResponseUtil.wrapResponse(productService.add(productRequest, files));
     }
 
-    @PutMapping(value = "/{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    @PutMapping(value = "/{id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @PreAuthorize("hasAnyRole('SELLER')")
     public ResponseEntity<CommonResponse<ProductDTO>> update(
             @PathVariable String id,
@@ -52,14 +50,14 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<PageResponse<ProductDTO>> getAll(
+    public ResponseEntity<CommonResponse<PageDTO<ProductDTO>>> getAll(
             @RequestParam(name = ParameterConstant.Page.PAGE, defaultValue = ParameterConstant.Page.DEFAULT_PAGE) Integer page,
             @RequestParam(name = ParameterConstant.Page.SIZE, defaultValue = ParameterConstant.Page.DEFAULT_SIZE) Integer size,
             @RequestParam(name = "shop", required = false) String shop,
             @RequestParam(name = "search", required = false) String search,
             @RequestParam(name = "category", required = false) String category,
-            @RequestParam(name = "sort-columns") List<String> sortColumns) throws NotFoundException, JsonProcessingException {
-        return ResponseEntity.ok(productService.getAll(page, size, shop, search, category, sortColumns));
+            @RequestParam(name = "sort-columns", required = false) List<String> sortColumns) throws NotFoundException, JsonProcessingException {
+        return ResponseUtil.wrapResponse(productService.getAll(page, size, shop, search, category, sortColumns));
     }
 
     @GetMapping("/{id}")

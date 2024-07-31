@@ -28,7 +28,7 @@ public class CategoryController {
     private CategoryService categoryService;
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     public ResponseEntity<CommonResponse<CategoryDTO>> add(@RequestBody CategoryRequest categoryRequest) throws InvalidException {
         return ResponseUtil.wrapResponse(categoryService.add(categoryRequest));
     }

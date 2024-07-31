@@ -7,7 +7,7 @@ import com.example.orderservice.dto.ShopDetailDTO;
 import com.example.orderservice.exception.InvalidException;
 import com.example.orderservice.exception.NotFoundException;
 import com.example.orderservice.payload.response.CommonResponse;
-import com.example.orderservice.payload.response.PageResponse;
+import com.example.orderservice.dto.PageDTO;
 import com.example.orderservice.service.DetailService;
 import com.example.orderservice.util.ResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +31,7 @@ public class DetailController {
     public ResponseEntity<CommonResponse<DetailDTO>> create(
             @RequestParam(name = "product", required = true) String product,
             @RequestParam(name = "customer", required = true) String customer,
-            @RequestParam(name = "quantity", defaultValue = "1") Integer quantity) throws Exception {
+            @RequestParam(name = "quantity", defaultValue = ParameterConstant.Quantity.DEFAULT_MIN_QUANTITY) Integer quantity) throws Exception {
         return ResponseUtil.wrapResponse(detailService.create(product, customer, quantity));
     }
 
@@ -43,12 +43,12 @@ public class DetailController {
     }
 
     @GetMapping
-    public ResponseEntity<PageResponse<ShopDetailDTO>> getAll(
+    public ResponseEntity<CommonResponse<PageDTO<ShopDetailDTO>>> getAll(
             @RequestParam(name = ParameterConstant.Page.PAGE, defaultValue = ParameterConstant.Page.DEFAULT_PAGE) Integer page,
             @RequestParam(name = ParameterConstant.Page.SIZE, defaultValue = ParameterConstant.Page.DEFAULT_SIZE) Integer size,
             @RequestParam(name = "customer", required = false) String customerId,
             @RequestParam(name = "status", required = false) Boolean status) throws Exception {
-        return ResponseEntity.ok(detailService.getAll(page, size, customerId, status));
+        return ResponseUtil.wrapResponse(detailService.getAll(page, size, customerId, status));
     }
 
     @GetMapping("/{id}")

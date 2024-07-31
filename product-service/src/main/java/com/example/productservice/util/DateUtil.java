@@ -4,7 +4,6 @@ import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 public final class DateUtil {
     public static Date convertStringToDate(String date) throws DateTimeParseException {
@@ -17,7 +16,7 @@ public final class DateUtil {
     }
 
     public static Date add(Date now, int unit, Integer number) throws Exception {
-        if(!Calendar.getAvailableCalendarTypes().contains(unit)) {
+        if (!Calendar.getAvailableCalendarTypes().contains(unit)) {
             throw new Exception("Invalid unit");
         }
 

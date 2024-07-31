@@ -53,7 +53,7 @@ public class Product extends Auditor {
     @OneToMany(mappedBy = "product", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Collection<Image> images;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     @JoinColumn(name = "category_id")
     @EqualsAndHashCode.Exclude
     private Category category;

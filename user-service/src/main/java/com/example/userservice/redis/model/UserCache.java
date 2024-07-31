@@ -11,7 +11,7 @@ import org.springframework.data.redis.core.index.Indexed;
 import java.io.Serializable;
 import java.util.Date;
 
-@RedisHash(timeToLive = 1800L)
+@RedisHash(value = "UserCache", timeToLive = 1800L)
 @Data
 @Builder
 @AllArgsConstructor

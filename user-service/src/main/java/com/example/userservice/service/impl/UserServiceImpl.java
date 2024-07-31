@@ -135,11 +135,10 @@ public class UserServiceImpl implements UserService {
     public UserDto createUser(OTPAuthenticationRequest request) throws ValidationException, NotFoundException, JsonProcessingException {
         UserCache userCache = userCacheManager.getUserCache(request.getSecret())
                 .orElseThrow(() -> {
-                    return new NotFoundException("");
+                    return new NotFoundException(ExceptionMessage.ERROR_USER_CACHE_NOT_FOUND);
                 });
-
         if (!StringUtils.hasText(request.getOtp()) || !userCache.getOtp().equals(request.getOtp())) {
-            throw new ValidationException(request.getOtp(), "ExceptionMessage.ERROR_INVALID_OTP");
+            throw new ValidationException(request.getOtp(), ExceptionMessage.ERROR_INVALID_OTP);
         }
 
         User user = convertToUser(userCache);
@@ -153,19 +152,30 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
 
-        messagingService.sendMessage(
-                KafkaTopic.CREATE_CUSTOMER,
-                mapper.writeValueAsString(
-                        CustomerRequest.builder()
-                                .accountId(user.getId())
-                                .email(user.getEmail())
-                                .nickname(user.getNickname())
-                                .fullname(user.getFullname())
-                                .phone(user.getPhone())
-                                .role(RoleType.CUSTOMER.name())
-                                .build()
-                )
-        );
+        CustomerRequest customerRequest = CustomerRequest.builder()
+                .accountId(user.getId())
+                .email(user.getEmail())
+                .nickname(user.getNickname())
+                .fullname(user.getFullname())
+                .phone(user.getPhone())
+                .role(RoleType.CUSTOMER.name())
+                .build();
+        messagingService.sendMessage(KafkaTopic.CREATE_CUSTOMER, mapper.writeValueAsString(customerRequest));
+
+        Map<String, String> emailArgs = new HashMap<>();
+        emailArgs.put(EmailConstant.ARG_LOGO_URI, "");
+        emailArgs.put(EmailConstant.ARG_RECEIVER_NAME, user.getFullname());
+        emailArgs.put(EmailConstant.ARG_SUPPORT_EMAIL, applicationConfig.getSenderEmail());
+
+        EmailMessage email = EmailMessage.builder()
+                .template(EmailConstant.TEMPLATE_EMAIL_CREATE_ACCOUNT)
+                .receiver(user.getEmail())
+                .sender(applicationConfig.getSenderEmail())
+                .subject(EmailConstant.ARG_CREATE_ACCOUNT_SUBJECT)
+                .args(emailArgs)
+                .locale(LocaleContextHolder.getLocale())
+                .build();
+        messagingService.sendMessage(KafkaTopic.SEND_EMAIL, mapper.writeValueAsString(email));
         return userMapper.toDto(user);
     }
 

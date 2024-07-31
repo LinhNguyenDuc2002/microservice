@@ -3,7 +3,7 @@ package com.example.productservice.cache.redis;
 import com.example.productservice.cache.ProductCacheManager;
 import com.example.productservice.constant.CacheConstant;
 import com.example.productservice.dto.ProductDTO;
-import com.example.productservice.payload.response.PageResponse;
+import com.example.productservice.dto.PageDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,19 +30,18 @@ public class ProductCacheManagerImpl implements ProductCacheManager {
     }
 
     @Override
-    public void saveAllProducts(PageResponse<ProductDTO> products, Integer page, Integer size, String shop, String category) throws JsonProcessingException {
+    public void saveAllProducts(PageDTO<ProductDTO> products, Integer page, Integer size, String shop, String category) throws JsonProcessingException {
         String key = String.format(CacheConstant.KEY_PRODUCT_CACHE, page, size, shop, category);
         String json = objectMapper.writeValueAsString(products);
         redisTemplate.opsForValue().set(key, json);
     }
 
     @Override
-    public PageResponse<ProductDTO> getAllProducts(Integer page, Integer size, String shop, String category) throws JsonProcessingException {
+    public PageDTO<ProductDTO> getAllProducts(Integer page, Integer size, String shop, String category) throws JsonProcessingException {
         String key = String.format(CacheConstant.KEY_PRODUCT_CACHE, page, size, shop, category);
         String json = (String) redisTemplate.opsForValue().get(key);
 
-        PageResponse<ProductDTO> products = json != null ? objectMapper.readValue(json, new TypeReference<PageResponse<ProductDTO>>() {
-        }) : null;
+        PageDTO<ProductDTO> products = (json != null) ? objectMapper.readValue(json, new TypeReference<PageDTO<ProductDTO>>() {}) : null;
         return products;
     }
 }

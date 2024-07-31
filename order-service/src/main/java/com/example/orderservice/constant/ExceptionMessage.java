@@ -17,4 +17,6 @@ public final class ExceptionMessage {
     public final static String ERROR_CUSTOMER_NOT_FOUND = "";
 
     public final static String ERROR_TOKEN_NOT_FOUND = "Token is not found";
+
+    public final static String ERROR_SHOP_NOT_FOUND = "Shop doesn't exist";
 }

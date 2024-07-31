@@ -21,11 +21,13 @@ import java.util.List;
 public class BillDTO {
     private String id;
 
-    private String billId;
+    private String code;
 
     private String phone;
 
     private boolean active;
+
+    private String shopId;
 
     private AddressDTO address;
 
