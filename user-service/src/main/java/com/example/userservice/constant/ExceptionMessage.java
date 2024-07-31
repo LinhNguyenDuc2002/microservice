@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 public final class ExceptionMessage {
     public final static String ERROR_INPUT_INVALID = "The request is invalid";
 
+    public final static String ERROR_USER_CACHE_NOT_FOUND = "The account info is not found";
+
     public final static String ERROR_USER_NOT_FOUND = "User doesn't exist";
     public final static String ERROR_USERNAME_EXISTED = "Username existed";
     public final static String ERROR_USER_UNKNOWN = "";

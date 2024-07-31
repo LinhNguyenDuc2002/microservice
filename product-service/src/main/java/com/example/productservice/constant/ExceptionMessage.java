@@ -14,7 +14,7 @@ public final class ExceptionMessage {
     public final static String ERROR_CUSTOMER_INVALID_INPUT = "";
     public final static String ERROR_CUSTOMER_NOT_FOUND = "";
 
-    public final static String ERROR_SHOP_NOT_FOUND = "";
+    public final static String ERROR_SHOP_NOT_FOUND = "The shop doesn't exist";
     public final static String ERROR_SHOP_EXIST = "";
 
     public final static String ERROR_COMMENT_NOT_FOUND = "The comment is not found";

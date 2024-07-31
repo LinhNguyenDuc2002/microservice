@@ -1,4 +1,4 @@
-package com.example.userservice.scheduler;
+package com.example.orderservice.scheduler;
 
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
@@ -12,10 +12,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 @Configuration
 @Getter
 public class SchedulerConfig {
-    public static final String SCHEDULER_BEAN = "SCHEDULER_BEAN";
-
-    // Default cron job runs at 00:00 everyday
-    public static final String CRON_JOB_DEFAULT = "0 0 0 * * ?"; //seconds - minutes - hours - dayOfMonth - month - dayOfWeek
+    public static final String CRON_JOB_DEFAULT = "0 0 0 * * ?";
 
     private String dailyHouseKeepingJob;
 
@@ -27,12 +24,10 @@ public class SchedulerConfig {
         dailyHouseKeepingJob = environment.getProperty("job.housekeeping.default", String.class, CRON_JOB_DEFAULT);
     }
 
-    @Bean(SCHEDULER_BEAN)
-    protected TaskScheduler tclStateSyncScheduler() {
-        //Create an object to schedule task
+    @Bean
+    protected TaskScheduler taskScheduler() {
         ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
 
-        //Allow 10 threads to run at the same time
         threadPoolTaskScheduler.setPoolSize(10);
         threadPoolTaskScheduler.setThreadNamePrefix("task-");
         return threadPoolTaskScheduler;

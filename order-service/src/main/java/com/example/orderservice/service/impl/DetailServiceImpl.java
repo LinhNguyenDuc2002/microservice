@@ -12,7 +12,7 @@ import com.example.orderservice.exception.InvalidException;
 import com.example.orderservice.exception.NotFoundException;
 import com.example.orderservice.mapper.DetailMapper;
 import com.example.orderservice.payload.productservice.response.ProductCheckingResponse;
-import com.example.orderservice.payload.response.PageResponse;
+import com.example.orderservice.dto.PageDTO;
 import com.example.orderservice.repository.BillRepository;
 import com.example.orderservice.repository.CustomerRepository;
 import com.example.orderservice.repository.DetailRepository;
@@ -79,17 +79,15 @@ public class DetailServiceImpl implements DetailService {
 
     @Override
     public DetailDTO update(String id, Integer quantity) throws Exception {
-        Optional<Detail> check = detailRepository.findById(id);
-
-        if (!check.isPresent()) {
-            throw new NotFoundException(ExceptionMessage.ERROR_DETAIL_NOT_FOUND);
-        }
+        Detail detail = detailRepository.findById(id)
+                .orElseThrow(() -> {
+                    return new NotFoundException(ExceptionMessage.ERROR_DETAIL_NOT_FOUND);
+                });
 
         if (quantity <= 0) {
             throw new InvalidException(ExceptionMessage.ERROR_PRODUCT_INVALID_INPUT);
         }
 
-        Detail detail = check.get();
         ProductCheckingResponse productCheckingResponse = productService.checkProductExist(detail.getProduct(), quantity);
         if (!productCheckingResponse.isExist()) {
             throw new NotFoundException(ExceptionMessage.ERROR_PRODUCT_INVALID_INPUT);
@@ -102,7 +100,7 @@ public class DetailServiceImpl implements DetailService {
     }
 
     @Override
-    public PageResponse<ShopDetailDTO> getAll(Integer page, Integer size, String customerId, Boolean status) throws Exception {
+    public PageDTO<ShopDetailDTO> getAll(Integer page, Integer size, String customerId, Boolean status) throws Exception {
         Pageable pageable = PageUtil.getPage(page, size);
 
         DetailPredicate detailPredicate = new DetailPredicate()
@@ -131,7 +129,7 @@ public class DetailServiceImpl implements DetailService {
             );
         }
 
-        return PageResponse.<ShopDetailDTO>builder()
+        return PageDTO.<ShopDetailDTO>builder()
                 .index(page)
                 .totalPage(details.getTotalPages())
                 .elements(shopDetailDTOS)

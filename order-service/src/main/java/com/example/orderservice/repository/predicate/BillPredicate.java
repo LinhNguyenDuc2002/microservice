@@ -13,12 +13,12 @@ public class BillPredicate extends BasePredicate {
 
     /**
      *
-     * @param customer
+     * @param customerId
      * @return
      */
-    public BillPredicate customer(String customer) {
-        if(StringUtils.hasText(customer)) {
-            criteria.and(qBill.details.any().customer.id.eq(customer));
+    public BillPredicate withCustomerId(String customerId) {
+        if(StringUtils.hasText(customerId)) {
+            criteria.and(qBill.details.any().customer.id.eq(customerId));
         }
 
         return this;
@@ -29,9 +29,22 @@ public class BillPredicate extends BasePredicate {
      * @param status
      * @return
      */
-    public BillPredicate status(String status) {
+    public BillPredicate withStatus(String status) {
         if(StringUtils.hasText(status) && EnumSet.allOf(BillStatus.class).contains(BillStatus.valueOf(status))) {
             criteria.and(qBill.status.eq(BillStatus.valueOf(status)));
+        }
+
+        return this;
+    }
+
+    /**
+     *
+     * @param shopId
+     * @return
+     */
+    public BillPredicate withShopId(String shopId) {
+        if(StringUtils.hasText(shopId)) {
+            criteria.and(qBill.shopId.eq(shopId));
         }
 
         return this;

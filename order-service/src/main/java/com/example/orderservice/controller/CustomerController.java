@@ -7,7 +7,7 @@ import com.example.orderservice.exception.InvalidException;
 import com.example.orderservice.exception.NotFoundException;
 import com.example.orderservice.payload.CustomerRequest;
 import com.example.orderservice.payload.response.CommonResponse;
-import com.example.orderservice.payload.response.PageResponse;
+import com.example.orderservice.dto.PageDTO;
 import com.example.orderservice.service.CustomerService;
 import com.example.orderservice.util.ResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +35,7 @@ public class CustomerController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
-    public ResponseEntity<PageResponse<CustomerDTO>> getAll(
+    public ResponseEntity<PageDTO<CustomerDTO>> getAll(
             @RequestParam(name = ParameterConstant.Page.PAGE, defaultValue = ParameterConstant.Page.DEFAULT_PAGE) Integer page,
             @RequestParam(name = ParameterConstant.Page.SIZE, defaultValue = ParameterConstant.Page.DEFAULT_SIZE) Integer size) {
         return ResponseEntity.ok(customerService.getAll(page, size));

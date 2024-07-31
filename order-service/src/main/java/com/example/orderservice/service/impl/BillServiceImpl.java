@@ -16,7 +16,7 @@ import com.example.orderservice.message.email.EmailConstant;
 import com.example.orderservice.message.email.EmailMessage;
 import com.example.orderservice.payload.BillRequest;
 import com.example.orderservice.payload.UpdateBillRequest;
-import com.example.orderservice.payload.response.PageResponse;
+import com.example.orderservice.dto.PageDTO;
 import com.example.orderservice.repository.AddressRepository;
 import com.example.orderservice.repository.BillRepository;
 import com.example.orderservice.repository.CustomerRepository;
@@ -108,6 +108,7 @@ public class BillServiceImpl implements BillService {
                     .phone(billRequest.getPhone())
                     .status(BillStatus.PROCESSING)
                     .address(address)
+                    .shopId(key)
                     .build();
             billRepository.save(bill);
             bills.add(bill);
@@ -156,12 +157,21 @@ public class BillServiceImpl implements BillService {
     }
 
     @Override
-    public PageResponse<BillDTO> getAll(Integer page, Integer size, Date start, Date end) {
-        Pageable pageable = PageUtil.getPage(page, size);
+    public PageDTO<BillDTO> getAll(String id, Integer page, Integer size, Date start, Date end, String status, List<String> sortColumns) throws Exception {
+        boolean checkShop = productService.checkShopExist(id);
+        if(!checkShop) {
+            throw new NotFoundException(ExceptionMessage.ERROR_SHOP_NOT_FOUND);
+        }
 
-        BillPredicate billPredicate = new BillPredicate().from(start).to(end);
+        Pageable pageable = (sortColumns == null) ? PageUtil.getPage(page, size) : PageUtil.getPage(page, size, sortColumns.toArray(new String[0]));
+        BillPredicate billPredicate = new BillPredicate()
+                .from(start)
+                .to(end)
+                .withStatus(status)
+                .withShopId(id);
         Page<Bill> bills = billRepository.findAll(billPredicate.getCriteria(), pageable);
-        return PageResponse.<BillDTO>builder()
+
+        return PageDTO.<BillDTO>builder()
                 .index(page)
                 .totalPage(bills.getTotalPages())
                 .elements(billMapper.toDtoList(bills.getContent()))
@@ -180,19 +190,19 @@ public class BillServiceImpl implements BillService {
     }
 
     @Override
-    public PageResponse<BillDTO> getByCustomerId(Integer page, Integer size, String status, String id) throws NotFoundException {
+    public PageDTO<BillDTO> getByCustomerId(Integer page, Integer size, String status, String id, List<String> sortColumns) throws NotFoundException {
         Optional<Customer> check = customerRepository.findById(id);
         if(!check.isPresent()) {
             throw new NotFoundException(ExceptionMessage.ERROR_CUSTOMER_NOT_FOUND);
         }
 
-        Pageable pageable = PageUtil.getPage(page, size);
+        Pageable pageable = (sortColumns == null) ? PageUtil.getPage(page, size) : PageUtil.getPage(page, size, sortColumns.toArray(new String[0]));
         BillPredicate billPredicate = new BillPredicate()
-                .customer(id)
-                .status(status);
+                .withCustomerId(id)
+                .withStatus(status);
         Page<Bill> bills = billRepository.findAll(billPredicate.getCriteria(), pageable);
 
-        return PageResponse.<BillDTO>builder()
+        return PageDTO.<BillDTO>builder()
                 .index(page)
                 .totalPage(bills.getTotalPages())
                 .elements(billMapper.toDtoList(bills.getContent()))
@@ -208,7 +218,9 @@ public class BillServiceImpl implements BillService {
         }
 
         Bill bill = check.get();
-        if(bill.getStatus().equals(BillStatus.PAID) || !EnumSet.allOf(BillStatus.class).contains(BillStatus.valueOf(status))) {
+        if(bill.getStatus().equals(BillStatus.PAID) ||
+                bill.getStatus().equals(BillStatus.APPROVED) ||
+                !EnumSet.allOf(BillStatus.class).contains(BillStatus.valueOf(status))) {
             log.error("{} status is invalid", status);
             throw new InvalidException(ExceptionMessage.ERROR_PRODUCT_INVALID_INPUT);
         }
@@ -220,7 +232,7 @@ public class BillServiceImpl implements BillService {
             Customer customer = new ArrayList<Detail>(bill.getDetails()).get(0).getCustomer();
             Map<String, String> emailArgs = new HashMap<>();
             emailArgs.put(EmailConstant.ARG_LOGO_URI, "");
-            emailArgs.put(EmailConstant.ARG_BILL_ID, StringFormatUtil.formatBillId("B-", bill.getBillId()));
+            emailArgs.put(EmailConstant.ARG_BILL_ID, bill.getCode());
             emailArgs.put(EmailConstant.ARG_RECEIVER_NAME, customer.getFullname());
             emailArgs.put(EmailConstant.ARG_RECEIVER_PHONE, bill.getPhone());
             emailArgs.put(EmailConstant.ARG_DELIVERY_ADDRESS, formatAddress(bill.getAddress()));
@@ -236,6 +248,7 @@ public class BillServiceImpl implements BillService {
                     .build();
             messagingService.sendMessage(KafkaTopic.SEND_EMAIL, mapper.writeValueAsString(email));
         }
+
         return billMapper.toDto(bill);
     }
 

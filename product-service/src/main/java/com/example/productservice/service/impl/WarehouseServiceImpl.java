@@ -29,16 +29,16 @@ public class WarehouseServiceImpl implements WarehouseService {
     public Map<String, List<String>> checkWarehouse(Map<String, Integer> productList) throws InvalidException {
         List<String> productKey = productList.keySet().stream().toList();
 
-        ProductPredicate productPredicate = new ProductPredicate().withIds(productKey);
+        ProductPredicate productPredicate = new ProductPredicate().inProductIds(productKey);
         List<Product> products = productRepository.findAll(productPredicate.getCriteria());
 
-        for(Product product : products) {
+        for (Product product : products) {
             if (productList.get(product.getId()) > product.getQuantity()) {
                 throw new InvalidException(ExceptionMessage.ERROR_PRODUCT_SOLD_OUT);
             }
         }
 
-        for(Product product : products) {
+        for (Product product : products) {
             product.setQuantity(product.getQuantity() - productList.get(product.getId()));
             product.setSold(product.getSold() + productList.get(product.getId()));
         }
@@ -48,13 +48,13 @@ public class WarehouseServiceImpl implements WarehouseService {
 
     @Override
     public Map<String, List<String>> groupDetails(List<String> productKey) {
-        ProductPredicate productPredicate = new ProductPredicate().withIds(productKey);
+        ProductPredicate productPredicate = new ProductPredicate().inProductIds(productKey);
         List<Product> products = productRepository.findAll(productPredicate.getCriteria());
 
         Map<String, List<String>> response = new LinkedHashMap<>();
-        for(Product product : products) {
+        for (Product product : products) {
             String shopId = product.getShop().getId();
-            if(!response.containsKey(shopId)) {
+            if (!response.containsKey(shopId)) {
                 response.put(shopId, new ArrayList<>());
             }
             response.get(shopId).add(product.getId());

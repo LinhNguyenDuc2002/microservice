@@ -32,6 +32,8 @@ public class UserCacheManagerImpl implements UserCacheManager {
                 userCacheRepository.deleteById(id);
             }
         }
-        userCacheRepository.deleteAll();
+        else {
+            userCacheRepository.deleteAll();
+        }
     }
 }

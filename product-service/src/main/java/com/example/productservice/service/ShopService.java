@@ -15,4 +15,6 @@ public interface ShopService {
     ShopDTO update(String id, ShopRequest shopRequest) throws NotFoundException;
 
     void delete(String id) throws Exception;
+
+    Boolean checkShopExist(String id) throws NotFoundException;
 }

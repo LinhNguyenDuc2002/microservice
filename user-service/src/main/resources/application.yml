@@ -48,8 +48,8 @@ spring:
   data:
     # redis cache
     redis:
-      host: localhost
-      port: 6379
+      host: ${redis.host}
+      port: ${redis.port}
 
   kafka:
     bootstrap-servers: localhost:9094
@@ -76,6 +76,7 @@ spring:
           auth: true
           starttls:
             enable: true
+
 # Mail
 message:
   email:
@@ -123,3 +124,9 @@ eureka:
       defaultZone: http://localhost:8761/eureka/ # where services will be registered and found
     instance:
       hostname: localhost # hostname
+
+# Redis cache
+redis:
+  enable: false
+  host: localhost
+  port: 6379

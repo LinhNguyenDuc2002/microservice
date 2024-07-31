@@ -55,4 +55,9 @@ public class ShopController {
         shopService.delete(id);
         return ResponseUtil.wrapResponse(null, "");
     }
+
+    @GetMapping("/shop/{id}/exist")
+    public ResponseEntity<Boolean> checkShopExist(@PathVariable String id) throws NotFoundException {
+        return ResponseEntity.ok(shopService.checkShopExist(id));
+    }
 }

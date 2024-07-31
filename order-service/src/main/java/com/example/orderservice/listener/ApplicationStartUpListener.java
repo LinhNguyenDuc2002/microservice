@@ -1,6 +1,6 @@
-package com.example.userservice.listener;
+package com.example.orderservice.listener;
 
-import com.example.userservice.scheduler.SchedulerManager;
+import com.example.orderservice.scheduler.SchedulerManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;

@@ -12,8 +12,12 @@ import com.example.productservice.mapper.ShopMapper;
 import com.example.productservice.payload.AddressRequest;
 import com.example.productservice.payload.ShopRequest;
 import com.example.productservice.repository.AddressRepository;
+import com.example.productservice.repository.CommentRepository;
 import com.example.productservice.repository.CustomerRepository;
+import com.example.productservice.repository.ProductRepository;
 import com.example.productservice.repository.ShopRepository;
+import com.example.productservice.repository.predicate.CommentPredicate;
+import com.example.productservice.repository.predicate.ProductPredicate;
 import com.example.productservice.repository.predicate.ShopPredicate;
 import com.example.productservice.security.SecurityUtils;
 import com.example.productservice.service.ShopService;
@@ -39,6 +43,12 @@ public class ShopServiceImpl implements ShopService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private ProductRepository productRepository;
+
+    @Autowired
+    private CommentRepository commentRepository;
 
     @Override
     public ShopDTO getMyShop() throws InvalidException, NotFoundException {
@@ -100,7 +110,16 @@ public class ShopServiceImpl implements ShopService {
                     return new NotFoundException(ExceptionMessage.ERROR_SHOP_NOT_FOUND);
                 });
 
-        return shopMapper.toDto(shop);
+        ProductPredicate productPredicate = new ProductPredicate().withShopId(id);
+        long numberOfProducts = productRepository.count(productPredicate.getCriteria());
+
+        CommentPredicate commentPredicate = new CommentPredicate().withShopId(id);
+        long numberOfReviews = commentRepository.count(commentPredicate.getCriteria());
+
+        ShopDTO shopDTO = shopMapper.toDto(shop);
+        shopDTO.setNumberOfProducts(numberOfProducts);
+        shopDTO.setNumberOfReviews(numberOfReviews);
+        return shopDTO;
     }
 
     @Override
@@ -137,5 +156,15 @@ public class ShopServiceImpl implements ShopService {
 
         // Unassign role
         userService.unassignRole(String.valueOf(RoleType.SELLER), customer.getAccountId());
+    }
+
+    @Override
+    public Boolean checkShopExist(String id) throws NotFoundException {
+        boolean checkShop = shopRepository.existsById(id);
+        if (!checkShop) {
+            throw new NotFoundException(ExceptionMessage.ERROR_SHOP_NOT_FOUND);
+        }
+
+        return true;
     }
 }

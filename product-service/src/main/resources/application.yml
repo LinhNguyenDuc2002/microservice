@@ -29,6 +29,8 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: update
 
   lombok:
     enabled: true
@@ -39,10 +41,10 @@ spring:
         jwt:
           issuer-uri: http://localhost:8081/api/user-service
           jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/oauth2/jwks
-#      resourceserver:
-#        jwt:
-#          issuer-uri: http://localhost:8080/realms/blue_shop
-#          jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
+  #      resourceserver:
+  #        jwt:
+  #          issuer-uri: http://localhost:8080/realms/blue_shop
+  #          jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
 
   kafka:
     bootstrap-servers: localhost:9094

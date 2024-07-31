@@ -12,6 +12,7 @@ import com.example.productservice.exception.NotFoundException;
 import com.example.productservice.mapper.CommentMapper;
 import com.example.productservice.payload.CommentRequest;
 import com.example.productservice.payload.orderservice.response.CheckingDetailResponse;
+import com.example.productservice.dto.PageDTO;
 import com.example.productservice.repository.CommentRepository;
 import com.example.productservice.repository.CustomerRepository;
 import com.example.productservice.repository.ProductRepository;
@@ -20,8 +21,11 @@ import com.example.productservice.repository.predicate.CustomerPredicate;
 import com.example.productservice.security.SecurityUtils;
 import com.example.productservice.service.CommentService;
 import com.example.productservice.service.OrderService;
+import com.example.productservice.util.PageUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -102,14 +106,20 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public List<CommentDTO> getAll(String id) throws NotFoundException {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> {
-                    return new NotFoundException(ExceptionMessage.ERROR_PRODUCT_NOT_FOUND);
-                });
+    public PageDTO<CommentDTO> getAll(String id, Integer page, Integer size, List<String> sortColumns) throws NotFoundException {
+        boolean checkProduct = productRepository.existsById(id);
+        if(!checkProduct) {
+            throw new NotFoundException(ExceptionMessage.ERROR_PRODUCT_NOT_FOUND);
+        }
 
-        List<Comment> comments = product.getComments().stream().toList();
-        return commentMapper.toDtoList(comments);
+        Pageable pageable = (sortColumns == null) ? PageUtil.getPage(page, size) : PageUtil.getPage(page, size, sortColumns.toArray(new String[0]));
+        CommentPredicate commentPredicate = new CommentPredicate().withProductId(id);
+        Page<Comment> comments = commentRepository.findAll(commentPredicate.getCriteria(), pageable);
+        return PageDTO.<CommentDTO>builder()
+                .index(comments.getNumber())
+                .totalPage(comments.getTotalPages())
+                .elements(commentMapper.toDtoList(comments.getContent()))
+                .build();
     }
 
     @Override

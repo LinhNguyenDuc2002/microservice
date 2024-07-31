@@ -211,9 +211,17 @@
 			<version>${querydsl.version}</version>
 		</dependency>
 
+		<!--		eureka client-->
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+		</dependency>
+
+		<!--		read excel file-->
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>4.1.2</version>
 		</dependency>
 	</dependencies>
 

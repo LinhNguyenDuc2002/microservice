@@ -2,7 +2,7 @@ package com.example.productservice.service.impl;
 
 import com.example.productservice.dto.statistic.ProductStatisticsDTO;
 import com.example.productservice.entity.Product;
-import com.example.productservice.payload.response.PageResponse;
+import com.example.productservice.dto.PageDTO;
 import com.example.productservice.repository.CategoryRepository;
 import com.example.productservice.repository.ProductRepository;
 import com.example.productservice.repository.ShopRepository;
@@ -34,11 +34,11 @@ public class DashboardServiceImpl implements DashboardService {
     private OrderService orderService;
 
     @Override
-    public PageResponse<ProductStatisticsDTO> productStatistics(Integer page, Integer size, String shopId, String categoryId) throws Exception {
-        Pageable pageable = PageUtil.getPage(page, size);
+    public PageDTO<ProductStatisticsDTO> productStatistics(Integer page, Integer size, String shopId, String categoryId, List<String> sortColumns) throws Exception {
+        Pageable pageable = (sortColumns == null) ? PageUtil.getPage(page, size) : PageUtil.getPage(page, size, sortColumns.toArray(new String[0]));
 
         ProductPredicate productPredicate = new ProductPredicate()
-                .shop(shopId)
+                .withShopId(shopId)
                 .withCategoryId(categoryId);
         Page<Product> products = productRepository.findAll(productPredicate.getCriteria(), pageable);
 
@@ -60,12 +60,12 @@ public class DashboardServiceImpl implements DashboardService {
             );
         }
 
-        PageResponse pageResponse = PageResponse.<ProductStatisticsDTO>builder()
-                .index(page)
+        PageDTO pageDTO = PageDTO.<ProductStatisticsDTO>builder()
+                .index(products.getNumber())
                 .totalPage(products.getTotalPages())
                 .elements(productStatisticsDTOS)
                 .build();
 
-        return pageResponse;
+        return pageDTO;
     }
 }

@@ -41,7 +41,6 @@ public final class PageUtil {
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     @Slf4j
     public static final class Sorting {
-        // The delimiter to separate column name and the direction
         public static final String DELIMITER = ":";
 
         public static final Sort.Direction DEFAULT_DIRECTION = Sort.Direction.ASC;
