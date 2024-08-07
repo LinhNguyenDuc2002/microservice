@@ -2,8 +2,11 @@ package com.example.productservice.util;
 
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 public final class DateUtil {
     public static Date convertStringToDate(String date) throws DateTimeParseException {

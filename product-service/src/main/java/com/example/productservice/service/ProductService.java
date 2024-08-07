@@ -19,7 +19,7 @@ public interface ProductService {
 
     ProductDTO get(String id) throws NotFoundException;
 
-    ExistingProductCheckDTO checkProductExist(String id, Integer quantity) throws NotFoundException, InvalidException;
+    ExistingProductCheckDTO checkProductExist(String id, String productTypeId, Integer quantity) throws NotFoundException, InvalidException;
 
     void delete(String id) throws NotFoundException;
 }

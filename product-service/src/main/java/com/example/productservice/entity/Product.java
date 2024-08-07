@@ -51,6 +51,7 @@ public class Product extends Auditor {
     private String note;
 
     @OneToMany(mappedBy = "product", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @EqualsAndHashCode.Exclude
     private Collection<Image> images;
 
     @ManyToOne
@@ -60,9 +61,14 @@ public class Product extends Auditor {
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @EqualsAndHashCode.Exclude
+    private Collection<ProductType> productTypes;
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @EqualsAndHashCode.Exclude
     private Collection<Comment> comments;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shop_id")
+    @EqualsAndHashCode.Exclude
     private Shop shop;
 }

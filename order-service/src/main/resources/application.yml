@@ -60,7 +60,7 @@ spring:
 message:
   email:
     protocol: smtp
-    from: 
+    from:
     username:
     password:
     host: smtp-mail.outlook.com

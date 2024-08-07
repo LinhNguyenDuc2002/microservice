@@ -2,8 +2,10 @@ package com.example.userservice.controller;
 
 import com.example.userservice.constant.ResponseMessage;
 import com.example.userservice.constant.SecurityConstant;
+import com.example.userservice.dto.UserAddressDTO;
 import com.example.userservice.dto.UserDto;
 import com.example.userservice.dto.request.OTPAuthenticationRequest;
+import com.example.userservice.dto.request.UserRegistration;
 import com.example.userservice.dto.request.UserRequest;
 import com.example.userservice.dto.response.CommonResponse;
 import com.example.userservice.exception.NotFoundException;
@@ -48,10 +50,10 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<CommonResponse<Object>> createTempUser(
-            @Valid @RequestBody UserRequest newUserRequest,
+            @Valid @RequestBody UserRegistration newUserRegistration,
             BindingResult bindingResult) throws ValidationException, JsonProcessingException, NoSuchAlgorithmException, InvalidKeyException {
-        HandleBindingResult.handle(bindingResult, newUserRequest);
-        return ResponseUtil.wrapResponse(userService.createTempUser(newUserRequest), ResponseMessage.WAIT_ENTER_OTP.getMessage());
+        HandleBindingResult.handle(bindingResult, newUserRegistration);
+        return ResponseUtil.wrapResponse(userService.createTempUser(newUserRegistration), ResponseMessage.WAIT_ENTER_OTP.getMessage());
     }
 
     @DeleteMapping("/{id}")
@@ -72,7 +74,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CommonResponse<UserDto>> update(
+    public ResponseEntity<CommonResponse<UserAddressDTO>> update(
             @PathVariable String id,
             @Valid @RequestBody UserRequest userRequest,
             BindingResult bindingResult) throws NotFoundException, ValidationException {

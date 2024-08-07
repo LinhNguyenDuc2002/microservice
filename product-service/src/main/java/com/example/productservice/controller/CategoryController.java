@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/category")
@@ -28,13 +29,13 @@ public class CategoryController {
     private CategoryService categoryService;
 
     @PostMapping
-//    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
     public ResponseEntity<CommonResponse<CategoryDTO>> add(@RequestBody CategoryRequest categoryRequest) throws InvalidException {
         return ResponseUtil.wrapResponse(categoryService.add(categoryRequest));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
     public ResponseEntity<CommonResponse<CategoryDTO>> update(@PathVariable String id, @RequestBody CategoryRequest categoryRequest) throws InvalidException, NotFoundException {
         return ResponseUtil.wrapResponse(categoryService.update(id, categoryRequest));
     }
@@ -45,7 +46,7 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
     public ResponseEntity<CommonResponse<Void>> delete(@PathVariable String id) throws NotFoundException {
         categoryService.delete(id);
         return ResponseUtil.wrapResponse(null);

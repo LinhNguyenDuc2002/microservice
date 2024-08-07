@@ -25,6 +25,32 @@ public class DetailPredicate extends BasePredicate {
 
     /**
      *
+     * @param productId
+     * @return
+     */
+    public DetailPredicate withProductId(String productId) {
+        if(StringUtils.hasText(productId)) {
+            criteria.and(qDetail.product.eq(productId));
+        }
+
+        return this;
+    }
+
+    /**
+     *
+     * @param productTypeId
+     * @return
+     */
+    public DetailPredicate withProductTypeId(String productTypeId) {
+        if(StringUtils.hasText(productTypeId)) {
+            criteria.and(qDetail.productType.eq(productTypeId));
+        }
+
+        return this;
+    }
+
+    /**
+     *
      * @param id
      * @return
      */

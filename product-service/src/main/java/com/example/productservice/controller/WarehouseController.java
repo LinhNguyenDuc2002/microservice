@@ -1,6 +1,8 @@
 package com.example.productservice.controller;
 
 import com.example.productservice.exception.InvalidException;
+import com.example.productservice.exception.NotFoundException;
+import com.example.productservice.payload.orderservice.request.WareHouseCheckingReq;
 import com.example.productservice.service.WarehouseService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +24,8 @@ public class WarehouseController {
     private WarehouseService warehouseService;
 
     @PatchMapping
-    public ResponseEntity<Map<String, List<String>>> checkWarehouse(@RequestBody Map<String, Integer> formData) throws InvalidException {
-        return ResponseEntity.ok(warehouseService.checkWarehouse(formData));
+    public ResponseEntity<Map<String, List<String>>> checkWarehouse(@RequestBody List<WareHouseCheckingReq> request) throws InvalidException, NotFoundException {
+        return ResponseEntity.ok(warehouseService.checkWarehouse(request));
     }
 
     @PostMapping("/detail-group")

@@ -1,12 +1,11 @@
 package com.example.productservice.service;
 
 import com.example.productservice.exception.InvalidException;
+import com.example.productservice.payload.UpdateDetailPriceReq;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import java.util.Map;
-
 public interface OrderMessagingService {
-    void updateUnitPrice(Map<String, Double> productList) throws JsonProcessingException;
+    void updateUnitPrice(UpdateDetailPriceReq request) throws JsonProcessingException;
 
     void createCustomer(String customerRequest) throws JsonProcessingException, InvalidException;
 }
