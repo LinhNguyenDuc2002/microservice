@@ -3,6 +3,7 @@ package com.example.productservice.service.impl;
 import com.example.productservice.constant.KafkaTopic;
 import com.example.productservice.exception.InvalidException;
 import com.example.productservice.payload.CustomerRequest;
+import com.example.productservice.payload.UpdateDetailPriceReq;
 import com.example.productservice.service.CustomerService;
 import com.example.productservice.service.OrderMessagingService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -12,8 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-
-import java.util.Map;
 
 @Service
 @Slf4j
@@ -28,8 +27,8 @@ public class KafkaOrderService implements OrderMessagingService {
     private ObjectMapper mapper;
 
     @Override
-    public void updateUnitPrice(Map<String, Double> productList) throws JsonProcessingException {
-        kafkaTemplate.send(KafkaTopic.UPDATE_UNIT_PRICE_DETAIL, mapper.writeValueAsString(productList));
+    public void updateUnitPrice(UpdateDetailPriceReq request) throws JsonProcessingException {
+        kafkaTemplate.send(KafkaTopic.UPDATE_UNIT_PRICE_DETAIL, mapper.writeValueAsString(request));
     }
 
     @KafkaListener(topics = KafkaTopic.CREATE_CUSTOMER)

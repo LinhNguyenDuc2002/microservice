@@ -7,7 +7,7 @@ import com.example.orderservice.exception.NotFoundException;
 import com.example.orderservice.dto.PageDTO;
 
 public interface DetailService {
-    DetailDTO create(String product, String customer, Integer quantity) throws Exception;
+    DetailDTO create(String product, String customer, String productType, Integer quantity) throws Exception;
 
     DetailDTO update(String id, Integer quantity) throws Exception;
 

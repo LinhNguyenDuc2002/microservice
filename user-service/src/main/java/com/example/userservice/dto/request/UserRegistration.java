@@ -18,7 +18,7 @@ import java.util.Date;
 @NoArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UserRequest {
+public class UserRegistration {
     @JsonProperty("username")
     @Size(min = 1, message = "Username cannot be empty")
     @NotNull(message = "Username cannot be null")
@@ -28,6 +28,11 @@ public class UserRequest {
     @Size(min = 1, message = "Nickname cannot be empty")
     @NotNull(message = "Nickname cannot be null")
     private String nickname;
+
+    @JsonProperty("password")
+    @Size(min = 6, message = "Password has a minimum length of 6 characters")
+    @NotNull(message = "Password cannot be null")
+    private String password;
 
     @JsonProperty("fullname")
     @Size(min = 1, message = "Fullname cannot be empty")
@@ -51,7 +56,7 @@ public class UserRequest {
     @JsonProperty("sex")
     private Boolean sex;
 
-    @JsonProperty("address")
-    @NotNull(message = "Address cannot be null")
-    private AddressRequest addressRequest;
+    @JsonProperty("role")
+    @NotNull(message = "Role cannot be null")
+    private String role;
 }

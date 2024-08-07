@@ -17,6 +17,7 @@ import com.example.orderservice.message.email.EmailMessage;
 import com.example.orderservice.payload.BillRequest;
 import com.example.orderservice.payload.UpdateBillRequest;
 import com.example.orderservice.dto.PageDTO;
+import com.example.orderservice.payload.productservice.request.WareHouseCheckingReq;
 import com.example.orderservice.repository.AddressRepository;
 import com.example.orderservice.repository.BillRepository;
 import com.example.orderservice.repository.CustomerRepository;
@@ -35,6 +36,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -86,12 +88,18 @@ public class BillServiceImpl implements BillService {
             throw new NotFoundException(ExceptionMessage.ERROR_DETAIL_NOT_FOUND);
         }
 
-        Map<String, Integer> productList = new LinkedHashMap<>();
+        List<WareHouseCheckingReq> wareHouseCheckingReqs = new ArrayList<>();
         details.stream().forEach(detail -> {
-            productList.put(detail.getProduct(), detail.getQuantity());
+            wareHouseCheckingReqs.add(
+                    WareHouseCheckingReq.builder()
+                            .productId(detail.getProduct())
+                            .productTypeId(StringUtils.hasText(detail.getProductType()) ? detail.getProductType() : null)
+                            .quantity(detail.getQuantity())
+                            .build()
+            );
         });
 
-        Map<String, List<String>> response = productService.checkWarehouse(productList);
+        Map<String, List<String>> response = productService.checkWarehouse(wareHouseCheckingReqs);
 
         Address address = Address.builder()
                 .country(billRequest.getAddress().getCountry())

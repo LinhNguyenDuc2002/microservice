@@ -1,28 +1,27 @@
 package com.example.productservice.entity;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
-import java.util.Collection;
-
 @Entity
-@Data
-@Table(name = "category")
+@Getter
+@Setter
+@Table(name = "product_type")
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class Category extends Auditor {
+@AllArgsConstructor
+public class ProductType extends Auditor {
     @Id
     @UuidGenerator
     @Column(name = "id")
@@ -31,11 +30,17 @@ public class Category extends Auditor {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "note")
-    private String note;
+    @Column(name = "description")
+    private String description;
 
-    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @Column(name = "quantity")
+    private Long quantity;
+
+    @Column(name = "price")
+    private Double price;
+
+    @ManyToOne
+    @JoinColumn(name = "product_id")
     @EqualsAndHashCode.Exclude
-    private Collection<Product> products;
+    private Product product;
 }
-

@@ -68,8 +68,9 @@ public class ProductController {
     @GetMapping("/{id}/exist")
     public ResponseEntity<ExistingProductCheckDTO> checkProductExist(
             @PathVariable String id,
+            @RequestParam("type") String productTypeId,
             @RequestParam("quantity") Integer quantity) throws NotFoundException, InvalidException {
-        return ResponseEntity.ok(productService.checkProductExist(id, quantity));
+        return ResponseEntity.ok(productService.checkProductExist(id, productTypeId, quantity));
     }
 
     @DeleteMapping("/{id}")

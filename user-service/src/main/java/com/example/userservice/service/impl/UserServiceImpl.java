@@ -5,22 +5,27 @@ import com.example.userservice.config.ApplicationConfig;
 import com.example.userservice.constant.ExceptionMessage;
 import com.example.userservice.constant.KafkaTopic;
 import com.example.userservice.constant.RoleType;
+import com.example.userservice.dto.UserAddressDTO;
 import com.example.userservice.dto.UserDto;
+import com.example.userservice.dto.request.AddressRequest;
 import com.example.userservice.dto.request.OTPAuthenticationRequest;
+import com.example.userservice.dto.request.UserRegistration;
 import com.example.userservice.dto.request.UserRequest;
+import com.example.userservice.entity.Address;
 import com.example.userservice.entity.Role;
 import com.example.userservice.entity.User;
 import com.example.userservice.exception.NotFoundException;
 import com.example.userservice.exception.UnauthorizedException;
 import com.example.userservice.exception.ValidationException;
+import com.example.userservice.mapper.AddressMapper;
 import com.example.userservice.mapper.UserMapper;
 import com.example.userservice.message.email.EmailConstant;
 import com.example.userservice.message.email.EmailMessage;
 import com.example.userservice.payload.CustomerRequest;
 import com.example.userservice.redis.model.UserCache;
+import com.example.userservice.repository.AddressRepository;
 import com.example.userservice.repository.RoleRepository;
 import com.example.userservice.repository.UserRepository;
-import com.example.userservice.repository.httpclient.ProductServiceClient;
 import com.example.userservice.security.util.SecurityUtils;
 import com.example.userservice.service.UserService;
 import com.example.userservice.util.OTPUtil;
@@ -50,6 +55,9 @@ public class UserServiceImpl implements UserService {
     private UserMapper userMapper;
 
     @Autowired
+    private AddressMapper addressMapper;
+
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -65,7 +73,7 @@ public class UserServiceImpl implements UserService {
     private UserCacheManager userCacheManager;
 
     @Autowired
-    private ProductServiceClient productServiceClient;
+    private AddressRepository addressRepository;
 
     @Autowired
     private ApplicationConfig applicationConfig;
@@ -91,20 +99,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Map<String, String> createTempUser(UserRequest newUserRequest) throws ValidationException, NoSuchAlgorithmException, InvalidKeyException {
+    public Map<String, String> createTempUser(UserRegistration newUserRegistration) throws ValidationException, NoSuchAlgorithmException, InvalidKeyException {
         log.info("Save registration information temporarily");
 
-        if (!StringUtils.hasText(newUserRequest.getEmail())) {
+        if (!StringUtils.hasText(newUserRegistration.getEmail())) {
             log.error("Email is invalid");
-            throw new ValidationException(newUserRequest, ExceptionMessage.ERROR_EMAIL_INVALID);
+            throw new ValidationException(newUserRegistration, ExceptionMessage.ERROR_EMAIL_INVALID);
         }
-        if (userRepository.existsByEmail(newUserRequest.getEmail())) {
+        if (userRepository.existsByEmail(newUserRegistration.getEmail())) {
             log.error("Email is already in use");
-            throw new ValidationException(newUserRequest, ExceptionMessage.ERROR_EMAIL_EXISTED);
+            throw new ValidationException(newUserRegistration, ExceptionMessage.ERROR_EMAIL_EXISTED);
         }
 
         String otp = OTPUtil.generateOTP();
-        UserCache userCache = convertToUserCache(newUserRequest);
+        UserCache userCache = convertToUserCache(newUserRegistration);
         userCache.setOtp(otp);
 
         Map<String, String> emailArgs = new HashMap<>();
@@ -218,7 +226,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto update(String id, UserRequest userRequest) throws NotFoundException, ValidationException {
+    public UserAddressDTO update(String id, UserRequest userRequest) throws NotFoundException, ValidationException {
         log.info("Update user {}", id);
 
         User user = userRepository.findById(id)
@@ -231,7 +239,6 @@ public class UserServiceImpl implements UserService {
 
         if (!user.getUsername().equals(userRequest.getUsername())) {
             boolean checkUsername = userRepository.existsByUsername(userRequest.getUsername());
-
             if (checkUsername) {
                 log.error("Username {} existed", userRequest.getUsername());
                 throw new ValidationException(userRequest, ExceptionMessage.ERROR_USERNAME_EXISTED);
@@ -239,6 +246,25 @@ public class UserServiceImpl implements UserService {
             user.setUsername(userRequest.getUsername());
         }
 
+        AddressRequest addressRequest = userRequest.getAddressRequest();
+        Address address = user.getAddress();
+        if (address == null) {
+            address = Address.builder()
+                    .detail(addressRequest.getSpecificAddress())
+                    .ward(addressRequest.getWard())
+                    .district(addressRequest.getDistrict())
+                    .city(addressRequest.getCity())
+                    .country(addressRequest.getCountry())
+                    .build();
+            addressRepository.save(address);
+            user.setAddress(address);
+        } else {
+            address.setDetail(addressRequest.getSpecificAddress());
+            address.setWard(addressRequest.getWard());
+            address.setDistrict(addressRequest.getDistrict());
+            address.setCity(addressRequest.getCity());
+            address.setCountry(addressRequest.getCountry());
+        }
         user.setFullname(userRequest.getFullname());
         user.setDob(userRequest.getDob());
         user.setEmail(userRequest.getEmail());
@@ -247,7 +273,10 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
         log.info("Updated user {} successfully", id);
-        return userMapper.toDto(user);
+        return UserAddressDTO.builder()
+                .user(userMapper.toDto(user))
+                .address(addressMapper.toDto(user.getAddress()))
+                .build();
     }
 
     public User convertToUser(UserCache userCache) {
@@ -263,18 +292,18 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
-    public UserCache convertToUserCache(UserRequest newUserRequest) {
+    public UserCache convertToUserCache(UserRegistration newUserRegistration) {
         return UserCache.builder()
                 .id(UUID.randomUUID().toString())
-                .nickname(newUserRequest.getNickname())
-                .username(newUserRequest.getUsername())
-                .password(newUserRequest.getPassword())
-                .fullname(newUserRequest.getFullname())
-                .dob(newUserRequest.getDob())
-                .phone(newUserRequest.getPhone())
-                .email(newUserRequest.getEmail())
-                .sex(newUserRequest.getSex())
-                .role(newUserRequest.getRole())
+                .nickname(newUserRegistration.getNickname())
+                .username(newUserRegistration.getUsername())
+                .password(newUserRegistration.getPassword())
+                .fullname(newUserRegistration.getFullname())
+                .dob(newUserRegistration.getDob())
+                .phone(newUserRegistration.getPhone())
+                .email(newUserRegistration.getEmail())
+                .sex(newUserRegistration.getSex())
+                .role(newUserRegistration.getRole())
                 .build();
     }
 }

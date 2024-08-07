@@ -29,6 +29,9 @@ public class Detail extends Auditor {
     @Column(name = "product_id")
     private String product;
 
+    @Column(name = "product_type_id")
+    private String productType;
+
     @Column(name = "comment_status")
     private Boolean commentStatus;
 

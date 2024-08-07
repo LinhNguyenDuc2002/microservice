@@ -49,7 +49,7 @@ public class DetailServiceImpl implements DetailService {
     private BillRepository billRepository;
 
     @Override
-    public DetailDTO create(String productId, String customerId, Integer quantity) throws Exception {
+    public DetailDTO create(String productId, String customerId, String productTypeId, Integer quantity) throws Exception {
         if (quantity <= 0) {
             throw new InvalidException(ExceptionMessage.ERROR_PRODUCT_INVALID_INPUT);
         }
@@ -59,13 +59,14 @@ public class DetailServiceImpl implements DetailService {
             throw new NotFoundException(ExceptionMessage.ERROR_CUSTOMER_NOT_FOUND);
         }
 
-        ProductCheckingResponse productCheckingResponse = productService.checkProductExist(productId, quantity);
+        ProductCheckingResponse productCheckingResponse = productService.checkProductExist(productId, productTypeId, quantity);
         if (!productCheckingResponse.isExist()) {
             throw new NotFoundException(ExceptionMessage.ERROR_PRODUCT_INVALID_INPUT);
         }
 
         Detail detail = Detail.builder()
                 .product(productId)
+                .productType(productTypeId)
                 .quantity(quantity)
                 .unitPrice(productCheckingResponse.getPrice())
                 .customer(checkCustomer.get())
@@ -88,7 +89,7 @@ public class DetailServiceImpl implements DetailService {
             throw new InvalidException(ExceptionMessage.ERROR_PRODUCT_INVALID_INPUT);
         }
 
-        ProductCheckingResponse productCheckingResponse = productService.checkProductExist(detail.getProduct(), quantity);
+        ProductCheckingResponse productCheckingResponse = productService.checkProductExist(detail.getProduct(), detail.getProductType(), quantity);
         if (!productCheckingResponse.isExist()) {
             throw new NotFoundException(ExceptionMessage.ERROR_PRODUCT_INVALID_INPUT);
         }
@@ -108,11 +109,7 @@ public class DetailServiceImpl implements DetailService {
                 .withCustomerId(customerId);
         Page<Detail> details = detailRepository.findAll(detailPredicate.getCriteria(), pageable);
 
-        Map<String, Integer> productList = new LinkedHashMap<>();
-        details.stream().forEach(detail -> {
-            productList.put(detail.getProduct(), detail.getQuantity());
-        });
-        Map<String, List<String>> response = productService.checkWarehouse(productList);
+        Map<String, List<String>> response = productService.groupDetails(details.stream().map(Detail::getProduct).toList());
 
         List<ShopDetailDTO> shopDetailDTOS = new ArrayList<>();
         for (String key : response.keySet()) {

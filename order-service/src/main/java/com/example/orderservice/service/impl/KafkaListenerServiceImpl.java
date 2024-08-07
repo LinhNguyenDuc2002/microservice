@@ -4,6 +4,7 @@ import com.example.orderservice.constant.KafkaTopic;
 import com.example.orderservice.entity.Detail;
 import com.example.orderservice.exception.InvalidException;
 import com.example.orderservice.payload.CustomerRequest;
+import com.example.orderservice.payload.UpdateDetailPriceReq;
 import com.example.orderservice.repository.DetailRepository;
 import com.example.orderservice.repository.predicate.DetailPredicate;
 import com.example.orderservice.service.CustomerService;
@@ -35,16 +36,16 @@ public class KafkaListenerServiceImpl implements KafkaListenerService {
     @KafkaListener(topics = KafkaTopic.UPDATE_UNIT_PRICE_DETAIL)
     @Override
     public void updateUnitPrice(String products) throws JsonProcessingException {
-        Map<String, Double> productList = mapper.readValue(products, new TypeReference<Map<String, Double>>() {});
-        Set<String> keyProduct = productList.keySet();
+        UpdateDetailPriceReq request = mapper.readValue(products, UpdateDetailPriceReq.class);
 
         DetailPredicate detailPredicate = new DetailPredicate()
-                .withProductIds(keyProduct.stream().toList())
+                .withProductId(request.getProductId())
+                .withProductTypeId(request.getProductTypeId())
                 .withStatus(false);
         List<Detail> details = detailRepository.findAll(detailPredicate.getCriteria());
 
         for(Detail detail : details) {
-            detail.setUnitPrice(productList.get(detail.getProduct()));
+            detail.setUnitPrice(request.getPrice());
         }
 
         detailRepository.saveAll(details);

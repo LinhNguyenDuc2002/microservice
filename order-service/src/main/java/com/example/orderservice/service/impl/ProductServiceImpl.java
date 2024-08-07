@@ -2,7 +2,7 @@ package com.example.orderservice.service.impl;
 
 import com.example.orderservice.config.ProductConfiguration;
 import com.example.orderservice.constant.SecurityConstant;
-import com.example.orderservice.exception.NotFoundException;
+import com.example.orderservice.payload.productservice.request.WareHouseCheckingReq;
 import com.example.orderservice.payload.productservice.response.ProductCheckingResponse;
 import com.example.orderservice.security.SecurityUtils;
 import com.example.orderservice.service.ProductService;
@@ -31,7 +31,7 @@ public class ProductServiceImpl implements ProductService {
     private WebClientProcessor webClientProcessor;
 
     @Override
-    public ProductCheckingResponse checkProductExist(String productId, Integer quantity) throws Exception {
+    public ProductCheckingResponse checkProductExist(String productId, String productTypeId, Integer quantity) throws Exception {
         String url = productConfiguration.getProductCheckingUrl();
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(url);
 
@@ -40,6 +40,7 @@ public class ProductServiceImpl implements ProductService {
         uriBuilder.uriVariables(pathVariable);
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.put("type", Collections.singletonList(productTypeId));
         params.put("quantity", Collections.singletonList(String.valueOf(quantity)));
         Map<String, String> header = new LinkedHashMap<>();
 
@@ -53,7 +54,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Map<String, List<String>> checkWarehouse(Map<String, Integer> productList) throws Exception {
+    public Map<String, List<String>> checkWarehouse(List<WareHouseCheckingReq> wareHouseCheckingReqs) throws Exception {
         String url = productConfiguration.getCheckWarehouseUrl();
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(url);
 
@@ -64,7 +65,7 @@ public class ProductServiceImpl implements ProductService {
         return webClientProcessor.patch(
                 uriBuilder.toUriString(),
                 header,
-                productList,
+                wareHouseCheckingReqs,
                 Map.class
         );
     }

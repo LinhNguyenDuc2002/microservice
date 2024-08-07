@@ -31,8 +31,9 @@ public class DetailController {
     public ResponseEntity<CommonResponse<DetailDTO>> create(
             @RequestParam(name = "product", required = true) String product,
             @RequestParam(name = "customer", required = true) String customer,
+            @RequestParam(name = "type", required = false) String productType,
             @RequestParam(name = "quantity", defaultValue = ParameterConstant.Quantity.DEFAULT_MIN_QUANTITY) Integer quantity) throws Exception {
-        return ResponseUtil.wrapResponse(detailService.create(product, customer, quantity));
+        return ResponseUtil.wrapResponse(detailService.create(product, customer, productType, quantity));
     }
 
     @PatchMapping("/{id}")

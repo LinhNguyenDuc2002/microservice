@@ -21,4 +21,6 @@ public final class ExceptionMessage {
     public final static String ERROR_COMMENT_EDIT = "Couldn't edit this comment";
 
     public final static String ERROR_TOKEN_NOT_FOUND = "The current JWT token is not found";
+
+    public final static String ERROR_PRODUCT_TYPE_NOT_FOUND = "Product type is not found";
 }

@@ -9,6 +9,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Collection;
+import java.util.List;
+
 @Getter
 @Setter
 @Builder
@@ -19,14 +22,15 @@ public class ProductRequest {
     @NotNull
     private String name;
 
-    @NotNull
     private Double price;
 
-    @NotNull
     private Long quantity;
 
     private String note;
 
     @NotNull
     private String category;
+
+    // List interface don't have a specific constructor, so should user Collection instead of
+    private Collection<ProductTypeRequest> productTypes;
 }
