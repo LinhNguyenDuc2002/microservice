@@ -28,7 +28,7 @@ import java.util.Collection;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EntityListeners(ProductListener.class)
+//@EntityListeners(ProductListener.class)
 public class Product extends Auditor {
     @Id
     @UuidGenerator

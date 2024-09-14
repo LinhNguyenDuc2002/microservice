@@ -15,6 +15,7 @@ import com.example.productservice.entity.Shop;
 import com.example.productservice.exception.InvalidException;
 import com.example.productservice.exception.NotFoundException;
 import com.example.productservice.mapper.ProductMapper;
+import com.example.productservice.mapper.ProductTypeMapper;
 import com.example.productservice.payload.ProductRequest;
 import com.example.productservice.payload.ProductTypeRequest;
 import com.example.productservice.payload.UpdateDetailPriceReq;
@@ -57,6 +58,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Autowired
     private ProductMapper productMapper;
+
+    @Autowired
+    private ProductTypeMapper productTypeMapper;
 
     @Autowired
     private Cloudinary cloudinary;
@@ -215,8 +219,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public PageDTO<ProductDTO> getAll(Integer page, Integer size, String shop, String search, String category, List<String> sortColumns) throws NotFoundException, JsonProcessingException {
-//        PageResponse<ProductDTO> productCache = productCacheManager.getAllProducts(page, size, shop, category);
-//        if(productCache != null) return productCache;
+        PageDTO<ProductDTO> productCache = productCacheManager.getAllProducts(page, size, shop, category);
+        if(productCache != null) return productCache;
 
         Pageable pageable = (sortColumns == null) ? PageUtil.getPage(page, size) : PageUtil.getPage(page, size, sortColumns.toArray(new String[0]));
 
@@ -231,19 +235,18 @@ public class ProductServiceImpl implements ProductService {
                 .totalPage(products.getTotalPages())
                 .elements(productMapper.toDtoList(products.getContent()))
                 .build();
-//        productCacheManager.saveAllProducts(pageResponse, page, size, shop, category);
+        productCacheManager.saveAllProducts(pageDTO, page, size, shop, category);
         return pageDTO;
     }
 
     @Override
     public ProductDTO get(String id) throws NotFoundException {
-        Optional<Product> product = productRepository.findById(id);
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> {
+                    return new NotFoundException(ExceptionMessage.ERROR_PRODUCT_NOT_FOUND);
+                });
 
-        if (!product.isPresent()) {
-            throw new NotFoundException(ExceptionMessage.ERROR_PRODUCT_NOT_FOUND);
-        }
-
-        return productMapper.toDto(product.get());
+        return productMapper.toDto(product);
     }
 
     @Override
