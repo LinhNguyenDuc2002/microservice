@@ -34,4 +34,6 @@ public class ProductDTO {
     private List<String> images;
 
     private String category;
+
+    private List<ProductTypeDTO> productTypes;
 }

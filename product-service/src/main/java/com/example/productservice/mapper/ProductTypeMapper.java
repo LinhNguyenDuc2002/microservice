@@ -8,11 +8,11 @@ import org.springframework.stereotype.Component;
 public class ProductTypeMapper extends AbstractMapper<ProductType, ProductTypeDTO> {
     @Override
     public Class<ProductTypeDTO> getDtoClass() {
-        return null;
+        return ProductTypeDTO.class;
     }
 
     @Override
     public Class<ProductType> getEntityClass() {
-        return null;
+        return ProductType.class;
     }
 }
