@@ -1,24 +1,24 @@
 package com.example.userservice.controller;
 
-import com.example.userservice.constant.ResponseMessage;
+import com.example.userservice.constant.I18nMessage;
 import com.example.userservice.constant.SecurityConstant;
 import com.example.userservice.dto.UserAddressDTO;
 import com.example.userservice.dto.UserDto;
 import com.example.userservice.dto.request.OTPAuthenticationRequest;
 import com.example.userservice.dto.request.UserRegistration;
 import com.example.userservice.dto.request.UserRequest;
-import com.example.userservice.dto.response.CommonResponse;
+import com.example.userservice.dto.response.Response;
+import com.example.userservice.exception.InvalidationException;
 import com.example.userservice.exception.NotFoundException;
-import com.example.userservice.exception.ValidationException;
+import com.example.userservice.i18n.I18nService;
 import com.example.userservice.service.UserService;
-import com.example.userservice.util.HandleBindingResult;
 import com.example.userservice.util.ResponseUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,47 +38,65 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private I18nService i18nService;
+
     @GetMapping("/me")
-    public ResponseEntity<CommonResponse<UserDto>> getLoggedInUser() throws NotFoundException {
-        return ResponseUtil.wrapResponse(userService.getLoggedInUser(), ResponseMessage.GET_USER_SUCCESS.getMessage());
+    public ResponseEntity<Response<UserDto>> getLoggedInUser() throws NotFoundException {
+        return ResponseUtil.wrapResponse(
+                userService.getLoggedInUser(),
+                i18nService.getMessage(I18nMessage.INFO_GET_USER, LocaleContextHolder.getLocale())
+        );
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<CommonResponse<UserDto>> verifyOTPToCreateUser(@RequestBody OTPAuthenticationRequest request) throws ValidationException, NotFoundException, JsonProcessingException {
-        return ResponseUtil.wrapResponse(userService.createUser(request), ResponseMessage.CREATE_USER_SUCCESS.getMessage());
+    public ResponseEntity<Response<UserDto>> verifyOTPToCreateUser(@RequestBody OTPAuthenticationRequest request) throws InvalidationException, NotFoundException, JsonProcessingException {
+        return ResponseUtil.wrapResponse(
+                userService.createUser(request),
+                i18nService.getMessage(I18nMessage.INFO_CREATE_ACCOUNT, LocaleContextHolder.getLocale())
+        );
     }
 
     @PostMapping
-    public ResponseEntity<CommonResponse<Object>> createTempUser(
-            @Valid @RequestBody UserRegistration newUserRegistration,
-            BindingResult bindingResult) throws ValidationException, JsonProcessingException, NoSuchAlgorithmException, InvalidKeyException {
-        HandleBindingResult.handle(bindingResult, newUserRegistration);
-        return ResponseUtil.wrapResponse(userService.createTempUser(newUserRegistration), ResponseMessage.WAIT_ENTER_OTP.getMessage());
+    public ResponseEntity<Response<Object>> createTempUser(@Valid @RequestBody UserRegistration newUserRegistration) throws InvalidationException, JsonProcessingException, NoSuchAlgorithmException, InvalidKeyException {
+        return ResponseUtil.wrapResponse(
+                userService.createTempUser(newUserRegistration),
+                i18nService.getMessage(I18nMessage.INFO_WAIT_OTP, LocaleContextHolder.getLocale())
+        );
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<CommonResponse<UserDto>> delete(@PathVariable String id) throws NotFoundException {
+    public ResponseEntity<Response<UserDto>> delete(@PathVariable String id) throws NotFoundException {
         userService.delete(id);
-        return ResponseUtil.wrapResponse(null, ResponseMessage.DELETE_USER_SUCCESS.getMessage());
+        return ResponseUtil.wrapResponse(
+                i18nService.getMessage(I18nMessage.INFO_DELETE_ACCOUNT, LocaleContextHolder.getLocale())
+        );
     }
 
     @GetMapping
     @Secured({SecurityConstant.ADMIN, SecurityConstant.EMPLOYEE})
-    public ResponseEntity<CommonResponse<List<UserDto>>> getAll() {
-        return ResponseUtil.wrapResponse(userService.getAll(), ResponseMessage.GET_ALL_USER_SUCCESS.getMessage());
+    public ResponseEntity<Response<List<UserDto>>> getAll() {
+        return ResponseUtil.wrapResponse(
+                userService.getAll(),
+                i18nService.getMessage(I18nMessage.INFO_GET_ALL_USER, LocaleContextHolder.getLocale())
+        );
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CommonResponse<UserDto>> get(@PathVariable String id) throws NotFoundException {
-        return ResponseUtil.wrapResponse(userService.get(id), ResponseMessage.GET_USER_SUCCESS.getMessage());
+    public ResponseEntity<Response<UserDto>> get(@PathVariable String id) throws NotFoundException {
+        return ResponseUtil.wrapResponse(
+                userService.get(id),
+                i18nService.getMessage(I18nMessage.INFO_GET_USER, LocaleContextHolder.getLocale())
+        );
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CommonResponse<UserAddressDTO>> update(
+    public ResponseEntity<Response<UserAddressDTO>> update(
             @PathVariable String id,
-            @Valid @RequestBody UserRequest userRequest,
-            BindingResult bindingResult) throws NotFoundException, ValidationException {
-        HandleBindingResult.handle(bindingResult, userRequest);
-        return ResponseUtil.wrapResponse(userService.update(id, userRequest), ResponseMessage.UPDATE_USER_SUCCESS.getMessage());
+            @Valid @RequestBody UserRequest userRequest) throws NotFoundException, InvalidationException {
+        return ResponseUtil.wrapResponse(
+                userService.update(id, userRequest),
+                i18nService.getMessage(I18nMessage.INFO_UPDATE_USER, LocaleContextHolder.getLocale())
+        );
     }
 }

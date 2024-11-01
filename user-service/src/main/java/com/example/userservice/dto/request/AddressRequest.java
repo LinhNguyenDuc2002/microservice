@@ -2,6 +2,7 @@ package com.example.userservice.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -22,15 +23,15 @@ public class AddressRequest {
 
     private String ward;
 
-    @Size(min = 1, message = "District cannot be empty")
-    @NotNull(message = "District cannot be null")
+    @NotNull(message = "{error.not-null}")
+    @NotBlank(message = "{error.not-blank}")
     private String district;
 
-    @Size(min = 1, message = "City name cannot be empty")
-    @NotNull(message = "City name cannot be null")
+    @NotNull(message = "{error.not-null}")
+    @NotBlank(message = "{error.not-blank}")
     private String city;
 
-    @Size(min = 1, message = "Country cannot be empty")
-    @NotNull(message = "Country cannot be null")
+    @NotNull(message = "{error.not-null}")
+    @NotBlank(message = "{error.not-blank}")
     private String country;
 }

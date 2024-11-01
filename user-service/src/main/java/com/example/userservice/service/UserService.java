@@ -6,7 +6,7 @@ import com.example.userservice.dto.request.OTPAuthenticationRequest;
 import com.example.userservice.dto.request.UserRegistration;
 import com.example.userservice.dto.request.UserRequest;
 import com.example.userservice.exception.NotFoundException;
-import com.example.userservice.exception.ValidationException;
+import com.example.userservice.exception.InvalidationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.security.InvalidKeyException;
@@ -17,7 +17,7 @@ import java.util.Map;
 public interface UserService {
     UserDto getLoggedInUser() throws NotFoundException;
 
-    Map<String, String> createTempUser(UserRegistration newUserRegistration) throws ValidationException, JsonProcessingException, NoSuchAlgorithmException, InvalidKeyException;
+    Map<String, String> createTempUser(UserRegistration newUserRegistration) throws InvalidationException, JsonProcessingException, NoSuchAlgorithmException, InvalidKeyException;
 
     void delete(String id) throws NotFoundException;
 
@@ -25,7 +25,7 @@ public interface UserService {
 
     UserDto get(String id) throws NotFoundException;
 
-    UserAddressDTO update(String id, UserRequest userRequest) throws NotFoundException, ValidationException;
+    UserAddressDTO update(String id, UserRequest userRequest) throws NotFoundException, InvalidationException;
 
-    UserDto createUser(OTPAuthenticationRequest request) throws ValidationException, NotFoundException, JsonProcessingException;
+    UserDto createUser(OTPAuthenticationRequest request) throws InvalidationException, NotFoundException, JsonProcessingException;
 }

@@ -36,7 +36,7 @@ public class AuthUser implements UserDetails {
         this.password = password;
         this.authorities = authorityList
                 .stream()
-                .map(role -> new SimpleGrantedAuthority(role.getRoleName().name()))
+                .map(role -> new SimpleGrantedAuthority(role.getName().name()))
                 .collect(Collectors.toList());
     }
 
