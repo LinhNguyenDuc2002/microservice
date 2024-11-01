@@ -7,17 +7,17 @@ import lombok.Setter;
 @Builder
 @Getter
 @Setter
-public class ValidationException extends Exception{
+public class InvalidationException extends Exception{
     private Object errorObject;
 
     private String message;
 
-    public ValidationException(Object errorObject, String message) {
+    public InvalidationException(Object errorObject, String message) {
         this.errorObject = errorObject;
         this.message = message;
     }
 
-    public ValidationException(String message) {
+    public InvalidationException(String message) {
         this.message = message;
     }
 }

@@ -7,6 +7,6 @@ import lombok.Data;
 @Data
 @Builder
 @AllArgsConstructor
-public class NotFoundException extends Exception{
+public class NotFoundException extends Exception {
     private String message;
 }

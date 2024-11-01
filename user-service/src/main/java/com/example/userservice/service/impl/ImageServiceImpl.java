@@ -2,8 +2,7 @@ package com.example.userservice.service.impl;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import com.example.userservice.constant.ExceptionMessage;
-import com.example.userservice.constant.ResponseMessage;
+import com.example.userservice.constant.I18nMessage;
 import com.example.userservice.entity.Image;
 import com.example.userservice.entity.User;
 import com.example.userservice.exception.NotFoundException;
@@ -42,12 +41,12 @@ public class ImageServiceImpl implements ImageService {
 
         Optional<String> userId = SecurityUtils.getLoggedInUserId();
         if (userId.isEmpty()) {
-            throw new UnauthorizedException(ExceptionMessage.ERROR_USER_UNKNOWN);
+            throw new UnauthorizedException(I18nMessage.ERROR_USER_UNKNOWN);
         }
 
         User user = userRepository.findById(userId.get())
                 .orElseThrow(() -> {
-                    return new UnauthorizedException(ExceptionMessage.ERROR_USER_UNKNOWN);
+                    return new UnauthorizedException(I18nMessage.ERROR_USER_UNKNOWN);
                 });
 
         Image avatar = user.getAvatar();
@@ -75,7 +74,7 @@ public class ImageServiceImpl implements ImageService {
 
         boolean check = imageRepository.existsById(id);
         if (!check) {
-            throw new NotFoundException(ResponseMessage.DELETE_AVATAR_SUCCESS.getMessage());
+            throw new NotFoundException(I18nMessage.ERROR_IMAGE_NOT_FOUND);
         }
 
         imageRepository.deleteById(id);

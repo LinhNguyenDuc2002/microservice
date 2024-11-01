@@ -1,11 +1,13 @@
 package com.example.userservice.constant;
 
 public enum RoleType {
-    CUSTOMER,
+    ADMIN,
 
-    SELLER,
+    MANAGER,
 
     EMPLOYEE,
 
-    ADMIN
+    CUSTOMER,
+
+    SELLER,
 }

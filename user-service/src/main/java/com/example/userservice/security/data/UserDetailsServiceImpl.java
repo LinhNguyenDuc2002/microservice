@@ -1,6 +1,6 @@
 package com.example.userservice.security.data;
 
-import com.example.userservice.constant.ExceptionMessage;
+import com.example.userservice.constant.I18nMessage;
 import com.example.userservice.entity.User;
 import com.example.userservice.exception.CommonRuntimeException;
 import com.example.userservice.repository.UserRepository;
@@ -24,7 +24,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .orElseThrow(() -> {
                     return CommonRuntimeException.builder()
                             .status(HttpStatus.NOT_FOUND)
-                            .message(ExceptionMessage.ERROR_USER_NOT_FOUND)
+                            .message(I18nMessage.ERROR_USER_NOT_FOUND)
                             .build();
                 });
 

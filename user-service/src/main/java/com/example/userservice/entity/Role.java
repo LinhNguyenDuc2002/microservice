@@ -7,6 +7,8 @@ import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -30,9 +32,17 @@ public class Role {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "role_name")
+    @Column(name = "name")
     @Convert(converter = RoleTypeConverter.class)
-    private RoleType roleName;
+    private RoleType name;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "role_permission",
+            joinColumns = @JoinColumn(name = "role_id"),
+            inverseJoinColumns = @JoinColumn(name = "permission_id")
+    )
+    private Collection<Permission> permissions;
 
     @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
     @EqualsAndHashCode.Exclude

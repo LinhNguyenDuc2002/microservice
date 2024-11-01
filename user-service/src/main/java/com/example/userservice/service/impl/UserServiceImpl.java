@@ -2,7 +2,7 @@ package com.example.userservice.service.impl;
 
 import com.example.userservice.cache.UserCacheManager;
 import com.example.userservice.config.ApplicationConfig;
-import com.example.userservice.constant.ExceptionMessage;
+import com.example.userservice.constant.I18nMessage;
 import com.example.userservice.constant.KafkaTopic;
 import com.example.userservice.constant.RoleType;
 import com.example.userservice.dto.UserAddressDTO;
@@ -14,9 +14,9 @@ import com.example.userservice.dto.request.UserRequest;
 import com.example.userservice.entity.Address;
 import com.example.userservice.entity.Role;
 import com.example.userservice.entity.User;
+import com.example.userservice.exception.InvalidationException;
 import com.example.userservice.exception.NotFoundException;
 import com.example.userservice.exception.UnauthorizedException;
-import com.example.userservice.exception.ValidationException;
 import com.example.userservice.mapper.AddressMapper;
 import com.example.userservice.mapper.UserMapper;
 import com.example.userservice.message.email.EmailConstant;
@@ -86,12 +86,12 @@ public class UserServiceImpl implements UserService {
 
         Optional<String> userId = SecurityUtils.getLoggedInUserId();
         if (userId.isEmpty()) {
-            throw new UnauthorizedException(ExceptionMessage.ERROR_USER_UNKNOWN);
+            throw new UnauthorizedException(I18nMessage.ERROR_USER_UNKNOWN);
         }
 
         User user = userRepository.findById(userId.get())
                 .orElseThrow(() -> {
-                    return new UnauthorizedException(ExceptionMessage.ERROR_USER_UNKNOWN);
+                    return new UnauthorizedException(I18nMessage.ERROR_USER_UNKNOWN);
                 });
 
         log.info("Got info of logged in user successfully");
@@ -99,16 +99,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Map<String, String> createTempUser(UserRegistration newUserRegistration) throws ValidationException, NoSuchAlgorithmException, InvalidKeyException {
+    public Map<String, String> createTempUser(UserRegistration newUserRegistration) throws InvalidationException, NoSuchAlgorithmException, InvalidKeyException {
         log.info("Save registration information temporarily");
 
         if (!StringUtils.hasText(newUserRegistration.getEmail())) {
             log.error("Email is invalid");
-            throw new ValidationException(newUserRegistration, ExceptionMessage.ERROR_EMAIL_INVALID);
+            throw new InvalidationException(newUserRegistration, I18nMessage.ERROR_EMAIL_INVALID);
         }
         if (userRepository.existsByEmail(newUserRegistration.getEmail())) {
             log.error("Email is already in use");
-            throw new ValidationException(newUserRegistration, ExceptionMessage.ERROR_EMAIL_EXISTED);
+            throw new InvalidationException(newUserRegistration, I18nMessage.ERROR_EMAIL_EXISTED);
         }
 
         String otp = OTPUtil.generateOTP();
@@ -140,13 +140,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto createUser(OTPAuthenticationRequest request) throws ValidationException, NotFoundException, JsonProcessingException {
+    public UserDto createUser(OTPAuthenticationRequest request) throws InvalidationException, NotFoundException, JsonProcessingException {
         UserCache userCache = userCacheManager.getUserCache(request.getSecret())
                 .orElseThrow(() -> {
-                    return new NotFoundException(ExceptionMessage.ERROR_USER_CACHE_NOT_FOUND);
+                    return new NotFoundException(I18nMessage.ERROR_USER_CACHE_NOT_FOUND);
                 });
         if (!StringUtils.hasText(request.getOtp()) || !userCache.getOtp().equals(request.getOtp())) {
-            throw new ValidationException(request.getOtp(), ExceptionMessage.ERROR_INVALID_OTP);
+            throw new InvalidationException(request.getOtp(), I18nMessage.ERROR_INVALID_OTP);
         }
 
         User user = convertToUser(userCache);
@@ -154,7 +154,7 @@ public class UserServiceImpl implements UserService {
 
         Set<Role> roles = new HashSet<>();
         RoleType roleType = RoleType.valueOf(userCache.getRole());
-        roles.add(roleRepository.findByRoleName(roleType));
+        roles.add(roleRepository.findByName(roleType));
 
         user.setRoles(roles);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -195,7 +195,7 @@ public class UserServiceImpl implements UserService {
         if (!checkUser) {
             log.error("User {} don't exist", id);
             throw NotFoundException.builder()
-                    .message(ExceptionMessage.ERROR_USER_NOT_FOUND)
+                    .message(I18nMessage.ERROR_USER_NOT_FOUND)
                     .build();
         }
 
@@ -217,7 +217,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> {
                     log.error("User {} don't exist", id);
                     return NotFoundException.builder()
-                            .message(ExceptionMessage.ERROR_USER_NOT_FOUND)
+                            .message(I18nMessage.ERROR_USER_NOT_FOUND)
                             .build();
                 });
 
@@ -226,14 +226,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserAddressDTO update(String id, UserRequest userRequest) throws NotFoundException, ValidationException {
+    public UserAddressDTO update(String id, UserRequest userRequest) throws NotFoundException, InvalidationException {
         log.info("Update user {}", id);
 
         User user = userRepository.findById(id)
                 .orElseThrow(() -> {
                     log.error("User {} don't exist", id);
                     return NotFoundException.builder()
-                            .message(ExceptionMessage.ERROR_USER_NOT_FOUND)
+                            .message(I18nMessage.ERROR_USER_NOT_FOUND)
                             .build();
                 });
 
@@ -241,7 +241,7 @@ public class UserServiceImpl implements UserService {
             boolean checkUsername = userRepository.existsByUsername(userRequest.getUsername());
             if (checkUsername) {
                 log.error("Username {} existed", userRequest.getUsername());
-                throw new ValidationException(userRequest, ExceptionMessage.ERROR_USERNAME_EXISTED);
+                throw new InvalidationException(userRequest, I18nMessage.ERROR_USERNAME_EXISTED);
             }
             user.setUsername(userRequest.getUsername());
         }
