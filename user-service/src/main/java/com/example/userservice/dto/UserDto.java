@@ -23,11 +23,11 @@ public class UserDto {
     @JsonProperty("username")
     private String username;
 
-    @JsonProperty("nick_name")
-    private String nickName;
+    @JsonProperty("first_name")
+    private String firstName;
 
-    @JsonProperty("fullname")
-    private String fullname;
+    @JsonProperty("last_name")
+    private String lastName;
 
     @JsonProperty("birthday")
     private Date dob;
@@ -44,6 +44,6 @@ public class UserDto {
     @JsonProperty("sex")
     private String sex;
 
-    @JsonProperty("note")
-    private String note;
+    @JsonProperty("first_login")
+    private Boolean firstLogin;
 }

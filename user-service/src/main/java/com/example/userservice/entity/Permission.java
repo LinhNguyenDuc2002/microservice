@@ -14,7 +14,7 @@ import org.hibernate.annotations.UuidGenerator;
 @Table(name = "permission")
 @NoArgsConstructor
 @AllArgsConstructor
-public class Permission {
+public class Permission extends Auditor {
     @Id
     @UuidGenerator
     private String id;

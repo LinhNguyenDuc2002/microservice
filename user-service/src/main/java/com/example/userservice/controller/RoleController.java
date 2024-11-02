@@ -62,9 +62,7 @@ public class RoleController {
             @RequestParam("role") String roleName,
             @RequestParam("user") String userId) throws NotFoundException {
         roleService.assignRole(roleName, userId);
-        return ResponseUtil.wrapResponse(
-                ""
-        );
+        return ResponseUtil.wrapResponse(I18nMessage.INFO_ASSIGN_ROLE);
     }
 
     @DeleteMapping("/mapping")
@@ -72,6 +70,6 @@ public class RoleController {
             @RequestParam("role") String roleName,
             @RequestParam("user") String userId) throws NotFoundException {
         roleService.unassignRole(roleName, userId);
-        return ResponseUtil.wrapResponse(null, "");
+        return ResponseUtil.wrapResponse(I18nMessage.INFO_UNASSIGN_ROLE);
     }
 }

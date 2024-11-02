@@ -1,11 +1,12 @@
 package com.example.userservice.controller;
 
 import com.example.userservice.constant.I18nMessage;
-import com.example.userservice.constant.SecurityConstant;
 import com.example.userservice.dto.UserAddressDTO;
 import com.example.userservice.dto.UserDto;
 import com.example.userservice.dto.request.OTPAuthenticationRequest;
+import com.example.userservice.dto.request.UpdateInfo;
 import com.example.userservice.dto.request.UserRegistration;
+import com.example.userservice.dto.request.UserRegistrationHasRole;
 import com.example.userservice.dto.request.UserRequest;
 import com.example.userservice.dto.response.Response;
 import com.example.userservice.exception.InvalidationException;
@@ -18,9 +19,9 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -57,10 +58,18 @@ public class UserController {
         );
     }
 
-    @PostMapping
-    public ResponseEntity<Response<Object>> createTempUser(@Valid @RequestBody UserRegistration newUserRegistration) throws InvalidationException, JsonProcessingException, NoSuchAlgorithmException, InvalidKeyException {
+    @PostMapping("/customer")
+    public ResponseEntity<Response<Object>> createTempUser(@Valid @RequestBody UserRegistration userRegistration) throws InvalidationException, JsonProcessingException, NoSuchAlgorithmException, InvalidKeyException {
         return ResponseUtil.wrapResponse(
-                userService.createTempUser(newUserRegistration),
+                userService.createTempUser(userRegistration),
+                i18nService.getMessage(I18nMessage.INFO_WAIT_OTP, LocaleContextHolder.getLocale())
+        );
+    }
+
+    @PostMapping
+    public ResponseEntity<Response<Object>> createUser(@Valid @RequestBody UserRegistrationHasRole userRegistration) throws InvalidationException, JsonProcessingException, NoSuchAlgorithmException, InvalidKeyException {
+        return ResponseUtil.wrapResponse(
+                userService.createUser(userRegistration),
                 i18nService.getMessage(I18nMessage.INFO_WAIT_OTP, LocaleContextHolder.getLocale())
         );
     }
@@ -74,7 +83,7 @@ public class UserController {
     }
 
     @GetMapping
-    @Secured({SecurityConstant.ADMIN, SecurityConstant.EMPLOYEE})
+//    @Secured({SecurityConstant.ADMIN, SecurityConstant.EMPLOYEE})
     public ResponseEntity<Response<List<UserDto>>> getAll() {
         return ResponseUtil.wrapResponse(
                 userService.getAll(),
@@ -87,6 +96,16 @@ public class UserController {
         return ResponseUtil.wrapResponse(
                 userService.get(id),
                 i18nService.getMessage(I18nMessage.INFO_GET_USER, LocaleContextHolder.getLocale())
+        );
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<Response<UserAddressDTO>> update(
+            @PathVariable String id,
+            @Valid @RequestBody UpdateInfo updateInfo) throws NotFoundException, InvalidationException {
+        return ResponseUtil.wrapResponse(
+                userService.update(id, updateInfo),
+                i18nService.getMessage(I18nMessage.INFO_UPDATE_USER, LocaleContextHolder.getLocale())
         );
     }
 

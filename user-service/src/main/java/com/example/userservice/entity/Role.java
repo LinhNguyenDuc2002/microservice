@@ -24,7 +24,7 @@ import java.util.Collection;
 @Table(name = "role")
 @NoArgsConstructor
 @AllArgsConstructor
-public class Role {
+public class Role extends Auditor {
     @Id
     @UuidGenerator
     private String id;

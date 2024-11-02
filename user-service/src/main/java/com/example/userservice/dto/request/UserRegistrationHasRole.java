@@ -1,10 +1,10 @@
 package com.example.userservice.dto.request;
 
-import com.example.userservice.annotation.password.ValidPassword;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,13 +13,10 @@ import lombok.Setter;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PasswordRequest {
-    @JsonProperty("old-password")
-    private String oldPassword;
-
-    @JsonProperty("new-password")
-    @ValidPassword(message = "{error.password.invalid}")
-    private String newPassword;
+public class UserRegistrationHasRole extends UserRegistration {
+    @JsonProperty("role")
+    @NotNull(message = "{error.not-null}")
+    @NotBlank(message = "{error.not-blank}")
+    private String role;
 }

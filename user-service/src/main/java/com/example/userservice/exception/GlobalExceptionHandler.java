@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -29,7 +30,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Object> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         List<Error> errors = new ArrayList<>();
         Response<Object> response = Response.builder()
-                .status(Status.FAIL.name())
+                .status(Status.FAIL.getMessage())
                 .code(HttpStatus.BAD_REQUEST.value())
                 .message(
                         i18nService.getMessage(I18nMessage.ERROR_DATA_INVALID, LocaleContextHolder.getLocale())
@@ -51,10 +52,23 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<Object> handleUsernameNotFoundException(UsernameNotFoundException ex) {
+        Response response = Response.builder()
+                .status(Status.FAIL.getMessage())
+                .code(HttpStatus.NOT_FOUND.value())
+                .message(
+                        i18nService.getMessage(ex.getMessage(), LocaleContextHolder.getLocale())
+                )
+                .build();
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<Object> handleNotFoundException(NotFoundException ex) {
         Response<Object> response = Response.builder()
-                .status(Status.FAIL.name())
+                .status(Status.FAIL.getMessage())
                 .code(HttpStatus.NOT_FOUND.value())
                 .message(
                         i18nService.getMessage(ex.getMessage(), LocaleContextHolder.getLocale())
@@ -66,7 +80,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidationException.class)
     public ResponseEntity<Object> handleInvalidationException(InvalidationException ex) {
         Response response = Response.builder()
-                .status(Status.FAIL.name())
+                .status(Status.FAIL.getMessage())
                 .code(HttpStatus.BAD_REQUEST.value())
                 .message(
                         i18nService.getMessage(ex.getMessage(), LocaleContextHolder.getLocale())
@@ -86,7 +100,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UnauthorizedException.class)
     public final ResponseEntity<Object> handleUnauthorizedException(UnauthorizedException ex) {
         Response response = Response.builder()
-                .status(Status.FAIL.name())
+                .status(Status.FAIL.getMessage())
                 .code(HttpStatus.UNAUTHORIZED.value())
                 .message(
                         i18nService.getMessage(ex.getMessage(), LocaleContextHolder.getLocale())
