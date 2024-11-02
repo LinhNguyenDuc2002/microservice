@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 public final class ResponseUtil<T> {
     public static <T> ResponseEntity<Response<T>> wrapResponse(T data, String message) {
         Response<T> response = Response.<T>builder()
-                .status(Status.SUCCESS.name())
+                .status(Status.SUCCESS.getMessage())
                 .code(HttpStatus.OK.value())
                 .message(message)
                 .build();
@@ -21,7 +21,7 @@ public final class ResponseUtil<T> {
 
     public static <T> ResponseEntity<Response<T>> wrapResponse(String message) {
         Response<T> response = Response.<T>builder()
-                .status(Status.SUCCESS.name())
+                .status(Status.SUCCESS.getMessage())
                 .code(HttpStatus.OK.value())
                 .message(message)
                 .build();

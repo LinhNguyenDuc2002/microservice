@@ -14,7 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,8 +43,7 @@ public class AuthController {
      * @param
      * @return
      */
-
-    @PutMapping("/change-pwd")
+    @PutMapping("/password")
     public ResponseEntity<Response<Void>> changePassword(@Valid @RequestBody PasswordRequest pwd) throws InvalidationException, NotFoundException {
         authService.changePwd(pwd);
         return ResponseUtil.wrapResponse(
@@ -50,7 +51,17 @@ public class AuthController {
         );
     }
 
-    @PutMapping("/{id}/reset-pwd")
+    @PostMapping("/password")
+    public ResponseEntity<Response<Void>> forgetPassword(
+            @RequestParam(name = "password") String password,
+            @PathVariable String id) throws InvalidationException, NotFoundException {
+        authService.resetPwd(id, password);
+        return ResponseUtil.wrapResponse(
+                i18nService.getMessage(I18nMessage.INFO_RESET_PASSWORD, LocaleContextHolder.getLocale())
+        );
+    }
+
+    @PatchMapping("/password/{id}")
     @Secured({SecurityConstant.ADMIN, SecurityConstant.EMPLOYEE})
     public ResponseEntity<Response<Void>> resetPassword(
             @RequestParam(name = "password") String password,

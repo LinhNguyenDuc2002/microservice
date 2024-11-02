@@ -1,12 +1,14 @@
 package com.example.userservice.constant;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 @AllArgsConstructor
+@Getter
 public enum Status {
-    SUCCESS("status.success"),
+    SUCCESS("Success"),
 
-    FAIL("status.fail");
+    FAIL("Fail");
 
     private String message;
 }

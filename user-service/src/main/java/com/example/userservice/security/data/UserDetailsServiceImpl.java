@@ -2,10 +2,8 @@ package com.example.userservice.security.data;
 
 import com.example.userservice.constant.I18nMessage;
 import com.example.userservice.entity.User;
-import com.example.userservice.exception.CommonRuntimeException;
 import com.example.userservice.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -22,10 +20,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> {
-                    return CommonRuntimeException.builder()
-                            .status(HttpStatus.NOT_FOUND)
-                            .message(I18nMessage.ERROR_USER_NOT_FOUND)
-                            .build();
+                    return new UsernameNotFoundException(I18nMessage.ERROR_USERNAME_NOT_FOUND);
                 });
 
         AuthUser ret = new AuthUser(user.getUsername(), user.getPassword(), user.getRoles());

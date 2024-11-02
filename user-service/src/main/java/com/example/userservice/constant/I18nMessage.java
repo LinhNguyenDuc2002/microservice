@@ -27,6 +27,8 @@ public final class I18nMessage {
     public final static String INFO_GET_ALL_PERMISSION = "info.get-all-permission";
     public final static String INFO_GET_PERMISSION = "info.get-permission";
     public final static String INFO_UPDATE_PERMISSION = "info.update-permission";
+    public final static String INFO_ASSIGN_ROLE = "info.assign-role";
+    public final static String INFO_UNASSIGN_ROLE = "info.unassign-role";
 
     /**
      * Level: WARN
@@ -39,6 +41,7 @@ public final class I18nMessage {
     public final static String ERROR_DATA_INVALID = "error.data.invalid";
     public final static String ERROR_USER_CACHE_NOT_FOUND = "error.user-cache.not-found";
     public final static String ERROR_USER_NOT_FOUND = "error.user.not-found";
+    public final static String ERROR_USERNAME_NOT_FOUND = "error.username.not-found";
     public final static String ERROR_USERNAME_EXISTED = "error.username.existed";
     public final static String ERROR_USER_UNKNOWN = "";
     public final static String ERROR_USER_ASSIGN_ROLE = "error.user-assigned-role";

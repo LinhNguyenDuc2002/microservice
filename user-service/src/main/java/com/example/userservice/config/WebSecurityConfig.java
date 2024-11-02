@@ -111,6 +111,7 @@ public class WebSecurityConfig {
     /**
      * Remove prefix "ROLE_"
      * Therefore, when use @Secured or @PreAuthorize, don't need to use prefix "ROLE_" in front of roles
+     *
      * @return
      */
     @Bean
@@ -124,7 +125,7 @@ public class WebSecurityConfig {
      * ----------------
      * Default Endpoints
      * ----------------
-     *
+     * <p>
      * Authorization Endpoint           /oauth2/authorize
      * Token Endpoint                   /oauth2/token
      * Token Revocation                 /oauth2/revoke
@@ -132,6 +133,7 @@ public class WebSecurityConfig {
      * JWK Set Endpoint                 /oauth2/jwks
      * Authorization Server Metadata    /.well-known/oauth-authorization-server
      * OIDC Provider Configuration      /.well-known/openid-configuration
+     *
      * @param http
      * @return
      * @throws Exception
@@ -222,16 +224,13 @@ public class WebSecurityConfig {
                 )
 
                 .authorizeHttpRequests(authorize -> authorize //config authentication rules for requests
-                        .requestMatchers(HttpMethod.POST, "/user").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/user/customer").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth").permitAll()
-                        .requestMatchers( HttpMethod.POST, "/user/verify").permitAll()
-                        .requestMatchers( "/actuator/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/user/verify").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated()
                 );
-
-//                Form login handles the redirect to the login page from the authorization server filter chain
-//                .formLogin(Customizer.withDefaults());
 
 //        filter through jwtAuthenticationFilter() before UsernamePasswordAuthenticationFilter
 //        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -240,6 +239,7 @@ public class WebSecurityConfig {
 
     /**
      * Transfer authentication request from client to Authentication
+     *
      * @param converters
      * @return
      */
@@ -254,6 +254,7 @@ public class WebSecurityConfig {
     /**
      * Authenticate requests from client
      * Note: AuthenticationProvider is used to authenticate Authentication
+     *
      * @param providers
      * @return
      */

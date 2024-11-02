@@ -1,9 +1,8 @@
 package com.example.userservice.entity;
 
 import jakarta.persistence.CascadeType;
-import jakarta.persistence.Embeddable;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -33,11 +32,13 @@ public class User extends Auditor {
 
     private String username;
 
-    private String nickname;
+    @Column(name = "first_name")
+    private String firstName;
+
+    @Column(name = "last_name")
+    private String lastName;
 
     private String password;
-
-    private String fullname;
 
     private Date dob;
 
@@ -45,7 +46,8 @@ public class User extends Auditor {
 
     private String phone;
 
-    private String note;
+    @Column(name = "first_login")
+    private Boolean firstLogin;
 
     private Boolean sex;
 

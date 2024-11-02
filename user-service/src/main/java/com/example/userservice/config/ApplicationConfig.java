@@ -28,6 +28,7 @@ public class ApplicationConfig {
 
     /**
      * Create ModelMapper
+     *
      * @return
      */
     @Bean
@@ -37,6 +38,7 @@ public class ApplicationConfig {
 
     /**
      * Encode password
+     *
      * @return BCryptPasswordEncoder
      */
     @Bean
@@ -45,9 +47,10 @@ public class ApplicationConfig {
     }
 
     /**
-     *  Create and config  SpringTemplateEngine (implementation of ITemplateEngine in Thymeleaf)
-     *  It's used to handle template Thymeleaf
-     *  messageSource is message source for templates
+     * Create and config  SpringTemplateEngine (implementation of ITemplateEngine in Thymeleaf)
+     * It's used to handle template Thymeleaf
+     * messageSource is message source for templates
+     *
      * @return
      */
     @Bean
@@ -59,8 +62,9 @@ public class ApplicationConfig {
     }
 
     /**
-     *  Create and config ClassLoaderTemplateResolver (an implementation of ITemplateResolver in Thymeleaf)
-     *  It's used to identify template Thymeleaf and provide configs like prefix, suffix, ... of template files, ...
+     * Create and config ClassLoaderTemplateResolver (an implementation of ITemplateResolver in Thymeleaf)
+     * It's used to identify template Thymeleaf and provide configs like prefix, suffix, ... of template files, ...
+     *
      * @return
      */
     @Bean
@@ -76,6 +80,7 @@ public class ApplicationConfig {
     /**
      * Swagger config
      * http://localhost:8080/api/swagger-ui/index.html
+     *
      * @return
      */
     @Bean
@@ -85,4 +90,6 @@ public class ApplicationConfig {
                 .packagesToScan("com.example.userservice.controller") // Specify the package to scan
                 .build();
     }
+
+
 }

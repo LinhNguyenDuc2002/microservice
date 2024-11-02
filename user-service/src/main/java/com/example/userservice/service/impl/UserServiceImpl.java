@@ -3,13 +3,14 @@ package com.example.userservice.service.impl;
 import com.example.userservice.cache.UserCacheManager;
 import com.example.userservice.config.ApplicationConfig;
 import com.example.userservice.constant.I18nMessage;
-import com.example.userservice.constant.KafkaTopic;
 import com.example.userservice.constant.RoleType;
 import com.example.userservice.dto.UserAddressDTO;
 import com.example.userservice.dto.UserDto;
 import com.example.userservice.dto.request.AddressRequest;
 import com.example.userservice.dto.request.OTPAuthenticationRequest;
+import com.example.userservice.dto.request.UpdateInfo;
 import com.example.userservice.dto.request.UserRegistration;
+import com.example.userservice.dto.request.UserRegistrationHasRole;
 import com.example.userservice.dto.request.UserRequest;
 import com.example.userservice.entity.Address;
 import com.example.userservice.entity.Role;
@@ -21,7 +22,6 @@ import com.example.userservice.mapper.AddressMapper;
 import com.example.userservice.mapper.UserMapper;
 import com.example.userservice.message.email.EmailConstant;
 import com.example.userservice.message.email.EmailMessage;
-import com.example.userservice.payload.CustomerRequest;
 import com.example.userservice.redis.model.UserCache;
 import com.example.userservice.repository.AddressRepository;
 import com.example.userservice.repository.RoleRepository;
@@ -36,7 +36,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -82,8 +81,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto getLoggedInUser() {
-        log.info("Get info of logged in user");
-
         Optional<String> userId = SecurityUtils.getLoggedInUserId();
         if (userId.isEmpty()) {
             throw new UnauthorizedException(I18nMessage.ERROR_USER_UNKNOWN);
@@ -93,32 +90,22 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> {
                     return new UnauthorizedException(I18nMessage.ERROR_USER_UNKNOWN);
                 });
-
-        log.info("Got info of logged in user successfully");
         return userMapper.toDto(user);
     }
 
     @Override
-    public Map<String, String> createTempUser(UserRegistration newUserRegistration) throws InvalidationException, NoSuchAlgorithmException, InvalidKeyException {
-        log.info("Save registration information temporarily");
-
-        if (!StringUtils.hasText(newUserRegistration.getEmail())) {
-            log.error("Email is invalid");
-            throw new InvalidationException(newUserRegistration, I18nMessage.ERROR_EMAIL_INVALID);
-        }
-        if (userRepository.existsByEmail(newUserRegistration.getEmail())) {
-            log.error("Email is already in use");
-            throw new InvalidationException(newUserRegistration, I18nMessage.ERROR_EMAIL_EXISTED);
+    public Map<String, String> createTempUser(UserRegistration userRegistration) throws InvalidationException, NoSuchAlgorithmException, InvalidKeyException {
+        if (userRepository.existsByEmail(userRegistration.getEmail())) {
+            throw new InvalidationException(userRegistration, I18nMessage.ERROR_EMAIL_EXISTED);
         }
 
         String otp = OTPUtil.generateOTP();
-        UserCache userCache = convertToUserCache(newUserRegistration);
+        UserCache userCache = convertToUserCache(userRegistration);
         userCache.setOtp(otp);
 
         Map<String, String> emailArgs = new HashMap<>();
         emailArgs.put(EmailConstant.ARG_LOGO_URI, "");
         emailArgs.put(EmailConstant.ARG_OTP_CODE, otp);
-        emailArgs.put(EmailConstant.ARG_RECEIVER_NAME, userCache.getFullname());
         emailArgs.put(EmailConstant.ARG_SUPPORT_EMAIL, applicationConfig.getSenderEmail());
 
         EmailMessage email = EmailMessage.builder()
@@ -145,34 +132,38 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> {
                     return new NotFoundException(I18nMessage.ERROR_USER_CACHE_NOT_FOUND);
                 });
-        if (!StringUtils.hasText(request.getOtp()) || !userCache.getOtp().equals(request.getOtp())) {
+        if (!userCache.getOtp().equals(request.getOtp())) {
             throw new InvalidationException(request.getOtp(), I18nMessage.ERROR_INVALID_OTP);
         }
 
         User user = convertToUser(userCache);
+        user.setStatus(true);
+        user.setFirstLogin(true);
         userCacheManager.clearUserCache(userCache.getId());
 
         Set<Role> roles = new HashSet<>();
-        RoleType roleType = RoleType.valueOf(userCache.getRole());
-        roles.add(roleRepository.findByName(roleType));
+        roles.add(roleRepository.findByName(RoleType.CUSTOMER));
 
         user.setRoles(roles);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
 
-        CustomerRequest customerRequest = CustomerRequest.builder()
-                .accountId(user.getId())
-                .email(user.getEmail())
-                .nickname(user.getNickname())
-                .fullname(user.getFullname())
-                .phone(user.getPhone())
-                .role(RoleType.CUSTOMER.name())
+        return userMapper.toDto(user);
+    }
+
+    @Override
+    public UserDto createUser(UserRegistrationHasRole userRegistration) {
+        User user = User.builder()
+                .username(userRegistration.getUsername())
+                .password(passwordEncoder.encode(userRegistration.getPassword()))
+                .email(userRegistration.getEmail())
+                .phone(userRegistration.getPhone())
+                .firstLogin(true)
+                .status(true)
                 .build();
-        messagingService.sendMessage(KafkaTopic.CREATE_CUSTOMER, mapper.writeValueAsString(customerRequest));
 
         Map<String, String> emailArgs = new HashMap<>();
         emailArgs.put(EmailConstant.ARG_LOGO_URI, "");
-        emailArgs.put(EmailConstant.ARG_RECEIVER_NAME, user.getFullname());
         emailArgs.put(EmailConstant.ARG_SUPPORT_EMAIL, applicationConfig.getSenderEmail());
 
         EmailMessage email = EmailMessage.builder()
@@ -183,24 +174,22 @@ public class UserServiceImpl implements UserService {
                 .args(emailArgs)
                 .locale(LocaleContextHolder.getLocale())
                 .build();
-        messagingService.sendMessage(KafkaTopic.SEND_EMAIL, mapper.writeValueAsString(email));
+//        messagingService.sendMessage(KafkaTopic.SEND_EMAIL, mapper.writeValueAsString(email));
+        userRepository.save(user);
         return userMapper.toDto(user);
     }
 
     @Override
     public void delete(String id) throws NotFoundException {
-        log.info("Delete user {}", id);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> {
+                    return NotFoundException.builder()
+                            .message(I18nMessage.ERROR_USER_NOT_FOUND)
+                            .build();
+                });
 
-        boolean checkUser = userRepository.existsById(id);
-        if (!checkUser) {
-            log.error("User {} don't exist", id);
-            throw NotFoundException.builder()
-                    .message(I18nMessage.ERROR_USER_NOT_FOUND)
-                    .build();
-        }
-
-        userRepository.deleteById(id);
-        log.info("Deleted user with {}", id);
+        user.setStatus(false);
+        userRepository.save(user);
     }
 
     @Override
@@ -227,11 +216,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserAddressDTO update(String id, UserRequest userRequest) throws NotFoundException, InvalidationException {
-        log.info("Update user {}", id);
-
         User user = userRepository.findById(id)
                 .orElseThrow(() -> {
-                    log.error("User {} don't exist", id);
                     return NotFoundException.builder()
                             .message(I18nMessage.ERROR_USER_NOT_FOUND)
                             .build();
@@ -240,7 +226,6 @@ public class UserServiceImpl implements UserService {
         if (!user.getUsername().equals(userRequest.getUsername())) {
             boolean checkUsername = userRepository.existsByUsername(userRequest.getUsername());
             if (checkUsername) {
-                log.error("Username {} existed", userRequest.getUsername());
                 throw new InvalidationException(userRequest, I18nMessage.ERROR_USERNAME_EXISTED);
             }
             user.setUsername(userRequest.getUsername());
@@ -265,14 +250,46 @@ public class UserServiceImpl implements UserService {
             address.setCity(addressRequest.getCity());
             address.setCountry(addressRequest.getCountry());
         }
-        user.setFullname(userRequest.getFullname());
+        user.setFirstName(userRequest.getFirstName());
+        user.setLastName(userRequest.getLastName());
         user.setDob(userRequest.getDob());
-        user.setEmail(userRequest.getEmail());
+        user.setSex(userRequest.getSex());
         user.setPhone(userRequest.getPhone());
-
         userRepository.save(user);
 
-        log.info("Updated user {} successfully", id);
+        return UserAddressDTO.builder()
+                .user(userMapper.toDto(user))
+                .address(addressMapper.toDto(user.getAddress()))
+                .build();
+    }
+
+    @Override
+    public UserAddressDTO update(String id, UpdateInfo updateInfo) throws NotFoundException {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> {
+                    return NotFoundException.builder()
+                            .message(I18nMessage.ERROR_USER_NOT_FOUND)
+                            .build();
+                });
+
+        AddressRequest addressRequest = updateInfo.getAddressRequest();
+        Address address = Address.builder()
+                .detail(addressRequest.getSpecificAddress())
+                .ward(addressRequest.getWard())
+                .district(addressRequest.getDistrict())
+                .city(addressRequest.getCity())
+                .country(addressRequest.getCountry())
+                .build();
+        addressRepository.save(address);
+        user.setAddress(address);
+
+        user.setFirstName(updateInfo.getFirstName());
+        user.setLastName(updateInfo.getLastName());
+        user.setDob(updateInfo.getDob());
+        user.setSex(updateInfo.getSex());
+        user.setFirstLogin(false);
+        userRepository.save(user);
+
         return UserAddressDTO.builder()
                 .user(userMapper.toDto(user))
                 .address(addressMapper.toDto(user.getAddress()))
@@ -282,28 +299,19 @@ public class UserServiceImpl implements UserService {
     public User convertToUser(UserCache userCache) {
         return User.builder()
                 .username(userCache.getUsername())
-                .nickname(userCache.getNickname())
                 .password(userCache.getPassword())
-                .fullname(userCache.getFullname())
                 .email(userCache.getEmail())
                 .phone(userCache.getPhone())
-                .sex(userCache.getSex())
-                .dob(userCache.getDob())
                 .build();
     }
 
-    public UserCache convertToUserCache(UserRegistration newUserRegistration) {
+    public UserCache convertToUserCache(UserRegistration userRegistration) {
         return UserCache.builder()
                 .id(UUID.randomUUID().toString())
-                .nickname(newUserRegistration.getNickname())
-                .username(newUserRegistration.getUsername())
-                .password(newUserRegistration.getPassword())
-                .fullname(newUserRegistration.getFullname())
-                .dob(newUserRegistration.getDob())
-                .phone(newUserRegistration.getPhone())
-                .email(newUserRegistration.getEmail())
-                .sex(newUserRegistration.getSex())
-                .role(newUserRegistration.getRole())
+                .username(userRegistration.getUsername())
+                .password(userRegistration.getPassword())
+                .phone(userRegistration.getPhone())
+                .email(userRegistration.getEmail())
                 .build();
     }
 }
