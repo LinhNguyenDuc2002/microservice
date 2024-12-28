@@ -20,6 +20,9 @@ import org.springframework.security.oauth2.server.authorization.authentication.O
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  *
  */
@@ -55,7 +58,9 @@ public class TokenAuthenticationProvider implements AuthenticationProvider {
             refreshToken = jwtIssuerService.generateRefreshToken(clientAuthenticationToken);
         }
 
-        return new OAuth2AccessTokenAuthenticationToken(registeredClient, clientPrincipal, accessToken, refreshToken);
+        Map<String, Object> additionalParameters = new HashMap<>();
+        additionalParameters.put("uid", user.getId());
+        return new OAuth2AccessTokenAuthenticationToken(registeredClient, clientPrincipal, accessToken, refreshToken, additionalParameters);
     }
 
     @Override
@@ -89,7 +94,7 @@ public class TokenAuthenticationProvider implements AuthenticationProvider {
             throw new OAuth2AuthenticationException(OAuthError.INVALID_CREDENTIALS);
         }
 
-        // verify the password
+        // Verify the password
         String requestPwd = clientAuthentication.getAdditionalParameters().get(OAuth2ParameterNames.PASSWORD).toString();
         if (!passwordEncoder.matches(requestPwd, user.getPassword())) {
             throw new OAuth2AuthenticationException(OAuthError.INVALID_CREDENTIALS);

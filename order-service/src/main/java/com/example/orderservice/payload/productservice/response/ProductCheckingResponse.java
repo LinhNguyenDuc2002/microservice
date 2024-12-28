@@ -18,4 +18,6 @@ public class ProductCheckingResponse {
     private boolean exist;
 
     private Double price;
+
+    private String info;
 }

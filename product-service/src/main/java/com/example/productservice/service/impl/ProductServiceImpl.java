@@ -1,57 +1,58 @@
 package com.example.productservice.service.impl;
 
-import com.cloudinary.Cloudinary;
-import com.cloudinary.utils.ObjectUtils;
 import com.example.productservice.cache.ProductCacheManager;
-import com.example.productservice.constant.ExceptionMessage;
-import com.example.productservice.dto.ExistingProductCheckDTO;
+import com.example.productservice.constant.I18nMessage;
 import com.example.productservice.dto.PageDTO;
 import com.example.productservice.dto.ProductDTO;
+import com.example.productservice.dto.request.BasicProductRequest;
+import com.example.productservice.dto.request.ProductDetailRequest;
+import com.example.productservice.dto.request.ProductRequest;
 import com.example.productservice.entity.Category;
 import com.example.productservice.entity.Image;
 import com.example.productservice.entity.Product;
-import com.example.productservice.entity.ProductType;
-import com.example.productservice.entity.Shop;
-import com.example.productservice.exception.InvalidException;
+import com.example.productservice.entity.ProductDetail;
+import com.example.productservice.exception.InvalidationException;
 import com.example.productservice.exception.NotFoundException;
+import com.example.productservice.mapper.ProductDetailMapper;
 import com.example.productservice.mapper.ProductMapper;
-import com.example.productservice.mapper.ProductTypeMapper;
-import com.example.productservice.payload.ProductRequest;
-import com.example.productservice.payload.ProductTypeRequest;
-import com.example.productservice.payload.UpdateDetailPriceReq;
 import com.example.productservice.repository.CategoryRepository;
 import com.example.productservice.repository.ImageRepository;
+import com.example.productservice.repository.ProductDetailRepository;
 import com.example.productservice.repository.ProductRepository;
-import com.example.productservice.repository.ProductTypeRepository;
 import com.example.productservice.repository.ShopRepository;
 import com.example.productservice.repository.predicate.ProductPredicate;
-import com.example.productservice.repository.predicate.ProductTypePredicate;
-import com.example.productservice.repository.predicate.ShopPredicate;
 import com.example.productservice.security.SecurityUtils;
+import com.example.productservice.service.CloudinaryService;
 import com.example.productservice.service.ProductService;
-import com.example.productservice.util.DateUtil;
 import com.example.productservice.util.PageUtil;
+import com.example.productservice.util.StringUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.common.security.oauthbearer.internals.secured.ValidateException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class ProductServiceImpl implements ProductService {
+    private final String FOLDER = "product-service";
+    private final Integer MAX_IMAGE_NUMBER = 4;
+
     @Autowired
-    private ProductTypeRepository productTypeRepository;
+    private ProductDetailRepository productDetailRepository;
 
     @Autowired
     private ProductRepository productRepository;
@@ -60,10 +61,10 @@ public class ProductServiceImpl implements ProductService {
     private ProductMapper productMapper;
 
     @Autowired
-    private ProductTypeMapper productTypeMapper;
+    private ProductDetailMapper productDetailMapper;
 
     @Autowired
-    private Cloudinary cloudinary;
+    private CloudinaryService cloudinaryService;
 
     @Autowired
     private ImageRepository imageRepository;
@@ -84,158 +85,157 @@ public class ProductServiceImpl implements ProductService {
     private KafkaOrderService orderService;
 
     @Override
-    public ProductDTO add(String productRequest, List<MultipartFile> files) throws InvalidException, NotFoundException {
+    public ProductDTO add(ProductRequest productRequest) throws InvalidationException, NotFoundException, IOException {
         Optional<String> userId = SecurityUtils.getLoggedInUserId();
-        ShopPredicate shopPredicate = new ShopPredicate().withAccountId(userId.get());
-        Shop shop = shopRepository.findOne(shopPredicate.getCriteria())
+
+        boolean check = productRepository.existsByName(productRequest.getName());
+        if (check) {
+            throw new InvalidationException(I18nMessage.ERROR_PRODUCT_NAME_EXISTED);
+        }
+
+        Category category = categoryRepository.findById(productRequest.getCategoryId())
                 .orElseThrow(() -> {
-                    return new NotFoundException(ExceptionMessage.ERROR_SHOP_NOT_FOUND);
+                    return new NotFoundException(I18nMessage.ERROR_CATEGORY_NOT_FOUND);
                 });
 
-        try {
-            ProductRequest newProduct = objectMapper.readValue(productRequest, ProductRequest.class);
-            if (newProduct == null ||
-                    !StringUtils.hasText(newProduct.getName()) ||
-                    (newProduct.getPrice() == null && (newProduct.getProductTypes() == null || newProduct.getProductTypes().isEmpty())) ||
-                    (newProduct.getQuantity() == null && (newProduct.getProductTypes() == null || newProduct.getProductTypes().isEmpty()))) {
-                throw new InvalidException(ExceptionMessage.ERROR_PRODUCT_INVALID_INPUT);
-            }
+        Product product = Product.builder()
+                .name(productRequest.getName())
+                .description(productRequest.getDescription())
+                .category(category)
+                .status(true)
+                .build();
 
-            Category category = categoryRepository.findById(newProduct.getCategory())
-                    .orElseThrow(() -> {
-                        return new NotFoundException(ExceptionMessage.ERROR_CATEGORY_NOT_FOUND);
-                    });
-
-            Product product = Product.builder()
-                    .name(newProduct.getName())
-                    .note(newProduct.getNote())
-                    .category(category)
-                    .shop(shop)
-                    .sold(0L)
-                    .build();
-            Long quantity = newProduct.getQuantity();
-            Double price = newProduct.getPrice();
-            if (newProduct.getProductTypes() != null && !newProduct.getProductTypes().isEmpty()) {
-                List<ProductType> productTypes = new ArrayList<>();
-                quantity = 0L;
-
-                for (ProductTypeRequest productTypeRequest : newProduct.getProductTypes()) {
-                    ProductType productType = ProductType.builder()
-                            .name(productTypeRequest.getName())
-                            .description(productTypeRequest.getDescription())
-                            .quantity(productTypeRequest.getQuantity())
-                            .price(productTypeRequest.getPrice())
-                            .product(product)
-                            .build();
-                    quantity += productType.getQuantity();
-                    price = Math.min(price, productType.getPrice());
-                    productTypes.add(productType);
-                }
-
-                productRepository.save(product);
-                productTypeRepository.saveAll(productTypes);
-            }
-            product.setPrice(price);
-            product.setQuantity(quantity);
-            productRepository.save(product);
-
-            if (files != null && !files.isEmpty()) {
-                List<Image> images = uploadFile(files);
-                images.stream().forEach(image -> image.setProduct(product));
-                imageRepository.saveAll(images);
-            }
-
-            log.info("Added a product");
-            return productMapper.toDto(product);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        Map<String, MultipartFile> images = new HashMap<>();
+        long totalSize = 0;
+        for (MultipartFile file : productRequest.getImages()) {
+            totalSize += file.getSize();
+            images.put(UUID.randomUUID().toString(), file);
         }
+        double totalSizeInMB = totalSize / (1024 * 1024);
+        if (productRequest.getImages().size() > MAX_IMAGE_NUMBER || totalSizeInMB > 4) {
+            throw new ValidateException(I18nMessage.ERROR_PRODUCT_DETAIL_NAME_DUPLICATED);
+        }
+        product.setImageIds(StringUtil.joinDelimiter(images.keySet().stream().toList()));
+
+        List<ProductDetail> productDetails = new ArrayList<>();
+        for (ProductDetailRequest productDetailRequest : productRequest.getProductDetails()) {
+            String imageId = UUID.randomUUID().toString();
+            images.put(imageId, productDetailRequest.getImage());
+            ProductDetail productDetail = ProductDetail.builder()
+                    .name(productDetailRequest.getName())
+                    .description(productDetailRequest.getDescription())
+                    .quantity(productDetailRequest.getQuantity())
+                    .price(productDetailRequest.getPrice())
+                    .sold(0L)
+                    .status(true)
+                    .product(product)
+                    .imageId(imageId)
+                    .build();
+            productDetails.add(productDetail);
+        }
+        product.setProductDetails(productDetails);
+        cloudinaryService.upload(images);
+        productRepository.save(product);
+
+        return productMapper.toDto(product);
     }
 
     @Override
-    public ProductDTO update(String id, String productRequest, List<MultipartFile> files) throws InvalidException, NotFoundException {
+    public ProductDTO update(String id, BasicProductRequest productRequest) throws InvalidationException, NotFoundException, IOException {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> {
-                    return new NotFoundException(ExceptionMessage.ERROR_PRODUCT_NOT_FOUND);
+                    return new NotFoundException(I18nMessage.ERROR_PRODUCT_NOT_FOUND);
                 });
-
-        try {
-            ProductRequest request = objectMapper.readValue(productRequest, ProductRequest.class);
-            if (request == null ||
-                    !StringUtils.hasText(request.getName()) ||
-                    request.getQuantity() == null ||
-                    request.getPrice() == null) {
-                throw new InvalidException(ExceptionMessage.ERROR_PRODUCT_INVALID_INPUT);
+        if (!productRequest.getName().equals(product.getName())) {
+            boolean check = productRepository.existsByName(productRequest.getName());
+            if (check) {
+                throw new InvalidationException(I18nMessage.ERROR_PRODUCT_NAME_EXISTED);
             }
-
-            Category category = categoryRepository.findById(request.getCategory())
-                    .orElseThrow(() -> {
-                        return new NotFoundException(ExceptionMessage.ERROR_CATEGORY_NOT_FOUND);
-                    });
-
-            Long quantity = request.getQuantity();
-            if (quantity != null && !product.getProductTypes().isEmpty()) {
-                Long total = product.getProductTypes().stream().mapToLong(ProductType::getQuantity).sum();
-                if (total != quantity) {
-                    throw new InvalidException("");
-                }
-            }
-
-            product.setQuantity(quantity);
-            product.setName(request.getName());
-            product.setNote(request.getNote());
-            product.setCategory(category);
-            if (product.getPrice() != request.getPrice() && (product.getProductTypes() == null || product.getProductTypes().isEmpty())) {
-                product.setPrice(request.getPrice());
-                orderService.updateUnitPrice(
-                        UpdateDetailPriceReq.builder()
-                                .productId(product.getId())
-                                .price(product.getPrice())
-                                .build());
-            }
-
-            if (files != null && !files.isEmpty()) {
-                List<Image> images = product.getImages().stream().toList();
-                images.stream().forEach(image -> {
-                    try {
-                        destroyFile(image.getPublicId(), ObjectUtils.emptyMap());
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-                imageRepository.deleteAllInBatch(images);
-
-                List<Image> imageFiles = uploadFile(files);
-                imageFiles.stream().forEach(image -> image.setProduct(product));
-                product.setImages(imageFiles);
-            }
-
-            productRepository.save(product);
-            return productMapper.toDto(product);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
+
+        Category category = categoryRepository.findById(productRequest.getCategoryId())
+                .orElseThrow(() -> {
+                    return new NotFoundException(I18nMessage.ERROR_CATEGORY_NOT_FOUND);
+                });
+
+        if (productRequest.getImages() != null && !productRequest.getImages().isEmpty()) {
+            Map<String, MultipartFile> images = new HashMap<>();
+            long totalSize = 0;
+            for (MultipartFile file : productRequest.getImages()) {
+                totalSize += file.getSize();
+                images.put(UUID.randomUUID().toString(), file);
+            }
+            double totalSizeInMB = totalSize / (1024 * 1024);
+
+            if (productRequest.getImages().size() > MAX_IMAGE_NUMBER || totalSizeInMB > 4) {
+                throw new ValidateException(I18nMessage.ERROR_IMAGE_NUMBER_EXCEEDED);
+            }
+
+            List<String> ids = StringUtil.splitDelimiter(product.getImageIds());
+            cloudinaryService.destroy(ids);
+            imageRepository.deleteAllById(ids);
+            product.setImageIds(StringUtil.joinDelimiter(images.keySet().stream().toList()));
+            cloudinaryService.upload(images);
+        }
+
+        product.setName(productRequest.getName());
+        product.setDescription(productRequest.getDescription());
+        product.setCategory(category);
+        productRepository.save(product);
+
+        return productMapper.toDto(product);
     }
 
     @Override
-    public PageDTO<ProductDTO> getAll(Integer page, Integer size, String shop, String search, String category, List<String> sortColumns) throws NotFoundException, JsonProcessingException {
-        PageDTO<ProductDTO> productCache = productCacheManager.getAllProducts(page, size, shop, category);
-        if(productCache != null) return productCache;
+    public PageDTO<ProductDTO> getAll(Integer page, Integer size, String search, String category, List<String> sortColumns) throws NotFoundException, JsonProcessingException {
+//        PageDTO<ProductDTO> productCache = productCacheManager.getAllProducts(page, size, category);
+//        if (productCache != null) return productCache;
 
         Pageable pageable = (sortColumns == null) ? PageUtil.getPage(page, size) : PageUtil.getPage(page, size, sortColumns.toArray(new String[0]));
 
         ProductPredicate productPredicate = new ProductPredicate()
-                .withShopId(shop)
                 .withCategoryId(category)
                 .search(search);
         Page<Product> products = productRepository.findAll(productPredicate.getCriteria(), pageable);
 
+        List<ProductDTO> productDTOS = products.getContent().stream()
+                .map(product -> {
+                    ProductDTO productDTO = productMapper.toDto(product);
+
+                    List<Image> image = imageRepository.findAllById(StringUtil.splitDelimiter(product.getImageIds()));
+                    productDTO.setImageUrls(image.stream().map(Image::getSecureUrl).toList());
+
+                    Long quantity = 0L;
+                    Long sold = 0L;
+                    Double maxPrice = 0.0;
+                    for (ProductDetail productDetail : product.getProductDetails()) {
+                        quantity += productDetail.getQuantity();
+                        sold += productDetail.getSold();
+                        if (productDetail.getPrice() > maxPrice) {
+                            maxPrice = productDetail.getPrice();
+                        }
+                    }
+
+                    Double minPrice = product.getProductDetails().stream()
+                            .map(ProductDetail::getPrice)
+                            .filter(price -> price != null)
+                            .min(Double::compareTo)
+                            .orElse(0.0);
+
+                    productDTO.setQuantity(quantity);
+                    productDTO.setSold(sold);
+                    productDTO.setMaxPrice(maxPrice);
+                    productDTO.setMinPrice(minPrice);
+                    return productDTO;
+                })
+                .collect(Collectors.toList());
+
         PageDTO pageDTO = PageDTO.<ProductDTO>builder()
                 .index(products.getNumber())
                 .totalPage(products.getTotalPages())
-                .elements(productMapper.toDtoList(products.getContent()))
+                .elements(productDTOS)
                 .build();
-        productCacheManager.saveAllProducts(pageDTO, page, size, shop, category);
+//        productCacheManager.saveAllProducts(pageDTO, page, size, category);
         return pageDTO;
     }
 
@@ -243,74 +243,46 @@ public class ProductServiceImpl implements ProductService {
     public ProductDTO get(String id) throws NotFoundException {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> {
-                    return new NotFoundException(ExceptionMessage.ERROR_PRODUCT_NOT_FOUND);
+                    return new NotFoundException(I18nMessage.ERROR_PRODUCT_NOT_FOUND);
                 });
 
-        return productMapper.toDto(product);
-    }
+        ProductDTO productDTO = productMapper.toDto(product);
 
-    @Override
-    public ExistingProductCheckDTO checkProductExist(String id, String productTypeId, Integer quantity) throws NotFoundException, InvalidException {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> {
-                    return new NotFoundException(ExceptionMessage.ERROR_PRODUCT_NOT_FOUND);
-                });
+        List<Image> image = imageRepository.findAllById(StringUtil.splitDelimiter(product.getImageIds()));
+        productDTO.setImageUrls(image.stream().map(Image::getSecureUrl).toList());
 
-        Long productQuantity = product.getQuantity();
-        Double productPrice = product.getPrice();
-        if (StringUtils.hasText(productTypeId)) {
-            ProductTypePredicate productTypePredicate = new ProductTypePredicate()
-                    .withId(productTypeId)
-                    .withProductId(id);
-            ProductType productType = productTypeRepository.findOne(productTypePredicate.getCriteria())
-                    .orElseThrow(() -> {
-                        return new NotFoundException(ExceptionMessage.ERROR_PRODUCT_NOT_FOUND);
-                    });
-
-            productQuantity = productType.getQuantity();
-            productPrice = productType.getPrice();
+        Long quantity = 0L;
+        Long sold = 0L;
+        Double maxPrice = 0.0;
+        for (ProductDetail productDetail : product.getProductDetails()) {
+            quantity += productDetail.getQuantity();
+            sold += productDetail.getSold();
+            if (productDetail.getPrice() > maxPrice) {
+                maxPrice = productDetail.getPrice();
+            }
         }
 
-        if (quantity > productQuantity) {
-            throw new InvalidException(ExceptionMessage.ERROR_PRODUCT_SOLD_OUT);
-        }
+        Double minPrice = product.getProductDetails().stream()
+                .map(ProductDetail::getPrice)
+                .filter(price -> price != null)
+                .min(Double::compareTo)
+                .orElse(0.0);
 
-        return ExistingProductCheckDTO.builder()
-                .exist(true)
-                .price(productPrice)
-                .build();
+        productDTO.setQuantity(quantity);
+        productDTO.setSold(sold);
+        productDTO.setMaxPrice(maxPrice);
+        productDTO.setMinPrice(minPrice);
+
+        return productDTO;
     }
 
     @Override
     public void delete(String id) throws NotFoundException {
-        Optional<Product> product = productRepository.findById(id);
-
-        if (!product.isPresent()) {
-            throw new NotFoundException(ExceptionMessage.ERROR_PRODUCT_NOT_FOUND);
-        }
-
-        productRepository.deleteById(id);
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> {
+                    return new NotFoundException(I18nMessage.ERROR_PRODUCT_NOT_FOUND);
+                });
+        product.setStatus(false);
+        productRepository.save(product);
     }
-
-    public List<Image> uploadFile(List<MultipartFile> files) throws IOException {
-        List<Image> images = new ArrayList<>();
-        for (MultipartFile file : files) {
-            Map data = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
-
-            images.add(Image.builder()
-                    .format(data.get("format").toString())
-                    .resourceType(data.get("resource_type").toString())
-                    .secureUrl(data.get("secure_url").toString())
-                    .createdAt(DateUtil.convertStringToDate(data.get("created_at").toString()))
-                    .url(data.get("url").toString())
-                    .publicId(data.get("public_id").toString())
-                    .build());
-        }
-        return images;
-    }
-
-    private void destroyFile(String publicId, Map map) throws IOException {
-        cloudinary.uploader().destroy(publicId, map);
-    }
-
 }

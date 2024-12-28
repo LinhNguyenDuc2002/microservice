@@ -5,11 +5,11 @@ import com.example.productservice.dto.CommentDTO;
 import com.example.productservice.dto.PageDTO;
 import com.example.productservice.entity.Comment;
 import com.example.productservice.entity.Product;
-import com.example.productservice.exception.InvalidException;
+import com.example.productservice.exception.InvalidationException;
 import com.example.productservice.exception.NotFoundException;
 import com.example.productservice.mock.CommentMock;
 import com.example.productservice.mock.ProductMock;
-import com.example.productservice.payload.CommentRequest;
+import com.example.productservice.dto.request.CommentRequest;
 import com.example.productservice.repository.CommentRepository;
 import com.example.productservice.repository.ProductRepository;
 import jakarta.transaction.Transactional;
@@ -69,7 +69,7 @@ public class CommentServiceTest extends BaseTest {
 
     @Test
     @Transactional
-    void test_update() throws NotFoundException, InvalidException {
+    void test_update() throws NotFoundException, InvalidationException {
         mockProduct();
         Product product = productRepository.findAll().get(0);
         mockComment(product, true);
@@ -83,7 +83,7 @@ public class CommentServiceTest extends BaseTest {
 
     @Test
     @Transactional
-    void test_update_throwException() throws NotFoundException, InvalidException {
+    void test_update_throwException() throws NotFoundException, InvalidationException {
         // Test 1
         assertThrows(NotFoundException.class, () -> commentService.update(UUID.randomUUID().toString(), null));
 
@@ -93,12 +93,12 @@ public class CommentServiceTest extends BaseTest {
         mockComment(product, false);
         String commentId = commentRepository.findAll().get(0).getId();
 
-        assertThrows(InvalidException.class, () -> commentService.update(commentId, null));
+        assertThrows(InvalidationException.class, () -> commentService.update(commentId, null));
     }
 
     @Test
     @Transactional
-    void test_delete() throws NotFoundException, InvalidException {
+    void test_delete() throws NotFoundException, InvalidationException {
         mockProduct();
         Product product = productRepository.findAll().get(0);
         mockComment(product, true);
@@ -111,7 +111,7 @@ public class CommentServiceTest extends BaseTest {
 
     @Test
     @Transactional
-    void test_delete_throwException() throws NotFoundException, InvalidException {
+    void test_delete_throwException() throws NotFoundException, InvalidationException {
         // Test 1
         assertThrows(NotFoundException.class, () -> commentService.delete(UUID.randomUUID().toString()));
 
@@ -121,7 +121,7 @@ public class CommentServiceTest extends BaseTest {
         mockComment(product, false);
         String commentId = commentRepository.findAll().get(0).getId();
 
-        assertThrows(InvalidException.class, () -> commentService.delete(commentId));
+        assertThrows(InvalidationException.class, () -> commentService.delete(commentId));
     }
 
     private void mockProduct() {

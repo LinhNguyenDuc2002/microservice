@@ -47,5 +47,5 @@ public class OauthClientDetail {
     @OneToOne
     @MapsId
     @JoinColumn(name = "oauth_id", foreignKey = @ForeignKey(name = "fk_oauth_client"))
-    private OauthClient oauthId;
+    private OauthClient oauthClient;
 }

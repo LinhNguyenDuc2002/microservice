@@ -1,5 +1,7 @@
 package com.example.userservice.security.oauthserver.token;
 
+import com.example.userservice.entity.User;
+import com.example.userservice.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.AbstractOAuth2Token;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
@@ -24,12 +27,16 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Component
 @Slf4j
 public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -54,9 +61,9 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
             parameters.put("refresh_token", refreshToken.getTokenValue());
         }
 
-        if (!CollectionUtils.isEmpty(additionalParameters)) {
-            parameters.putAll(additionalParameters);
-        }
+//        if (!CollectionUtils.isEmpty(additionalParameters)) {
+//            parameters.putAll(additionalParameters);
+//        }
 
         // Write json data into response
         byte[] bytes = objectMapper.writeValueAsString(parameters).getBytes(StandardCharsets.UTF_8);
@@ -65,6 +72,16 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         response.getOutputStream().print(new String(bytes, StandardCharsets.ISO_8859_1)); // transfer bytes into string
         response.flushBuffer();
+
+        saveRefreshToken(refreshToken.getTokenValue(), (String) additionalParameters.get("uid"));
+    }
+
+    private void saveRefreshToken(String refreshToken, String userId) {
+        User user = userRepository.findById(userId).get();
+        if(user != null) {
+            user.setToken(refreshToken);
+            userRepository.save(user);
+        }
     }
 
     /**

@@ -1,25 +1,24 @@
 package com.example.productservice.service;
 
-import com.example.productservice.dto.ExistingProductCheckDTO;
-import com.example.productservice.dto.ProductDTO;
-import com.example.productservice.exception.InvalidException;
-import com.example.productservice.exception.NotFoundException;
 import com.example.productservice.dto.PageDTO;
+import com.example.productservice.dto.ProductDTO;
+import com.example.productservice.dto.request.BasicProductRequest;
+import com.example.productservice.dto.request.ProductRequest;
+import com.example.productservice.exception.InvalidationException;
+import com.example.productservice.exception.NotFoundException;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface ProductService {
-    ProductDTO add(String productRequest, List<MultipartFile> files) throws InvalidException, NotFoundException;
+    ProductDTO add(ProductRequest productRequest) throws InvalidationException, NotFoundException, IOException;
 
-    ProductDTO update(String id, String productRequest, List<MultipartFile> files) throws InvalidException, NotFoundException;
+    ProductDTO update(String id, BasicProductRequest productRequest) throws InvalidationException, NotFoundException, IOException;
 
-    PageDTO<ProductDTO> getAll(Integer page, Integer size, String shop, String search, String category, List<String> sortColumns) throws NotFoundException, JsonProcessingException;
+    PageDTO<ProductDTO> getAll(Integer page, Integer size, String search, String category, List<String> sortColumns) throws NotFoundException, JsonProcessingException;
 
     ProductDTO get(String id) throws NotFoundException;
-
-    ExistingProductCheckDTO checkProductExist(String id, String productTypeId, Integer quantity) throws NotFoundException, InvalidException;
 
     void delete(String id) throws NotFoundException;
 }

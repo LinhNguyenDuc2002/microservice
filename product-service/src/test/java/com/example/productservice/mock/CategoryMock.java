@@ -1,7 +1,7 @@
 package com.example.productservice.mock;
 
 import com.example.productservice.entity.Category;
-import com.example.productservice.payload.CategoryRequest;
+import com.example.productservice.dto.request.CategoryRequest;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 

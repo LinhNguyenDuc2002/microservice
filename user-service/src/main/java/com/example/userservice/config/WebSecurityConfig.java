@@ -125,7 +125,6 @@ public class WebSecurityConfig {
      * ----------------
      * Default Endpoints
      * ----------------
-     * <p>
      * Authorization Endpoint           /oauth2/authorize
      * Token Endpoint                   /oauth2/token
      * Token Revocation                 /oauth2/revoke
@@ -144,9 +143,11 @@ public class WebSecurityConfig {
 
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
         http
-                .cors(cors -> cors.disable())
-                .csrf(csrf -> csrf.disable())
-                .httpBasic(httpBasic -> httpBasic.disable())
+                .cors(cors -> cors.disable()) //disable CORS
+                .csrf(csrf -> csrf.disable()) //disable CSRF
+                .httpBasic(httpBasic -> httpBasic.disable()) //disable HTTP Basic Authentication
+
+                // config using stateless
                 .sessionManagement((session) -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
@@ -163,8 +164,8 @@ public class WebSecurityConfig {
 
                 // Accept access tokens for User Info and/or Client Registration
                 .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwtResourceServerCustomize) //handle JWT token
-                        .bearerTokenResolver(tokenResolver) //how to get token
+                        .jwt(jwtResourceServerCustomize) // handle JWT token
+                        .bearerTokenResolver(tokenResolver) // how to get token
                 )
 
                 // Returning OAuth2AuthorizationServerConfigurer allows to customize configs regarding Authorization Server
@@ -174,21 +175,23 @@ public class WebSecurityConfig {
 
                 // Customize the logic for client authentication requests
                 .clientAuthentication(clientAuth -> clientAuth //config client authentication
-                        // Pre-processor
+                        // (1) Pre-processor (convert)
                         .authenticationConverters(initConverter(clientAuthenticationConverter))
-                        // Main-processor
+                        // (2) Main-processor (authenticate)
                         .authenticationProviders(initProvider(publicClientAuthenticationProvider, clientSecretAuthenticationProvider))
+                        // Handle exception
                         .errorResponseHandler(authorizationExceptionHandler)
                 )
 
-                // Customize the logic for OAuth2 access token requests
+                // Customize the logic for access token and refresh token requests in OAuth2
                 .tokenEndpoint(tokenEndpoint -> tokenEndpoint
-                        // Pre-processor
+                        // (3) Pre-processor
                         .accessTokenRequestConverters(initConverter(tokenAuthenticationConverter, refreshTokenAuthenticationConverter))
-                        // Main-processor: used for authenticating the OAuth2AuthorizationGrantAuthenticationToken
+                        // (4) Main-processor: used for authenticating the OAuth2AuthorizationGrantAuthenticationToken
                         .authenticationProviders(initProvider(tokenAuthenticationProvider, refreshTokenAuthenticationProvider))
-                        // Post-processor
+                        // (5) Post-processor
                         .accessTokenResponseHandler(authenticationSuccessHandler)
+                        // Handle exception
                         .errorResponseHandler(authorizationExceptionHandler)
                 )
 
@@ -239,7 +242,8 @@ public class WebSecurityConfig {
 
     /**
      * Transfer authentication request from client to Authentication
-     *
+     * Input: AuthenticationConverter list
+     * Output: Consumer
      * @param converters
      * @return
      */

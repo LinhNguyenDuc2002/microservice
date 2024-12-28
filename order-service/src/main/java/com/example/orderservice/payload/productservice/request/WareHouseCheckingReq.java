@@ -15,9 +15,7 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = false)
 @Builder
 public class WareHouseCheckingReq {
-    private String productId;
-
-    private String productTypeId;
+    private String productDetailId;
 
     private Integer quantity;
 }

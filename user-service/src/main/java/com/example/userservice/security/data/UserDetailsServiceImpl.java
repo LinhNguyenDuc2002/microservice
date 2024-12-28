@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
@@ -23,8 +24,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                     return new UsernameNotFoundException(I18nMessage.ERROR_USERNAME_NOT_FOUND);
                 });
 
-        AuthUser ret = new AuthUser(user.getUsername(), user.getPassword(), user.getRoles());
-        ret.setId(user.getId());
+        AuthUser ret = new AuthUser(user.getId(), user.getUsername(), user.getPassword(), user.getRoles(), user.isStatus());
+        if(StringUtils.hasText(user.getToken())) {
+            ret.setRefreshToken(user.getToken());
+        }
         ret.setEmail(user.getEmail());
 
         return ret;

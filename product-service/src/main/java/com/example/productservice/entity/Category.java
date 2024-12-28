@@ -31,8 +31,11 @@ public class Category extends Auditor {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "note")
-    private String note;
+    @Column(name = "description", columnDefinition = "text")
+    private String description;
+
+    @Column(name = "status")
+    private boolean status;
 
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @EqualsAndHashCode.Exclude

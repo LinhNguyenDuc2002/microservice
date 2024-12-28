@@ -24,13 +24,13 @@ import java.util.Collection;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Comment extends Auditor{
+public class Comment extends Auditor {
     @Id
     @UuidGenerator
     @Column(name = "id")
     private String id;
 
-    @Column(name = "message")
+    @Column(name = "message", columnDefinition = "text")
     private String message;
 
     @OneToMany(mappedBy = "comment", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
@@ -39,10 +39,7 @@ public class Comment extends Auditor{
     @Column(name = "allow_edit")
     private boolean allowEdit;
 
-    @ManyToOne
-    @JoinColumn(name = "customer_id")
-    @EqualsAndHashCode.Exclude
-    private Customer customer;
+    private String customerId;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "product_id")

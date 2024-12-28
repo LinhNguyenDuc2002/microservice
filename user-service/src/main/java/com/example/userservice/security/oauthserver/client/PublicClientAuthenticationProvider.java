@@ -13,6 +13,9 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.stereotype.Component;
 
+/**
+ * AuthenticationProvider used to authenticate an Authentication and return Authentication
+ */
 @Component
 @Slf4j
 public class PublicClientAuthenticationProvider implements AuthenticationProvider {
@@ -37,7 +40,7 @@ public class PublicClientAuthenticationProvider implements AuthenticationProvide
             RegisteredClient registeredClient = registeredClientRepository.findByClientId(clientId);
             if (registeredClient == null) {
                 log.error("Unknown client {}", clientId);
-                throw new OAuth2AuthenticationException(OAuthError.INVALID_REQUEST);
+                throw new OAuth2AuthenticationException(OAuthError.NOT_FOUND_REGISTERED_CLIENT);
             }
 
             if (!registeredClient.getClientAuthenticationMethods().contains(clientAuthentication.getClientAuthenticationMethod())) {
@@ -53,6 +56,7 @@ public class PublicClientAuthenticationProvider implements AuthenticationProvide
      * check if the passed Authentication is supported by the class implementing this interface.
      * @param authentication
      * @return
+     * return TRUE if the parent class of input authentication is OAuth2ClientAuthenticationToken => call authenticate()
      */
     @Override
     public boolean supports(Class<?> authentication) {

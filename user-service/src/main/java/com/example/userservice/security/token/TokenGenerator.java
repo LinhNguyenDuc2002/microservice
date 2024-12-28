@@ -25,6 +25,21 @@ import java.util.UUID;
 
 /**
  * Generate token
+ * --- HEADER ---
+ * typ (type)
+ * alg (algorithm)
+ * --- PAYLOAD ---
+ * jti (jwt id)
+ * sub (subject)
+ * aud(audience)
+ * iss (issuer)
+ * exp (expiration time)
+ * iat (issued at)
+ * nbf (not before)
+ * claims:
+ *      cli (client id)
+ *      typ (type, eg: Bearer)
+ *      scope
  */
 @Slf4j
 public class TokenGenerator implements OAuth2TokenGenerator<Jwt> {
@@ -49,10 +64,10 @@ public class TokenGenerator implements OAuth2TokenGenerator<Jwt> {
         // Get registered client in context
         final RegisteredClient registeredClient = context.getRegisteredClient();
 
-        // Initialize token builder with jti, sub (subject), aud (audience), cli
+        // Initialize token builder
         JwtClaimsSet.Builder claimsBuilder = JwtClaimsSet.builder()
-                .id(UUID.randomUUID().toString())
-                .subject(registeredClient.getId()) //owner object
+                .id(UUID.randomUUID().toString()) // jti
+                .subject(registeredClient.getId()) // owner object
                 .audience(Collections.singletonList(registeredClient.getClientId()));
         claimsBuilder.claim(SecurityConstant.TOKEN_CLAIM_CLIENT_ID, registeredClient.getClientId());
 
@@ -62,7 +77,7 @@ public class TokenGenerator implements OAuth2TokenGenerator<Jwt> {
             issuer = context.getAuthorizationServerContext().getIssuer();
         }
         if (StringUtils.hasText(issuer)) {
-            claimsBuilder.issuer(issuer); //release source
+            claimsBuilder.issuer(issuer); // release source
         }
 
         // Jwt algorithm in header: typ (type), alg (algorithm)
@@ -94,7 +109,7 @@ public class TokenGenerator implements OAuth2TokenGenerator<Jwt> {
         // Define the token claims based on token type
         Instant issuedAt = Instant.now();
         if (OAuth2TokenType.ACCESS_TOKEN.equals(tokenType)) {
-            Duration lifespanInMinute = registeredClient.getTokenSettings().getAccessTokenTimeToLive(); //represents a period of time
+            Duration lifespanInMinute = registeredClient.getTokenSettings().getAccessTokenTimeToLive(); // represents a period of time
             claimsBuilder.claim(SecurityConstant.TOKEN_CLAIM_TYPE, OAuth2AccessToken.TokenType.BEARER.getValue());
 
             // token scope
@@ -105,13 +120,13 @@ public class TokenGenerator implements OAuth2TokenGenerator<Jwt> {
             Instant expiresAt = issuedAt.plus(lifespanInMinute);
             claimsBuilder.issuedAt(issuedAt)
                     .expiresAt(expiresAt)
-                    .notBefore(issuedAt); //the moment when JWT can be used
+                    .notBefore(issuedAt); // the moment when JWT can be used
 
             JwsHeader jwsHeader = jwsHeaderBuilder.build();
             JwtClaimsSet claims = claimsBuilder.build();
             return jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims));
         }
-        else {
+        else { // REFRESH TOKEN
             Duration lifespanInMinute = registeredClient.getTokenSettings().getRefreshTokenTimeToLive();
             claimsBuilder.claim(SecurityConstant.TOKEN_CLAIM_TYPE, SecurityConstant.TOKEN_CLAIM_REFRESH_VALUE);
 

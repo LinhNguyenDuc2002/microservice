@@ -23,17 +23,19 @@ public class ProductDTO {
 
     private String name;
 
-    private Double price;
-
     private Long quantity;
 
     private Long sold;
 
-    private String note;
+    private Double minPrice;
 
-    private List<String> images;
+    private Double maxPrice;
 
-    private String category;
+    private String description;
 
-    private List<ProductTypeDTO> productTypes;
+    private Boolean status;
+
+    private List<String> imageUrls;
+
+    private CategoryDTO category;
 }

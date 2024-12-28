@@ -10,7 +10,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class PageDTO<T> {
+public class PageDto<T> {
     @JsonProperty("page_number")
     private Integer index;
 

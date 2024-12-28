@@ -1,6 +1,6 @@
 package com.example.productservice.security;
 
-import com.example.productservice.constant.ExceptionMessage;
+import com.example.productservice.constant.I18nMessage;
 import com.example.productservice.constant.SecurityConstant;
 import com.example.productservice.exception.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +15,7 @@ import java.util.Optional;
 public class SecurityUtils {
     /**
      * Get current user id
+     *
      * @return
      */
     public static Optional<String> getLoggedInUserId() {
@@ -35,6 +36,7 @@ public class SecurityUtils {
 
     /**
      * Get the current logged-in  user
+     *
      * @return current username if user has logged. Otherwise return {@link Optional#empty()}
      */
     public static Optional<String> getCurrentUsername() {
@@ -64,7 +66,7 @@ public class SecurityUtils {
         }
 
         log.error("error at getCurrentJWT: cannot get current JWT");
-        throw new NotFoundException(ExceptionMessage.ERROR_TOKEN_NOT_FOUND);
+        throw new NotFoundException(I18nMessage.ERROR_TOKEN_NOT_FOUND);
     }
 
     private static Optional<String> resolveUserIdFromJwt(Jwt jwt) {

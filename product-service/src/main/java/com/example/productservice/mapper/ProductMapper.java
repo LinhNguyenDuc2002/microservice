@@ -1,23 +1,18 @@
 package com.example.productservice.mapper;
 
 import com.example.productservice.dto.ProductDTO;
-import com.example.productservice.entity.Image;
 import com.example.productservice.entity.Product;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ProductMapper extends AbstractMapper<Product, ProductDTO> {
-    @Override
-    public ProductDTO toDto(Product product) {
-        ProductDTO productDTO = super.toDto(product);
+    @Autowired
+    private ProductDetailMapper productDetailMapper;
 
-        if(product.getImages() != null && !product.getImages().isEmpty()) {
-            productDTO.setImages(product.getImages().stream().map(Image::getUrl).toList());
-        }
-        productDTO.setCategory(product.getCategory().getName());
+    @Autowired
+    private CommentMapper commentMapper;
 
-        return productDTO;
-    }
     @Override
     public Class<ProductDTO> getDtoClass() {
         return ProductDTO.class;

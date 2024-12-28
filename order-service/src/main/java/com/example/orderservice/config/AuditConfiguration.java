@@ -1,6 +1,6 @@
 package com.example.orderservice.config;
 
-import com.example.orderservice.security.SecurityUtils;
+import com.example.orderservice.security.SecurityUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -23,7 +23,7 @@ public class AuditConfiguration {
 
         @Override
         public Optional<String> getCurrentAuditor() {
-            return SecurityUtils.getCurrentUsername();
+            return SecurityUtil.getCurrentUsername();
         }
 
     }

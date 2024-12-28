@@ -41,6 +41,11 @@ public class RegisteredClientRepositoryImpl implements RegisteredClientRepositor
         return null;
     }
 
+    /**
+     * Find client registered
+     * @param clientId
+     * @return
+     */
     @Override
     public RegisteredClient findByClientId(String clientId) {
         OauthClient oauthClient = oauthClientRepository.findByClientId(clientId);
@@ -53,7 +58,7 @@ public class RegisteredClientRepositoryImpl implements RegisteredClientRepositor
     }
 
     private RegisteredClient fromOauthClient(OauthClient client) {
-        OauthClientDetail clientDetail = client.getDetail();
+        OauthClientDetail clientDetail = client.getOauthClientDetail();
 //        String clientSecret = null;
 //        ClientAuthenticationMethod authMethod = ClientAuthenticationMethod.NONE;
 //
@@ -89,7 +94,7 @@ public class RegisteredClientRepositoryImpl implements RegisteredClientRepositor
                         .accessTokenFormat(OAuth2TokenFormat.SELF_CONTAINED)
                         .accessTokenTimeToLive(Duration.ofMinutes(accessTokenLifespan))
                         .refreshTokenTimeToLive(Duration.ofMinutes(refreshTokenLifespan))
-                        .reuseRefreshTokens(true)
+                        .reuseRefreshTokens(false)
                         .build())
                 .build();
     }

@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * AuthenticationConverter used to converts authentication request from client to Authentication
  * This class converts authentication request from client to Authentication
  */
 @Component
@@ -43,7 +44,7 @@ public class ClientAuthenticationConverter implements AuthenticationConverter {
 
         String clientId = parameters.getFirst(OAuth2ParameterNames.CLIENT_ID);
         if (!StringUtils.hasText(clientId)) {
-            throw new OAuth2AuthenticationException(OAuthError.INVALID_REQUEST);
+            throw new OAuth2AuthenticationException(OAuthError.INVALID_CLIENT_ID);
         }
 
         String clientSecret = parameters.getFirst(OAuth2ParameterNames.CLIENT_SECRET);
@@ -53,7 +54,8 @@ public class ClientAuthenticationConverter implements AuthenticationConverter {
                 additionalParameters.put(
                         key,
                         value.size() == 1 ? value.get(0) : value.toArray(new String[0])
-                ));
+                )
+        );
 
         if (StringUtils.hasText(clientSecret)) {
             return new OAuth2ClientAuthenticationToken(clientId, ClientAuthenticationMethod.CLIENT_SECRET_POST, clientSecret, additionalParameters);

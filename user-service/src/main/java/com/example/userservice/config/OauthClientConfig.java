@@ -11,12 +11,14 @@ public class OauthClientConfig {
     private String grantType;
 
     /**
+     * Lifetime of access token
      * In minutes
      */
     @Value("${oauth.client.default.access-token-lifespan:300}")
     private long accessTokenLifeSpanInMin;
 
     /**
+     * Lifetime of refresh token
      * In minutes
      */
     @Value("${oauth.client.default.refresh-token-lifespan:1800}")
