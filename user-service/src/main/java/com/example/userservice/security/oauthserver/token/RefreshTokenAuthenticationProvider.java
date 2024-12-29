@@ -72,7 +72,9 @@ public class RefreshTokenAuthenticationProvider implements AuthenticationProvide
         // Verify user information
         String username = jwt.getClaimAsString(SecurityConstant.TOKEN_CLAIM_USERNAME);
         AuthUser user = (AuthUser) userDetailsService.loadUserByUsername(username);
-
+        if(!user.getRefreshToken().equals(refreshToken)) {
+            throw new OAuth2AuthenticationException(OAuthError.INVALID_REQUEST);
+        }
         // Generate new token
         ClientAuthenticationToken clientAuthenticationToken = new ClientAuthenticationToken(registeredClient, user);
         OAuth2AccessToken accessToken = jwtIssuerService.generateAccessToken(clientAuthenticationToken);

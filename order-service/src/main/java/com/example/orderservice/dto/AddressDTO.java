@@ -14,7 +14,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class AddressDTO {
+public class AddressDto {
     private String id;
 
     @JsonProperty("specific_address")

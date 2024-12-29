@@ -44,7 +44,7 @@ public class OauthClient extends Auditor {
     @Column(name = "description")
     private String description;
 
-    @OneToOne(mappedBy = "oauthId", cascade = CascadeType.REMOVE)
-    @PrimaryKeyJoinColumn
-    private OauthClientDetail detail;
+    @OneToOne(mappedBy = "oauthClient", cascade = CascadeType.REMOVE)
+    @PrimaryKeyJoinColumn //primary key of parent class is primary key of sub class
+    private OauthClientDetail oauthClientDetail;
 }

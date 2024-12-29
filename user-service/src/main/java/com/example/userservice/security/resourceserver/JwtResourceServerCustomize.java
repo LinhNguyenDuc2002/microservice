@@ -21,7 +21,7 @@ public class JwtResourceServerCustomize implements Customizer<OAuth2ResourceServ
     private JwtAuthenticationProvider jwtAuthenticationProvider;
 
     /**
-     * Customize JwtConfigurer
+     * Customize JwtConfigurer in Resource server
      * @param jwtConfigurer
      */
     @Override

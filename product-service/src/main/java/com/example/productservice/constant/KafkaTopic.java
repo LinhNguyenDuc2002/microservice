@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 public final class KafkaTopic {
     public final static String CREATE_CUSTOMER = "create-customer";
 
-    public final static String UPDATE_UNIT_PRICE_DETAIL = "update-detail";
+    public final static String UPDATE_ORDER_DETAIL = "update-detail";
 }

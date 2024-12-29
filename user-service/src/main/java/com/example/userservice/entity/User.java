@@ -53,6 +53,9 @@ public class User extends Auditor {
 
     private boolean status;
 
+    @Column(name = "token", columnDefinition = "text")
+    private String token;
+
     @OneToOne(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Image avatar;
 

@@ -7,6 +7,11 @@ import org.springframework.util.MultiValueMap;
 import java.util.Map;
 
 public final class RequestUtils {
+    /**
+     * get parameters from request
+     * @param request
+     * @return
+     */
     public static MultiValueMap<String, String> getParameters(HttpServletRequest request) {
         Map<String, String[]> parameterMap = request.getParameterMap();
         MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>(parameterMap.size());

@@ -3,6 +3,7 @@ package com.example.userservice.service.impl;
 import com.example.userservice.cache.UserCacheManager;
 import com.example.userservice.config.ApplicationConfig;
 import com.example.userservice.constant.I18nMessage;
+import com.example.userservice.constant.KafkaTopic;
 import com.example.userservice.constant.RoleType;
 import com.example.userservice.dto.UserAddressDTO;
 import com.example.userservice.dto.UserDto;
@@ -94,7 +95,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Map<String, String> createTempUser(UserRegistration userRegistration) throws InvalidationException, NoSuchAlgorithmException, InvalidKeyException {
+    public Map<String, String> createTempUser(UserRegistration userRegistration) throws InvalidationException, NoSuchAlgorithmException, InvalidKeyException, JsonProcessingException {
         if (userRepository.existsByEmail(userRegistration.getEmail())) {
             throw new InvalidationException(userRegistration, I18nMessage.ERROR_EMAIL_EXISTED);
         }
@@ -117,7 +118,7 @@ public class UserServiceImpl implements UserService {
                 .locale(LocaleContextHolder.getLocale())
                 .build();
         log.info("Sending OTP to authenticate ...");
-//        messagingService.sendMessage(KafkaTopic.SEND_EMAIL, mapper.writeValueAsString(email));
+        messagingService.sendMessage(KafkaTopic.SEND_EMAIL, mapper.writeValueAsString(email));
         log.info("OTP code is sent successfully");
 
         userCacheManager.storeUserCache(userCache);

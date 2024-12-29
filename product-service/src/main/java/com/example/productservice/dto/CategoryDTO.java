@@ -22,4 +22,8 @@ public class CategoryDTO {
     private String name;
 
     private String note;
+
+    private Integer total;
+
+    private boolean status;
 }

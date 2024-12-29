@@ -10,7 +10,6 @@ public abstract class AbstractMapper<E,D> implements Mapper<E,D> {
     @Autowired
     private ModelMapper modelMapper;
 
-
     @Override
     public D toDto(E e) {
         return modelMapper.map(e, getDtoClass());

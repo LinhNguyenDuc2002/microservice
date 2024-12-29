@@ -4,7 +4,8 @@ import com.example.orderservice.config.ProductConfiguration;
 import com.example.orderservice.constant.SecurityConstant;
 import com.example.orderservice.payload.productservice.request.WareHouseCheckingReq;
 import com.example.orderservice.payload.productservice.response.ProductCheckingResponse;
-import com.example.orderservice.security.SecurityUtils;
+import com.example.orderservice.payload.productservice.response.WareHouseCheckingResponse;
+import com.example.orderservice.security.SecurityUtil;
 import com.example.orderservice.service.ProductService;
 import com.example.orderservice.webclient.WebClientProcessor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,17 +32,16 @@ public class ProductServiceImpl implements ProductService {
     private WebClientProcessor webClientProcessor;
 
     @Override
-    public ProductCheckingResponse checkProductExist(String productId, String productTypeId, Integer quantity) throws Exception {
+    public ProductCheckingResponse checkProductExist(String productDetailId, Integer quantity) throws Exception {
         String url = productConfiguration.getProductCheckingUrl();
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(url);
 
         Map<String, Object> pathVariable = new HashMap<>();
-        pathVariable.put(ProductConfiguration.PATH_UUID, productId);
+        pathVariable.put(ProductConfiguration.PATH_UUID, productDetailId);
         uriBuilder.uriVariables(pathVariable);
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.put("type", Collections.singletonList(productTypeId));
-        params.put("quantity", Collections.singletonList(String.valueOf(quantity)));
+        params.put(ProductConfiguration.QUANTITY, Collections.singletonList(String.valueOf(quantity)));
         Map<String, String> header = new LinkedHashMap<>();
 
         // send request to product service
@@ -54,19 +54,19 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Map<String, List<String>> checkWarehouse(List<WareHouseCheckingReq> wareHouseCheckingReqs) throws Exception {
+    public WareHouseCheckingResponse checkWarehouse(List<WareHouseCheckingReq> wareHouseCheckingReqs) throws Exception {
         String url = productConfiguration.getCheckWarehouseUrl();
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(url);
 
         Map<String, String> header = new LinkedHashMap<>();
-        header.put(HttpHeaders.AUTHORIZATION, String.format(SecurityConstant.ACCESS_TOKEN_FORMAT, SecurityUtils.getCurrentJWT()));
+        header.put(HttpHeaders.AUTHORIZATION, String.format(SecurityConstant.ACCESS_TOKEN_FORMAT, SecurityUtil.getCurrentJWT()));
 
         // send request to product service
         return webClientProcessor.patch(
                 uriBuilder.toUriString(),
                 header,
                 wareHouseCheckingReqs,
-                Map.class
+                WareHouseCheckingResponse.class
         );
     }
 
@@ -82,7 +82,7 @@ public class ProductServiceImpl implements ProductService {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 
         Map<String, String> header = new LinkedHashMap<>();
-        header.put(HttpHeaders.AUTHORIZATION, String.format(SecurityConstant.ACCESS_TOKEN_FORMAT, SecurityUtils.getCurrentJWT()));
+        header.put(HttpHeaders.AUTHORIZATION, String.format(SecurityConstant.ACCESS_TOKEN_FORMAT, SecurityUtil.getCurrentJWT()));
 
         return webClientProcessor.get(
                 uriBuilder.toUriString(),
@@ -98,7 +98,7 @@ public class ProductServiceImpl implements ProductService {
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(url);
 
         Map<String, String> header = new LinkedHashMap<>();
-        header.put(HttpHeaders.AUTHORIZATION, String.format(SecurityConstant.ACCESS_TOKEN_FORMAT, SecurityUtils.getCurrentJWT()));
+        header.put(HttpHeaders.AUTHORIZATION, String.format(SecurityConstant.ACCESS_TOKEN_FORMAT, SecurityUtil.getCurrentJWT()));
 
         // send request to product service
         return webClientProcessor.post(

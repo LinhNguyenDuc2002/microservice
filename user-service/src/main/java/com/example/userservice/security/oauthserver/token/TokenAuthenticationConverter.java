@@ -57,10 +57,10 @@ public class TokenAuthenticationConverter implements AuthenticationConverter {
         String ipAddress;
         String xForwardedForHeader = request.getHeader(SecurityConstant.HEADER_FORWARDED_ADDRESS);
         if (xForwardedForHeader == null) {
-            ipAddress = request.getRemoteAddr();
+            ipAddress = request.getRemoteAddr(); // get client ip address
         }
         else {
-            ipAddress = new StringTokenizer(xForwardedForHeader, ",").nextToken().trim();
+            ipAddress = new StringTokenizer(xForwardedForHeader, ",").nextToken().trim(); // get first ip address
         }
 
         // Get the origin

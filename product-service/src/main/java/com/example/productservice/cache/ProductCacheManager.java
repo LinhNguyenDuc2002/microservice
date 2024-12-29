@@ -6,7 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 public interface ProductCacheManager {
     void clear();
-    void saveAllProducts(PageDTO<ProductDTO> products, Integer page, Integer size, String shop, String category) throws JsonProcessingException;
+    void saveAllProducts(PageDTO<ProductDTO> products, Integer page, Integer size, String category) throws JsonProcessingException;
 
-    PageDTO<ProductDTO> getAllProducts(Integer page, Integer size, String shop, String category) throws JsonProcessingException;
+    PageDTO<ProductDTO> getAllProducts(Integer page, Integer size, String category) throws JsonProcessingException;
 }

@@ -3,10 +3,10 @@ package com.example.productservice.service;
 import com.example.productservice.BaseTest;
 import com.example.productservice.dto.CategoryDTO;
 import com.example.productservice.entity.Category;
-import com.example.productservice.exception.InvalidException;
+import com.example.productservice.exception.InvalidationException;
 import com.example.productservice.exception.NotFoundException;
 import com.example.productservice.mock.CategoryMock;
-import com.example.productservice.payload.CategoryRequest;
+import com.example.productservice.dto.request.CategoryRequest;
 import com.example.productservice.repository.CategoryRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -41,7 +41,7 @@ public class CategoryServiceTest extends BaseTest {
     }
 
     @Test
-    void test_add() throws InvalidException {
+    void test_add() throws InvalidationException {
         // Input
         CategoryRequest categoryRequest = CategoryMock.mockCategoryRequest();
 
@@ -53,12 +53,12 @@ public class CategoryServiceTest extends BaseTest {
     }
 
     @Test
-    void test_add_throwInvalidException() throws InvalidException {
-        assertThrows(InvalidException.class, () -> categoryService.add(null));
+    void test_add_throwInvalidException() throws InvalidationException {
+        assertThrows(InvalidationException.class, () -> categoryService.add(null));
     }
 
     @Test
-    void test_update() throws InvalidException, NotFoundException {
+    void test_update() throws InvalidationException, NotFoundException {
         mockCategory();
         String categoryId = categoryRepository.findAll().get(0).getId();
         CategoryRequest categoryRequest = CategoryRequest.builder()
@@ -83,7 +83,7 @@ public class CategoryServiceTest extends BaseTest {
         mockCategory();
         String categoryId = categoryRepository.findAll().get(0).getId();
 
-        assertThrows(InvalidException.class, () -> categoryService.update(categoryId, null));
+        assertThrows(InvalidationException.class, () -> categoryService.update(categoryId, null));
     }
 
     @Test

@@ -28,12 +28,22 @@ public class AuthUser implements UserDetails {
     @Getter
     private String email;
 
+    @Setter
+    @Getter
+    private String refreshToken;
+
+    @Setter
+    @Getter
+    private boolean status;
+
     private Collection<? extends GrantedAuthority> authorities;
 
-    public AuthUser(String username, String password, Collection<Role> authorityList) {
+    public AuthUser(String id, String username, String password, Collection<Role> authorityList, boolean status) {
         super();
+        this.id = id;
         this.username = username;
         this.password = password;
+        this.status = status;
         this.authorities = authorityList
                 .stream()
                 .map(role -> new SimpleGrantedAuthority(role.getName().name()))
@@ -72,6 +82,6 @@ public class AuthUser implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return this.status;
     }
 }

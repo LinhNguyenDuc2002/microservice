@@ -42,7 +42,7 @@ public class ClientSecretAuthenticationProvider implements AuthenticationProvide
             RegisteredClient registeredClient = registeredClientRepository.findByClientId(clientId);
             if (registeredClient == null) {
                 log.error("Unknown client {}", clientId);
-                throw new OAuth2AuthenticationException(OAuthError.INVALID_REQUEST);
+                throw new OAuth2AuthenticationException(OAuthError.NOT_FOUND_REGISTERED_CLIENT);
             }
 
             String clientSecret = clientAuthentication.getCredentials().toString();
@@ -60,6 +60,7 @@ public class ClientSecretAuthenticationProvider implements AuthenticationProvide
      * check if the passed Authentication is supported by the class implementing this interface.
      * @param authentication
      * @return
+     * return TRUE if the parent class of input authentication is OAuth2ClientAuthenticationToken => call authenticate()
      */
     @Override
     public boolean supports(Class<?> authentication) {

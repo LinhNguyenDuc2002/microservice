@@ -23,9 +23,9 @@ public class CommentDTO {
 
     private String message;
 
-    private List<String> images;
+    private List<String> imageUrls;
 
-    private boolean allowEdit;
+    private Boolean allowEdit;
 
-    private CustomerDTO customer;
+    private String customerId;
 }
