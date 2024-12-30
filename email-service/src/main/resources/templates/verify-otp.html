@@ -68,23 +68,23 @@
         </p>
 
         <div class="container custom">
-            <h1 style="text-align:center">Verify your account</h1>
+            <h1 style="text-align:center" th:text="#{email.verify-otp.create-account}"></h1>
 
             <div>
-                <p th:text="'Dear ' + ${ARG_RECEIVER_NAME} + ','"></p>
+                <p th:text="#{email.greeting(${ARG_RECEIVER_NAME})}"></p>
                 <br/>
-                <p>Thank you for choosing our services. To complete your account verification, please enter the OTP code provided below:</p>
+                <p th:text="#{email.verify-otp.create-account.introduction}"></p>
                 <p th:text="'OTP: ' + ${ARG_OTP_CODE}"></p>
-                <p>This OTP is valid within 1 minutes. Please ensure that you do not share this OTP with anyone for security reasons. It is used for the purpose of verifying your account</p>
+                <p th:text="#{email.verify-otp.create-account.description}"></p>
                 <br/>
-                <p th:text="'If you have any request or need any assistance, please contact our support team at ' + ${ARG_SUPPORT_EMAIL}"></p>
+                <p th:text="#{email.support.info(${ARG_SUPPORT_EMAIL})}"></p>
             </div>
             <br/>
         </div>
 
         <div class="custom">
-            <p>Best regards,</p>
-            <p style='font-weight:bold'>Blue Shop supports</p>
+            <p th:text="#{email.ending}"></p>
+            <p style='font-weight:bold' th:text="#{email.name-unit}"></p>
         </div>
     </div>
 </div>

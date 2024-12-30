@@ -67,26 +67,26 @@
             </p>
 
             <div class="container custom">
-                <h1 style="text-align:center">Confirmed you order</h1>
+                <h1 style="text-align:center" th:text="#{email.confirm.order}"></h1>
 
                 <div>
-                    <p th:text="'Dear ' + ${ARG_RECEIVER_NAME} + ','"></p>
+                    <p th:text="#{email.greeting(${ARG_RECEIVER_NAME})}"></p>
                     <br/>
-                    <p>Thank you for choosing our services. Your order at Blue shop has been confirmed, some detailed information is below:</p>
-                    <p th:text="'Bill ID: ' + ${ARG_BILL_ID}"></p>
-                    <p th:text="'Customer: ' + ${ARG_RECEIVER_NAME}"></p>
-                    <p th:text="'Phone number: ' + ${ARG_RECEIVER_PHONE}"></p>
-                    <p th:text="'Delivery address: ' + ${ARG_DELIVERY_ADDRESS}"></p>
+                    <p th:text="#{email.confirm.order.introduction}"></p>
+                    <p th:text="#{email.order-info.bill-id(${ARG_BILL_ID})}"></p>
+                    <p th:text="#{email.order-info.receiver(${ARG_RECEIVER_NAME})}"></p>
+                    <p th:text="#{email.order-info.phone-number(${ARG_RECEIVER_PHONE})}"></p>
+                    <p th:text="#{email.order-info.delivery-address(${ARG_DELIVERY_ADDRESS})}"></p>
                     <br/>
-                    <p style="font-style: italic">This is an automated email, please do not reply!</p>
-                    <p style="font-style: italic" th:text="'If you have any request or need any assistance, please contact our support team at ' + ${ARG_SUPPORT_EMAIL}"></p>
+                    <p style="font-style: italic" th:text="#{email.remind.auto-mail}"></p>
+                    <p th:text="#{email.support.info(${ARG_SUPPORT_EMAIL})}"></p>
                 </div>
                 <br/>
             </div>
 
             <div class="custom">
-                <p>Best regards,</p>
-                <p style='font-weight:bold'>Blue Shop supports</p>
+                <p th:text="#{email.ending}"></p>
+                <p style='font-weight:bold' th:text="#{email.name-unit}"></p>
             </div>
         </div>
     </div>
