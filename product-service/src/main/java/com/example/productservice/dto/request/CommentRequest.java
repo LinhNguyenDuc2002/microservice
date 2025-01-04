@@ -15,5 +15,7 @@ public class CommentRequest {
     @NotBlank(message = "{error.not-blank}")
     private String message;
 
+    private String parentId;
+
     private List<MultipartFile> images;
 }

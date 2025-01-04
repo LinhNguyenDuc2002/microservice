@@ -1,5 +1,6 @@
 package com.example.userservice.service;
 
+import com.example.userservice.dto.BasicUserInfoDto;
 import com.example.userservice.dto.UserAddressDTO;
 import com.example.userservice.dto.UserDto;
 import com.example.userservice.dto.request.OTPAuthenticationRequest;
@@ -34,4 +35,6 @@ public interface UserService {
     UserDto createUser(OTPAuthenticationRequest request) throws InvalidationException, NotFoundException, JsonProcessingException;
 
     UserDto createUser(UserRegistrationHasRole userRegistration);
+
+    List<BasicUserInfoDto> getUserInfo(List<String> ids);
 }

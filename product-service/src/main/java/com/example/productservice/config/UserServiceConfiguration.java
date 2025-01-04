@@ -17,9 +17,12 @@ public class UserServiceConfiguration {
 
     private String unassignRoleUrl;
 
+    private String getUserInfoUrl;
+
     @PostConstruct
     public void init() {
         assignRoleUrl = String.format("%s/api/role/mapping", baseUrl);
         unassignRoleUrl = String.format("%s/api/role/mapping", baseUrl);
+        getUserInfoUrl = String.format("%s/api/user/info", baseUrl);
     }
 }

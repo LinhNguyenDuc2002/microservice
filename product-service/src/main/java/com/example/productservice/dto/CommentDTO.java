@@ -1,5 +1,6 @@
 package com.example.productservice.dto;
 
+import com.example.productservice.payload.userservice.response.CustomerInfoResponse;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -27,5 +28,5 @@ public class CommentDTO {
 
     private Boolean allowEdit;
 
-    private String customerId;
+    private CustomerInfoResponse customer;
 }

@@ -4,12 +4,10 @@ import com.example.orderservice.constant.I18nMessage;
 import com.example.orderservice.constant.OrderDetailStatus;
 import com.example.orderservice.constant.OrderStatus;
 import com.example.orderservice.constant.ProductStatus;
-import com.example.orderservice.dto.Error;
 import com.example.orderservice.dto.OrderDto;
 import com.example.orderservice.dto.PageDto;
+import com.example.orderservice.dto.request.OrderProductRequest;
 import com.example.orderservice.dto.request.OrderRequest;
-import com.example.orderservice.dto.request.ReceiverRequest;
-import com.example.orderservice.entity.Address;
 import com.example.orderservice.entity.Order;
 import com.example.orderservice.entity.OrderDetail;
 import com.example.orderservice.entity.Receiver;
@@ -18,8 +16,9 @@ import com.example.orderservice.exception.NotFoundException;
 import com.example.orderservice.exception.UnauthorizedException;
 import com.example.orderservice.i18n.I18nService;
 import com.example.orderservice.mapper.OrderMapper;
-import com.example.orderservice.payload.productservice.request.WareHouseCheckingReq;
-import com.example.orderservice.payload.productservice.response.WareHouseCheckingResponse;
+import com.example.orderservice.payload.productservice.request.ProductCheckingReq;
+import com.example.orderservice.payload.productservice.response.ProductCheckingResponse;
+import com.example.orderservice.payload.productservice.response.ProductListCheckingResponse;
 import com.example.orderservice.repository.OrderDetailRepository;
 import com.example.orderservice.repository.OrderRepository;
 import com.example.orderservice.repository.ReceiverRepository;
@@ -30,7 +29,6 @@ import com.example.orderservice.service.ProductService;
 import com.example.orderservice.util.PageUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -41,9 +39,6 @@ import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -66,8 +61,6 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private ReceiverRepository receiverRepository;
 
-    private Lock lock = new ReentrantLock();
-
     @Override
     public OrderDto create(OrderRequest orderRequest) throws Exception {
         Optional<String> accountId = SecurityUtil.getLoggedInUserId();
@@ -80,22 +73,21 @@ public class OrderServiceImpl implements OrderService {
             throw new NotFoundException(I18nMessage.ERROR_ORDER_DETAIL_NOT_FOUND);
         }
 
-        List<WareHouseCheckingReq> wareHouseCheckingReqs = new ArrayList<>();
+        List<ProductCheckingReq> productCheckingReqs = new ArrayList<>();
         orderDetails.stream().forEach(detail -> {
-            wareHouseCheckingReqs.add(
-                    WareHouseCheckingReq.builder()
+            productCheckingReqs.add(
+                    ProductCheckingReq.builder()
                             .productDetailId(detail.getProductDetailId())
                             .quantity(detail.getQuantity())
                             .build()
             );
         });
 
-        WareHouseCheckingResponse response = productService.checkWarehouse(wareHouseCheckingReqs);
-        List<WareHouseCheckingResponse.ProductDetailItem> productDetailItems = response.getProductDetailItems();
-        if(response.getStatus().equals(ProductStatus.PRODUCT_NOT_FOUND)) {
+        ProductListCheckingResponse response = productService.checkWarehouse(productCheckingReqs);
+        List<ProductListCheckingResponse.ProductDetailItem> productDetailItems = response.getProductDetailItems();
+        if (response.getStatus().equals(ProductStatus.PRODUCT_NOT_FOUND)) {
             //
-        }
-        else if (response.getStatus().equals(ProductStatus.PRODUCT_NOT_FOUND)) {
+        } else if (response.getStatus().equals(ProductStatus.PRODUCT_NOT_FOUND)) {
             //
         }
 
@@ -116,6 +108,51 @@ public class OrderServiceImpl implements OrderService {
                 });
         order.setOrderDetails(orderDetails);
         orderRepository.save(order);
+
+        // send mail to confirm order created
+
+        return orderMapper.toDto(order);
+    }
+
+    @Override
+    public OrderDto create(OrderProductRequest orderProductRequest) throws Exception {
+        Optional<String> accountId = SecurityUtil.getLoggedInUserId();
+        if (!accountId.isPresent()) {
+            throw new UnauthorizedException(I18nMessage.ERROR_UNAUTHORIZED);
+        }
+
+        ProductCheckingReq productCheckingReq = ProductCheckingReq.builder()
+                .productDetailId(orderProductRequest.getProductDetailId())
+                .quantity(orderProductRequest.getQuantity())
+                .build();
+        ProductCheckingResponse response = productService.checkProduct(productCheckingReq);
+
+        if (!response.isExist()) {
+            throw new NotFoundException(response.getInfo());
+        }
+
+        Receiver receiver = receiverRepository.findById(orderProductRequest.getReceiverId())
+                .orElseThrow(() -> {
+                    return new NotFoundException(I18nMessage.ERROR_RECEIVER_NOT_FOUND);
+                });
+
+        OrderDetail orderDetail = OrderDetail.builder()
+                .quantity(orderProductRequest.getQuantity())
+                .unitPrice(response.getPrice())
+                .productDetailId(orderProductRequest.getProductDetailId())
+                .status(OrderDetailStatus.PURCHASED)
+                .commentStatus(false)
+                .customerId(accountId.get())
+                .build();
+        Order order = Order.builder()
+                .code(generateCode())
+                .status(OrderStatus.PROCESSING)
+                .receiver(receiver)
+                .orderDetails(List.of(orderDetail))
+                .build();
+        orderRepository.save(order);
+
+        // send mail to confirm order created
 
         return orderMapper.toDto(order);
     }

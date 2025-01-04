@@ -1,27 +1,28 @@
 package com.example.userservice.service.impl;
 
-import com.cloudinary.Cloudinary;
-import com.cloudinary.utils.ObjectUtils;
 import com.example.userservice.constant.I18nMessage;
 import com.example.userservice.entity.Image;
 import com.example.userservice.entity.User;
+import com.example.userservice.exception.InvalidationException;
 import com.example.userservice.exception.NotFoundException;
 import com.example.userservice.exception.UnauthorizedException;
 import com.example.userservice.repository.ImageRepository;
 import com.example.userservice.repository.UserRepository;
 import com.example.userservice.security.util.SecurityUtils;
+import com.example.userservice.service.CloudinaryService;
 import com.example.userservice.service.ImageService;
 import com.example.userservice.util.DateUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -33,12 +34,10 @@ public class ImageServiceImpl implements ImageService {
     private UserRepository userRepository;
 
     @Autowired
-    private Cloudinary cloudinary;
+    private CloudinaryService cloudinaryService;
 
     @Override
-    public String setAvatar(MultipartFile file) throws IOException {
-        log.info("Get info of logged in user");
-
+    public String setAvatar(MultipartFile file) throws IOException, InvalidationException {
         Optional<String> userId = SecurityUtils.getLoggedInUserId();
         if (userId.isEmpty()) {
             throw new UnauthorizedException(I18nMessage.ERROR_USER_UNKNOWN);
@@ -49,45 +48,43 @@ public class ImageServiceImpl implements ImageService {
                     return new UnauthorizedException(I18nMessage.ERROR_USER_UNKNOWN);
                 });
 
-        Image avatar = user.getAvatar();
-        if (avatar == null) {
-            avatar = Image.builder().user(user).build();
+        if(file == null || file.isEmpty()) {
+            throw new InvalidationException("");
         }
 
-        Map<String, String> data = uploadFile(file);
+        String id = UUID.randomUUID().toString();
+        Map<String, MultipartFile> images = new HashMap<>();
+        images.put(id, file);
 
-        avatar.setFormat(data.get("format"));
-        avatar.setResourceType(data.get("resource_type"));
-        avatar.setUrl(data.get("url"));
-        avatar.setSecureUrl(data.get("secure_url"));
-        avatar.setCreatedAt(DateUtil.convertStringToDate(data.get("created_at")));
-        avatar.setPublicId(data.get("public_id"));
-        imageRepository.save(avatar);
+        String imageId = user.getImageId();
+        if(StringUtils.hasText(imageId)) {
+            imageRepository.deleteById(imageId);
+            cloudinaryService.destroy(imageId);
+        }
+        user.setImageId(id);
+        userRepository.save(user);
+        cloudinaryService.upload(images);
 
-        log.info("Set avatar successfully");
-        return avatar.getUrl();
+        return "";
     }
 
     @Override
-    public void deleteAvatar(String id) throws NotFoundException {
-        log.info("Delete avatar");
-
-        boolean check = imageRepository.existsById(id);
-        if (!check) {
-            throw new NotFoundException(I18nMessage.ERROR_IMAGE_NOT_FOUND);
+    public void deleteAvatar() throws NotFoundException, IOException {
+        Optional<String> userId = SecurityUtils.getLoggedInUserId();
+        if (userId.isEmpty()) {
+            throw new UnauthorizedException(I18nMessage.ERROR_USER_UNKNOWN);
         }
 
-        imageRepository.deleteById(id);
-    }
-
-    public Map<String, String> uploadFile(MultipartFile file) throws IOException {
-        List<Image> images = new ArrayList<>();
-        Map data = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
-
-        return data;
-    }
-
-    private void destroyFile(String publicId, Map map) throws IOException {
-        cloudinary.uploader().destroy(publicId, map);
+        User user = userRepository.findById(userId.get())
+                .orElseThrow(() -> {
+                    return new NotFoundException(I18nMessage.ERROR_USER_NOT_FOUND);
+                });
+        String imageId = user.getImageId();
+        if(StringUtils.hasText(imageId)) {
+            imageRepository.deleteById(imageId);
+            cloudinaryService.destroy(imageId);
+            user.setImageId(null);
+            userRepository.save(user);
+        }
     }
 }

@@ -43,6 +43,7 @@ public class Product extends Auditor {
     @Column(name = "status")
     private Boolean status;
 
+    @Column(name = "image_ids")
     private String imageIds;
 
     @ManyToOne

@@ -33,13 +33,20 @@ public class Comment extends Auditor {
     @Column(name = "message", columnDefinition = "text")
     private String message;
 
-    @OneToMany(mappedBy = "comment", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private Collection<Image> images;
+    @Column(name = "image_ids")
+    private String imageIds;
 
     @Column(name = "allow_edit")
     private boolean allowEdit;
 
     private String customerId;
+
+    @ManyToOne
+    @JoinColumn(name = "parent_id")
+    private Comment parentComment;
+
+    @OneToMany(mappedBy = "parentComment")
+    private Collection<Comment> childComments;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "product_id")

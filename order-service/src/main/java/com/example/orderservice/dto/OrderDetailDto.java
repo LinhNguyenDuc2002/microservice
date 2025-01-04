@@ -27,7 +27,7 @@ public class OrderDetailDto {
 
     private Boolean commentStatus;
 
-    private Boolean status;
+    private String status;
 
     private String customerId;
 

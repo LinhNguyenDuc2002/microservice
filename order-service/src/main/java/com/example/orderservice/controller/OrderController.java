@@ -4,6 +4,7 @@ import com.example.orderservice.constant.I18nMessage;
 import com.example.orderservice.constant.ParameterConstant;
 import com.example.orderservice.dto.OrderDto;
 import com.example.orderservice.dto.PageDto;
+import com.example.orderservice.dto.request.OrderProductRequest;
 import com.example.orderservice.dto.request.OrderRequest;
 import com.example.orderservice.dto.response.Response;
 import com.example.orderservice.exception.InvalidationException;
@@ -43,6 +44,14 @@ public class OrderController {
     public ResponseEntity<Response<OrderDto>> create(@Valid @RequestBody OrderRequest orderRequest) throws Exception {
         return ResponseUtil.wrapResponse(
                 orderService.create(orderRequest),
+                i18nService.getMessage(I18nMessage.INFO_CREATE_ORDER, LocaleContextHolder.getLocale())
+        );
+    }
+
+    @PostMapping("/product")
+    public ResponseEntity<Response<OrderDto>> create(@Valid @RequestBody OrderProductRequest orderProductRequest) throws Exception {
+        return ResponseUtil.wrapResponse(
+                orderService.create(orderProductRequest),
                 i18nService.getMessage(I18nMessage.INFO_CREATE_ORDER, LocaleContextHolder.getLocale())
         );
     }

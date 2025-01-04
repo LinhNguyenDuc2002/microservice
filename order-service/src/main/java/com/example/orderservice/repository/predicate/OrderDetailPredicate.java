@@ -76,10 +76,9 @@ public class OrderDetailPredicate extends BasePredicate {
      * @return
      */
     public OrderDetailPredicate withStatus(OrderDetailStatus status) {
-        if (status != null && EnumSet.allOf(OrderDetailStatus.class).contains(status)) {
+        if(status != null) {
             criteria.and(qOrderDetail.status.eq(status));
         }
-
         return this;
     }
 
@@ -88,7 +87,7 @@ public class OrderDetailPredicate extends BasePredicate {
      * @return
      */
     public OrderDetailPredicate withoutStatus(OrderDetailStatus status) {
-        if (status != null && EnumSet.allOf(OrderDetailStatus.class).contains(status)) {
+        if (status != null) {
             criteria.and(qOrderDetail.status.ne(status));
         }
 

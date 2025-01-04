@@ -12,9 +12,11 @@ import java.util.List;
 public interface CommentService {
     CommentDTO create(String id, CommentRequest commentRequest) throws Exception;
 
-    PageDTO<CommentDTO> getAll(String id, Integer page, Integer size, List<String> sortColumns) throws NotFoundException;
+    PageDTO<CommentDTO> getAll(String id, Integer page, Integer size, List<String> sortColumns) throws Exception;
+
+    PageDTO<CommentDTO> getAllChild(String id, Integer page, Integer size, List<String> sortColumns) throws Exception;
 
     CommentDTO update(String id, CommentRequest commentRequest) throws NotFoundException, InvalidationException, IOException;
 
-    void delete(String id) throws NotFoundException, InvalidationException;
+    void delete(String id) throws NotFoundException, InvalidationException, IOException;
 }

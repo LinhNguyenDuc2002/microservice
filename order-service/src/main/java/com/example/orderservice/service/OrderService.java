@@ -2,6 +2,7 @@ package com.example.orderservice.service;
 
 import com.example.orderservice.dto.OrderDto;
 import com.example.orderservice.dto.PageDto;
+import com.example.orderservice.dto.request.OrderProductRequest;
 import com.example.orderservice.dto.request.OrderRequest;
 import com.example.orderservice.exception.InvalidationException;
 import com.example.orderservice.exception.NotFoundException;
@@ -11,6 +12,8 @@ import java.util.List;
 
 public interface OrderService {
     OrderDto create(OrderRequest orderRequest) throws Exception;
+
+    OrderDto create(OrderProductRequest orderProductRequest) throws Exception;
 
     OrderDto update(String orderId, String receiverId) throws NotFoundException, InvalidationException;
 

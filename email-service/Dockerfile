@@ -23,3 +23,5 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
 # Build command: docker build -t <image name>:<version> .
 # Run command: docker run -d <image name>
 # Run command: docker run --name <container name> -p <port>:<port> -e <environment variables> <image name>
+# Tạo mạng: docker network create my-network
+# Chạy container: docker run -d --name kafka --network=my-network -p 9092:9092 kafka-image
