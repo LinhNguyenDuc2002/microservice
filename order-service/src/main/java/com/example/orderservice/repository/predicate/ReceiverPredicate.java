@@ -39,4 +39,18 @@ public class ReceiverPredicate extends BasePredicate {
 
         return this;
     }
+
+    /**
+     * @param name
+     * @param phoneNumber
+     * @return
+     */
+    public ReceiverPredicate withNameOrPhoneNumber(String name, String phoneNumber) {
+        if (StringUtils.hasText(name)) {
+            criteria.and(qReceiver.name.eq(name).or(qReceiver.phoneNumber.eq(phoneNumber)));
+        }
+
+        return this;
+    }
+
 }

@@ -20,13 +20,11 @@ import java.util.List;
 @NoArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class BasicProductRequest {
-    @NotNull(message = "{error.not-null}")
     @NotBlank(message = "{error.not-blank}")
     private String name;
 
     private String description;
 
-    @NotNull(message = "{error.not-null}")
     @NotBlank(message = "{error.not-blank}")
     private String categoryId;
 

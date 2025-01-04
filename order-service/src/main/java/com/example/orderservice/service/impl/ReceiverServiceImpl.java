@@ -29,14 +29,12 @@ public class ReceiverServiceImpl implements ReceiverService {
 
     @Override
     public ReceiverDto add(ReceiverRequest receiverRequest) throws InvalidationException {
-        boolean checkName = receiverRepository.existsByName(receiverRequest.getName());
-        if (!checkName) {
-            throw new InvalidationException(I18nMessage.ERROR_RECEIVER_NAME_EXIST);
-        }
-
-        boolean checkPhone = receiverRepository.existsByPhoneNumber(receiverRequest.getPhoneNumber());
-        if (!checkPhone) {
-            throw new InvalidationException(I18nMessage.ERROR_PHONE_NUMBER_EXIST);
+        ReceiverPredicate receiverPredicate = new ReceiverPredicate()
+                .withStatus(true)
+                .withNameOrPhoneNumber(receiverRequest.getName(), receiverRequest.getPhoneNumber());
+        boolean check = receiverRepository.exists(receiverPredicate.getCriteria());
+        if (check) {
+            throw new InvalidationException(I18nMessage.ERROR_RECEIVER_INFO_EXIST);
         }
 
         Optional<String> userId = SecurityUtil.getLoggedInUserId();
@@ -68,19 +66,17 @@ public class ReceiverServiceImpl implements ReceiverService {
         ReceiverPredicate receiverPredicate = new ReceiverPredicate()
                 .withId(id)
                 .withStatus(true);
-        Optional<Receiver> check = receiverRepository.findOne(receiverPredicate.getCriteria());
-        if (check.isPresent()) {
-            throw new NotFoundException(I18nMessage.ERROR_RECEIVER_NOT_FOUND);
-        }
+        Receiver receiver = receiverRepository.findOne(receiverPredicate.getCriteria())
+                .orElseThrow(() -> {
+                    return new NotFoundException(I18nMessage.ERROR_RECEIVER_NOT_FOUND);
+                });
 
-        Receiver receiver = check.get();
-        boolean checkName = receiverRepository.existsByName(receiverRequest.getName());
-        boolean checkPhone = receiverRepository.existsByPhoneNumber(receiverRequest.getPhoneNumber());
-        if (!receiver.getName().equals(receiverRequest.getName()) && checkName) {
-            throw new InvalidationException(I18nMessage.ERROR_RECEIVER_NAME_EXIST);
-        }
-        if (!receiver.getPhoneNumber().equals(receiverRequest.getPhoneNumber()) && checkPhone) {
-            throw new InvalidationException(I18nMessage.ERROR_PHONE_NUMBER_EXIST);
+        receiverPredicate = new ReceiverPredicate()
+                .withStatus(true)
+                .withNameOrPhoneNumber(receiverRequest.getName(), receiverRequest.getPhoneNumber());
+        boolean check = receiverRepository.exists(receiverPredicate.getCriteria());
+        if (check) {
+            throw new InvalidationException(I18nMessage.ERROR_RECEIVER_INFO_EXIST);
         }
 
         Address address = receiver.getAddress();

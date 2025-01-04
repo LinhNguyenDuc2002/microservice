@@ -8,7 +8,7 @@ import com.example.orderservice.dto.OrderDto;
 import com.example.orderservice.dto.PageDto;
 import com.example.orderservice.dto.request.OrderProductRequest;
 import com.example.orderservice.dto.request.OrderRequest;
-import com.example.orderservice.entity.Order;
+import com.example.orderservice.entity.PurchaseOrder;
 import com.example.orderservice.entity.OrderDetail;
 import com.example.orderservice.entity.Receiver;
 import com.example.orderservice.exception.InvalidationException;
@@ -95,7 +95,7 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> {
                     return new NotFoundException(I18nMessage.ERROR_RECEIVER_NOT_FOUND);
                 });
-        Order order = Order.builder()
+        PurchaseOrder purchaseOrder = PurchaseOrder.builder()
                 .code(generateCode())
                 .status(OrderStatus.PROCESSING)
                 .receiver(receiver)
@@ -104,14 +104,14 @@ public class OrderServiceImpl implements OrderService {
         orderDetails.stream()
                 .forEach(detail -> {
                     detail.setStatus(OrderDetailStatus.PURCHASED);
-                    detail.setOrder(order);
+                    detail.setPurchaseOrder(purchaseOrder);
                 });
-        order.setOrderDetails(orderDetails);
-        orderRepository.save(order);
+        purchaseOrder.setOrderDetails(orderDetails);
+        orderRepository.save(purchaseOrder);
 
         // send mail to confirm order created
 
-        return orderMapper.toDto(order);
+        return orderMapper.toDto(purchaseOrder);
     }
 
     @Override
@@ -144,27 +144,28 @@ public class OrderServiceImpl implements OrderService {
                 .commentStatus(false)
                 .customerId(accountId.get())
                 .build();
-        Order order = Order.builder()
+        PurchaseOrder purchaseOrder = PurchaseOrder.builder()
                 .code(generateCode())
                 .status(OrderStatus.PROCESSING)
                 .receiver(receiver)
                 .orderDetails(List.of(orderDetail))
                 .build();
-        orderRepository.save(order);
+        orderDetail.setPurchaseOrder(purchaseOrder);
+        orderRepository.save(purchaseOrder);
 
         // send mail to confirm order created
 
-        return orderMapper.toDto(order);
+        return orderMapper.toDto(purchaseOrder);
     }
 
     @Override
     public OrderDto update(String orderId, String receiverId) throws NotFoundException, InvalidationException {
-        Order order = orderRepository.findById(orderId)
+        PurchaseOrder purchaseOrder = orderRepository.findById(orderId)
                 .orElseThrow(() -> {
                     return new NotFoundException(I18nMessage.ERROR_ORDER_NOT_FOUND);
                 });
 
-        if (!OrderStatus.PROCESSING.equals(order.getStatus())) {
+        if (!OrderStatus.PROCESSING.equals(purchaseOrder.getStatus())) {
             throw new InvalidationException(I18nMessage.ERROR_ORDER_PROCESSED);
         }
 
@@ -173,9 +174,9 @@ public class OrderServiceImpl implements OrderService {
                     return new NotFoundException(I18nMessage.ERROR_RECEIVER_NOT_FOUND);
                 });
 
-        order.setReceiver(receiver);
-        orderRepository.save(order);
-        return orderMapper.toDto(order);
+        purchaseOrder.setReceiver(receiver);
+        orderRepository.save(purchaseOrder);
+        return orderMapper.toDto(purchaseOrder);
     }
 
     @Override
@@ -185,7 +186,7 @@ public class OrderServiceImpl implements OrderService {
                 .from(start)
                 .to(end)
                 .withStatus(status);
-        Page<Order> bills = orderRepository.findAll(orderPredicate.getCriteria(), pageable);
+        Page<PurchaseOrder> bills = orderRepository.findAll(orderPredicate.getCriteria(), pageable);
 
         return PageDto.<OrderDto>builder()
                 .index(page)
@@ -196,11 +197,11 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderDto get(String id) throws NotFoundException {
-        Order order = orderRepository.findById(id)
+        PurchaseOrder purchaseOrder = orderRepository.findById(id)
                 .orElseThrow(() -> {
                     return new NotFoundException(I18nMessage.ERROR_ORDER_NOT_FOUND);
                 });
-        return orderMapper.toDto(order);
+        return orderMapper.toDto(purchaseOrder);
     }
 
     @Override
@@ -211,7 +212,7 @@ public class OrderServiceImpl implements OrderService {
         OrderPredicate orderPredicate = new OrderPredicate()
                 .withCustomerId(id)
                 .withStatus(status);
-        Page<Order> bills = orderRepository.findAll(orderPredicate.getCriteria(), pageable);
+        Page<PurchaseOrder> bills = orderRepository.findAll(orderPredicate.getCriteria(), pageable);
 
         return PageDto.<OrderDto>builder()
                 .index(page)
@@ -222,20 +223,20 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderDto changeStatus(String id, String status) throws NotFoundException, InvalidationException {
-        Order order = orderRepository.findById(id)
+        PurchaseOrder purchaseOrder = orderRepository.findById(id)
                 .orElseThrow(() -> {
                     return new NotFoundException(I18nMessage.ERROR_ORDER_NOT_FOUND);
                 });
 
-        if (order.getStatus().equals(OrderStatus.PAID) ||
-                order.getStatus().equals(OrderStatus.APPROVED) ||
+        if (purchaseOrder.getStatus().equals(OrderStatus.PAID) ||
+                purchaseOrder.getStatus().equals(OrderStatus.APPROVED) ||
                 !EnumSet.allOf(OrderStatus.class).contains(OrderStatus.valueOf(status))) {
             log.error("{} status is invalid", status);
             throw new InvalidationException(I18nMessage.ERROR_STATUS_INVALID);
         }
 
-        order.setStatus(OrderStatus.valueOf(status));
-        orderRepository.save(order);
+        purchaseOrder.setStatus(OrderStatus.valueOf(status));
+        orderRepository.save(purchaseOrder);
 
         /*if (order.getStatus().equals(BillStatus.APPROVED)) {
             Customer customer = new ArrayList<OrderDetail>(order.getOrderDetails()).get(0).getCustomer();
@@ -258,18 +259,18 @@ public class OrderServiceImpl implements OrderService {
             messagingService.sendMessage(KafkaTopic.SEND_EMAIL, mapper.writeValueAsString(email));
         }*/
 
-        return orderMapper.toDto(order);
+        return orderMapper.toDto(purchaseOrder);
     }
 
     @Override
     public void delete(String id) throws NotFoundException, InvalidationException {
-        Order order = orderRepository.findById(id)
+        PurchaseOrder purchaseOrder = orderRepository.findById(id)
                 .orElseThrow(() -> {
                     return new NotFoundException(I18nMessage.ERROR_ORDER_NOT_FOUND);
                 });
 
-        if (order.getStatus().equals(OrderStatus.APPROVED) ||
-                order.getStatus().equals(OrderStatus.PAID)) {
+        if (purchaseOrder.getStatus().equals(OrderStatus.APPROVED) ||
+                purchaseOrder.getStatus().equals(OrderStatus.PAID)) {
             throw new InvalidationException(I18nMessage.ERROR_ORDER_CAN_NOT_DELETE);
         }
         orderRepository.deleteById(id);

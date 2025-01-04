@@ -41,7 +41,7 @@ public final class I18nMessage {
     public final static String ERROR_RECEIVER_NOT_FOUND = "error.receiver.not-found";
     public final static String ERROR_STATUS_INVALID = "error.status.invalid";
     public final static String ERROR_QUANTITY_MIN = "error.quantity.min";
-    public final static String ERROR_RECEIVER_NAME_EXIST = "error.receiver-name.exist";
+    public final static String ERROR_RECEIVER_INFO_EXIST = "error.receiver-info.exist";
     public final static String ERROR_PHONE_NUMBER_EXIST = "error.phone-number.exist";
     public final static String ERROR_TOKEN_NOT_FOUND = "error.token.not-found";
 }
