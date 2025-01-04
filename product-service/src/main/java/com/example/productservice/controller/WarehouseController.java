@@ -1,5 +1,6 @@
 package com.example.productservice.controller;
 
+import com.example.productservice.dto.ProductDetailCheckingDto;
 import com.example.productservice.dto.WareHouseCheckingDto;
 import com.example.productservice.payload.orderservice.request.WareHouseCheckingReq;
 import com.example.productservice.service.WarehouseService;
@@ -21,8 +22,13 @@ public class WarehouseController {
     private WarehouseService warehouseService;
 
     @PatchMapping
-    public ResponseEntity<WareHouseCheckingDto> checkWarehouse(@RequestBody List<WareHouseCheckingReq> request) {
-        return ResponseEntity.ok(warehouseService.checkWarehouse(request));
+    public ResponseEntity<WareHouseCheckingDto> checkListProduct(@RequestBody List<WareHouseCheckingReq> request) {
+        return ResponseEntity.ok(warehouseService.checkListProduct(request));
+    }
+
+    @PatchMapping("/product")
+    public ResponseEntity<ProductDetailCheckingDto> checkProduct(@RequestBody WareHouseCheckingReq request) {
+        return ResponseEntity.ok(warehouseService.checkProduct(request));
     }
 
     //export inventory file

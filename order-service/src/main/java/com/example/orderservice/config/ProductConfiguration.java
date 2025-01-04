@@ -20,6 +20,8 @@ public class ProductConfiguration {
 
     private String checkWarehouseUrl;
 
+    private String checkProductUrl;
+
     private String groupDetailsUrl;
 
     private String checkShopUrl;
@@ -31,5 +33,6 @@ public class ProductConfiguration {
         checkWarehouseUrl = String.format("%s/warehouse", baseUrl);
         groupDetailsUrl = String.format("%s/warehouse/detail-group", baseUrl);
         checkShopUrl = String.format("%s/shop/{%s}/exist", baseUrl, PATH_UUID);
+        checkProductUrl = String.format("%s/warehouse/product", baseUrl);
     }
 }

@@ -74,13 +74,13 @@ public class WebSecurityConfig {
         return http.build();
     }
 
-//    @Bean
-//    public JwtDecoder jwtDecoder() {
-//        NimbusJwtDecoder jwtDecoder = JwtDecoders.fromOidcIssuerLocation(issuerUri);
-//        OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuerUri);
-//        jwtDecoder.setJwtValidator(withIssuer);
-//        return jwtDecoder;
-//    }
+    @Bean
+    public JwtDecoder jwtDecoder() {
+        NimbusJwtDecoder jwtDecoder = JwtDecoders.fromOidcIssuerLocation(issuerUri);
+        OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuerUri);
+        jwtDecoder.setJwtValidator(withIssuer);
+        return jwtDecoder;
+    }
 
     @Bean
     public BearerTokenResolver tokenResolver() {

@@ -52,9 +52,20 @@ public class CommentController {
             @PathVariable String id,
             @RequestParam(name = ParameterConstant.Page.PAGE, defaultValue = ParameterConstant.Page.DEFAULT_PAGE) Integer page,
             @RequestParam(name = ParameterConstant.Page.SIZE, defaultValue = ParameterConstant.Page.DEFAULT_SIZE) Integer size,
-            @RequestParam(name = "sort-columns") List<String> sortColumns) throws NotFoundException {
+            @RequestParam(name = "sort-columns") List<String> sortColumns) throws Exception {
         return ResponseUtil.wrapResponse(
                 commentService.getAll(id, page, size, sortColumns),
+                i18nService.getMessage(I18nMessage.INFO_GET_COMMENT, LocaleContextHolder.getLocale())
+        );
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Response<PageDTO<CommentDTO>>> getAllChild(@PathVariable String id,
+            @RequestParam(name = ParameterConstant.Page.PAGE, defaultValue = ParameterConstant.Page.DEFAULT_PAGE) Integer page,
+            @RequestParam(name = ParameterConstant.Page.SIZE, defaultValue = ParameterConstant.Page.DEFAULT_SIZE) Integer size,
+            @RequestParam(name = "sort-columns") List<String> sortColumns) throws Exception {
+        return ResponseUtil.wrapResponse(
+                commentService.getAllChild(id, page, size, sortColumns),
                 i18nService.getMessage(I18nMessage.INFO_GET_COMMENT, LocaleContextHolder.getLocale())
         );
     }
@@ -70,7 +81,7 @@ public class CommentController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Response<Void>> delete(@PathVariable String id) throws NotFoundException, InvalidationException {
+    public ResponseEntity<Response<Void>> delete(@PathVariable String id) throws NotFoundException, InvalidationException, IOException {
         commentService.delete(id);
         return ResponseUtil.wrapResponse(
                 i18nService.getMessage(I18nMessage.INFO_DELETE_COMMENT, LocaleContextHolder.getLocale())

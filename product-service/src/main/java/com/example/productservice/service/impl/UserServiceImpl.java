@@ -1,9 +1,8 @@
 package com.example.productservice.service.impl;
 
-import com.example.productservice.config.OrderServiceConfiguration;
 import com.example.productservice.config.UserServiceConfiguration;
 import com.example.productservice.constant.SecurityConstant;
-import com.example.productservice.payload.orderservice.response.CheckingDetailResponse;
+import com.example.productservice.payload.userservice.response.CustomerInfoResponse;
 import com.example.productservice.security.SecurityUtils;
 import com.example.productservice.service.UserService;
 import com.example.productservice.webclient.WebClientProcessor;
@@ -16,8 +15,8 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -67,6 +66,23 @@ public class UserServiceImpl implements UserService {
                 uriBuilder.toUriString(),
                 header,
                 queryParam
+        );
+    }
+
+    @Override
+    public Map<String, CustomerInfoResponse> getUserInfo(List<String> ids) throws Exception {
+        String url = userServiceConfiguration.getGetUserInfoUrl();
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(url);
+
+        Map<String, String> header = new LinkedHashMap<>();
+        header.put(HttpHeaders.AUTHORIZATION, String.format(SecurityConstant.ACCESS_TOKEN_FORMAT, SecurityUtils.getCurrentJWT()));
+
+        // send request to user service
+        return webClientProcessor.post(
+                uriBuilder.toUriString(),
+                header,
+                ids,
+                Map.class
         );
     }
 }

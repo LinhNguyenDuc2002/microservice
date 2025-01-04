@@ -1,6 +1,7 @@
 package com.example.userservice.controller;
 
 import com.example.userservice.constant.I18nMessage;
+import com.example.userservice.dto.BasicUserInfoDto;
 import com.example.userservice.dto.UserAddressDTO;
 import com.example.userservice.dto.UserDto;
 import com.example.userservice.dto.request.OTPAuthenticationRequest;
@@ -117,5 +118,10 @@ public class UserController {
                 userService.update(id, userRequest),
                 i18nService.getMessage(I18nMessage.INFO_UPDATE_USER, LocaleContextHolder.getLocale())
         );
+    }
+
+    @PostMapping("/ìnfo")
+    public ResponseEntity<List<BasicUserInfoDto>> getUserInfo(@RequestBody List<String> ids) throws NotFoundException, InvalidationException {
+        return ResponseEntity.ok(userService.getUserInfo(ids));
     }
 }

@@ -2,9 +2,10 @@ package com.example.orderservice.service.impl;
 
 import com.example.orderservice.config.ProductConfiguration;
 import com.example.orderservice.constant.SecurityConstant;
-import com.example.orderservice.payload.productservice.request.WareHouseCheckingReq;
+import com.example.orderservice.exception.NotFoundException;
+import com.example.orderservice.payload.productservice.request.ProductCheckingReq;
 import com.example.orderservice.payload.productservice.response.ProductCheckingResponse;
-import com.example.orderservice.payload.productservice.response.WareHouseCheckingResponse;
+import com.example.orderservice.payload.productservice.response.ProductListCheckingResponse;
 import com.example.orderservice.security.SecurityUtil;
 import com.example.orderservice.service.ProductService;
 import com.example.orderservice.webclient.WebClientProcessor;
@@ -54,7 +55,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public WareHouseCheckingResponse checkWarehouse(List<WareHouseCheckingReq> wareHouseCheckingReqs) throws Exception {
+    public ProductListCheckingResponse checkWarehouse(List<ProductCheckingReq> productCheckingReqs) throws Exception {
         String url = productConfiguration.getCheckWarehouseUrl();
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(url);
 
@@ -65,8 +66,8 @@ public class ProductServiceImpl implements ProductService {
         return webClientProcessor.patch(
                 uriBuilder.toUriString(),
                 header,
-                wareHouseCheckingReqs,
-                WareHouseCheckingResponse.class
+                productCheckingReqs,
+                ProductListCheckingResponse.class
         );
     }
 
@@ -106,6 +107,23 @@ public class ProductServiceImpl implements ProductService {
                 header,
                 body,
                 Map.class
+        );
+    }
+
+    @Override
+    public ProductCheckingResponse checkProduct(ProductCheckingReq productCheckingReq) throws Exception {
+        String url = productConfiguration.getCheckProductUrl();
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(url);
+
+        Map<String, String> header = new LinkedHashMap<>();
+        header.put(HttpHeaders.AUTHORIZATION, String.format(SecurityConstant.ACCESS_TOKEN_FORMAT, SecurityUtil.getCurrentJWT()));
+
+        // send request to product service
+        return webClientProcessor.patch(
+                uriBuilder.toUriString(),
+                header,
+                productCheckingReq,
+                ProductCheckingResponse.class
         );
     }
 }

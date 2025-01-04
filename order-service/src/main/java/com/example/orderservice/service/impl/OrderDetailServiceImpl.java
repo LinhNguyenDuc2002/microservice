@@ -20,7 +20,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -39,6 +41,23 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         Optional<String> userId = SecurityUtil.getLoggedInUserId();
         if (!userId.isPresent()) {
             throw new UnauthorizedException(I18nMessage.ERROR_UNAUTHORIZED);
+        }
+
+        OrderDetailPredicate orderDetailPredicate = new OrderDetailPredicate()
+                .withProductDetailId(productDetailId)
+                .withCustomerId(userId.get())
+                .withStatus(OrderDetailStatus.IN_CART);
+        List<OrderDetail> check = orderDetailRepository.findAll(orderDetailPredicate.getCriteria());
+        if(!check.isEmpty()) {
+            OrderDetail existOrderDetail = check.get(0);
+            ProductCheckingResponse productCheckingResponse = productService.checkProductExist(productDetailId, quantity + existOrderDetail.getQuantity());
+            if (productCheckingResponse.isExist()) {
+                existOrderDetail.setQuantity(quantity + existOrderDetail.getQuantity());
+                existOrderDetail.setUnitPrice(productCheckingResponse.getPrice());
+                orderDetailRepository.save(existOrderDetail);
+            }
+
+            return orderDetailMapper.toDto(existOrderDetail);
         }
 
         if (quantity <= 0) {
@@ -89,8 +108,16 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     public PageDto<OrderDetailDto> getAll(Integer page, Integer size, String customerId, String status) throws Exception {
         Pageable pageable = PageUtil.getPage(page, size);
 
+        OrderDetailStatus orderDetailStatus = null;
+        try {
+            if(StringUtils.hasText(status)) {
+                orderDetailStatus = OrderDetailStatus.valueOf(status);
+            }
+        } catch (IllegalArgumentException e) {
+            orderDetailStatus = null;
+        }
         OrderDetailPredicate orderDetailPredicate = new OrderDetailPredicate()
-                .withStatus(OrderDetailStatus.valueOf(status))
+                .withStatus(orderDetailStatus)
                 .withCustomerId(customerId);
         Page<OrderDetail> details = orderDetailRepository.findAll(orderDetailPredicate.getCriteria(), pageable);
 

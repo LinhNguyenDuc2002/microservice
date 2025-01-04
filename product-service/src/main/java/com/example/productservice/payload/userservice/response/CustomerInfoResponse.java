@@ -1,4 +1,4 @@
-package com.example.orderservice.payload.productservice.request;
+package com.example.productservice.payload.userservice.response;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -14,8 +14,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 @Builder
-public class WareHouseCheckingReq {
-    private String productDetailId;
+public class CustomerInfoResponse {
+    private String id;
 
-    private Integer quantity;
+    private String firstName;
+
+    private String lastName;
+
+    private String avatarUrl;
+
+    private boolean status;
 }

@@ -56,8 +56,8 @@ public class User extends Auditor {
     @Column(name = "token", columnDefinition = "text")
     private String token;
 
-    @OneToOne(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private Image avatar;
+    @Column(name = "image_id")
+    private String imageId;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "address_id")

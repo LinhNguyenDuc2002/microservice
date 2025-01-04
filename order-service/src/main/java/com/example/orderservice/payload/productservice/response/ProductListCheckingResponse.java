@@ -16,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 @Builder
-public class WareHouseCheckingResponse {
+public class ProductListCheckingResponse {
     private String status;
 
     private List<ProductDetailItem> productDetailItems;

@@ -10,10 +10,6 @@ public class UserMapper extends AbstractMapper<User, UserDto> {
     public UserDto toDto(User user) {
         UserDto userDto = super.toDto(user);
 
-        if(user.getAvatar() != null) {
-            userDto.setAvatarUrl(user.getAvatar().getUrl());
-        }
-
         if(user.getSex() == null) {
             userDto.setSex("Other");
         }

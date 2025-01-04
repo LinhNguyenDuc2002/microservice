@@ -48,6 +48,7 @@ public final class I18nMessage {
     public final static String ERROR_TOKEN_NOT_FOUND = "error.token.not-found";
     public final static String ERROR_PRODUCT_DETAIL_NOT_FOUND = "error.product-detail.not-found";
     public final static String ERROR_PRODUCT_DETAIL_ONLY_ONE = "";
+    public final static String ERROR_PRODUCT_QUANTITY_NOT_ENOUGH = "error.product-quantity.not-enough";
     public final static String ERROR_IMAGE_NOT_FOUND = "error.image.not-found";
     public final static String ERROR_PRODUCT_DETAIL_NAME_DUPLICATED = "error.product-detail-name.duplicated";
     public final static String ERROR_IMAGE_NUMBER_EXCEEDED = "error.image-number.exceeded";

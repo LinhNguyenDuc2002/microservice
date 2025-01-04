@@ -5,6 +5,7 @@ import com.example.userservice.config.ApplicationConfig;
 import com.example.userservice.constant.I18nMessage;
 import com.example.userservice.constant.KafkaTopic;
 import com.example.userservice.constant.RoleType;
+import com.example.userservice.dto.BasicUserInfoDto;
 import com.example.userservice.dto.UserAddressDTO;
 import com.example.userservice.dto.UserDto;
 import com.example.userservice.dto.request.AddressRequest;
@@ -14,6 +15,7 @@ import com.example.userservice.dto.request.UserRegistration;
 import com.example.userservice.dto.request.UserRegistrationHasRole;
 import com.example.userservice.dto.request.UserRequest;
 import com.example.userservice.entity.Address;
+import com.example.userservice.entity.Image;
 import com.example.userservice.entity.Role;
 import com.example.userservice.entity.User;
 import com.example.userservice.exception.InvalidationException;
@@ -25,6 +27,7 @@ import com.example.userservice.message.email.EmailConstant;
 import com.example.userservice.message.email.EmailMessage;
 import com.example.userservice.redis.model.UserCache;
 import com.example.userservice.repository.AddressRepository;
+import com.example.userservice.repository.ImageRepository;
 import com.example.userservice.repository.RoleRepository;
 import com.example.userservice.repository.UserRepository;
 import com.example.userservice.security.util.SecurityUtils;
@@ -40,6 +43,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -77,6 +81,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private ApplicationConfig applicationConfig;
+
+    @Autowired
+    private ImageRepository imageRepository;
 
     private ObjectMapper mapper = new ObjectMapper();
 
@@ -178,6 +185,29 @@ public class UserServiceImpl implements UserService {
 //        messagingService.sendMessage(KafkaTopic.SEND_EMAIL, mapper.writeValueAsString(email));
         userRepository.save(user);
         return userMapper.toDto(user);
+    }
+
+    @Override
+    public List<BasicUserInfoDto> getUserInfo(List<String> ids) {
+        List<User> users = userRepository.findAllById(ids);
+
+        List<BasicUserInfoDto> response = new ArrayList<>();
+        for(User user : users) {
+            BasicUserInfoDto basicUserInfoDto = BasicUserInfoDto.builder()
+                    .id(user.getId())
+                    .firstName(user.getFirstName())
+                    .lastName(user.getLastName())
+                    .status(user.isStatus())
+                    .build();
+
+            Optional<Image> image = imageRepository.findById(user.getImageId());
+            if (image.isPresent()) {
+                basicUserInfoDto.setAvatarUrl(image.get().getSecureUrl());
+            }
+            response.add(basicUserInfoDto);
+        }
+
+        return response;
     }
 
     @Override
