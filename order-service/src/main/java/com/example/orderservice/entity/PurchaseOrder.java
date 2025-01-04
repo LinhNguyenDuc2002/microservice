@@ -2,13 +2,14 @@ package com.example.orderservice.entity;
 
 import com.example.orderservice.constant.OrderStatus;
 import com.example.orderservice.converter.OrderStatusConverter;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,11 +22,11 @@ import java.util.Collection;
 
 @Entity
 @Data
-@Table(name = "order")
+@Table(name = "purchase_order")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Order extends Auditor {
+public class PurchaseOrder extends Auditor {
     @Id
     @UuidGenerator
     @Column(name = "id")
@@ -38,11 +39,11 @@ public class Order extends Auditor {
     @Convert(converter = OrderStatusConverter.class)
     private OrderStatus status;
 
-    @OneToMany(mappedBy = "order")
+    @OneToMany(mappedBy = "purchaseOrder", cascade = CascadeType.ALL)
     @EqualsAndHashCode.Exclude
     private Collection<OrderDetail> orderDetails;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "receiver_id")
     private Receiver receiver;
 }

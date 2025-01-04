@@ -30,5 +30,5 @@ public class OrderDto {
 
     private List<OrderDetailDto> orderDetails;
 
-    private Receiver receiver;
+    private ReceiverDto receiver;
 }

@@ -11,12 +11,12 @@ import lombok.Getter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ReceiverRequest {
-    @NotBlank
+    @NotBlank(message = "{error.not-blank}")
     private String name;
 
-    @NotBlank
+    @NotBlank(message = "{error.not-blank}")
     private String phoneNumber;
 
-    @NotNull
+    @NotNull(message = "{error.not-null}")
     private AddressRequest address;
 }

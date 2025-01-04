@@ -14,12 +14,12 @@ public class AddressRequest {
 
     private String ward;
 
-    @NotBlank
+    @NotBlank(message = "{error.not-blank}")
     private String district;
 
-    @NotBlank
+    @NotBlank(message = "{error.not-blank}")
     private String city;
 
-    @NotBlank
+    @NotBlank(message = "{error.not-blank}")
     private String country;
 }

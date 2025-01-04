@@ -51,5 +51,5 @@ public class OrderDetail extends Auditor {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
     @EqualsAndHashCode.Exclude
-    private Order order;
+    private PurchaseOrder purchaseOrder;
 }

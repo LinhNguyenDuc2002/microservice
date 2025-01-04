@@ -38,7 +38,7 @@ public class WarehouseServiceImpl implements WarehouseService {
 
         ProductDetailPredicate productDetailPredicate = new ProductDetailPredicate()
                 .withStatus(true) // selling
-                .inIds((List<String>) requestMap.keySet());
+                .inIds(requestMap.keySet().stream().toList());
         List<ProductDetail> productDetails = productDetailRepository.findAll(productDetailPredicate.getCriteria());
         List<String> productDetailKey = productDetails.stream().map(ProductDetail::getId).toList();
 
