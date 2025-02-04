@@ -1,7 +1,7 @@
 package com.example.orderservice.repository.predicate;
 
 import com.example.orderservice.constant.OrderStatus;
-import com.example.orderservice.entity.QOrder;
+import com.example.orderservice.entity.QPurchaseOrder;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.util.StringUtils;
 
@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.EnumSet;
 
 public class OrderPredicate extends BasePredicate {
-    private final static QOrder qOrder = QOrder.order;
+    private final static QPurchaseOrder qPurchaseOrder = QPurchaseOrder.purchaseOrder;
 
     /**
      * @param customerId
@@ -17,7 +17,7 @@ public class OrderPredicate extends BasePredicate {
      */
     public OrderPredicate withCustomerId(String customerId) {
         if (StringUtils.hasText(customerId)) {
-            criteria.and(qOrder.orderDetails.any().customerId.eq(customerId));
+            criteria.and(qPurchaseOrder.orderDetails.any().customerId.eq(customerId));
         }
 
         return this;
@@ -29,7 +29,7 @@ public class OrderPredicate extends BasePredicate {
      */
     public OrderPredicate withStatus(String status) {
         if (StringUtils.hasText(status) && EnumSet.allOf(OrderStatus.class).contains(OrderStatus.valueOf(status))) {
-            criteria.and(qOrder.status.eq(OrderStatus.valueOf(status)));
+            criteria.and(qPurchaseOrder.status.eq(OrderStatus.valueOf(status)));
         }
 
         return this;
@@ -40,7 +40,7 @@ public class OrderPredicate extends BasePredicate {
      * @return
      */
     public OrderPredicate from(@NotNull Date startAt) {
-        criteria.and(qOrder.createdDate.after(startAt));
+        criteria.and(qPurchaseOrder.createdDate.after(startAt));
 
         return this;
     }
@@ -50,7 +50,7 @@ public class OrderPredicate extends BasePredicate {
      * @return
      */
     public OrderPredicate to(@NotNull Date endAt) {
-        criteria.and(qOrder.createdDate.before(endAt));
+        criteria.and(qPurchaseOrder.createdDate.before(endAt));
 
         return this;
     }

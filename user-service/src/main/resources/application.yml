@@ -77,14 +77,13 @@ spring:
           starttls:
             enable: true
 
-# Mail
 message:
   email:
     protocol: smtp
     from:
     username:
     password:
-    host: smtp-mail.outlook.com
+    host: smtp.gmail.com
     port: 587
 
 # JWT
@@ -103,9 +102,9 @@ oauth:
 
 # Cloudinary
 cloudinary:
-  cloudName:
-  apiKey:
-  apiSecret:
+  cloudName: dwlokgoam
+  apiKey: 976349327572747
+  apiSecret: xMr3J7-geMUqeQNpcwHTZD4Aook
 
 tempUser:
   lifespan: 12

@@ -8,13 +8,12 @@ import com.example.orderservice.dto.OrderDto;
 import com.example.orderservice.dto.PageDto;
 import com.example.orderservice.dto.request.OrderProductRequest;
 import com.example.orderservice.dto.request.OrderRequest;
-import com.example.orderservice.entity.PurchaseOrder;
 import com.example.orderservice.entity.OrderDetail;
+import com.example.orderservice.entity.PurchaseOrder;
 import com.example.orderservice.entity.Receiver;
 import com.example.orderservice.exception.InvalidationException;
 import com.example.orderservice.exception.NotFoundException;
 import com.example.orderservice.exception.UnauthorizedException;
-import com.example.orderservice.i18n.I18nService;
 import com.example.orderservice.mapper.OrderMapper;
 import com.example.orderservice.payload.productservice.request.ProductCheckingReq;
 import com.example.orderservice.payload.productservice.response.ProductCheckingResponse;
@@ -26,7 +25,8 @@ import com.example.orderservice.repository.predicate.OrderPredicate;
 import com.example.orderservice.security.SecurityUtil;
 import com.example.orderservice.service.OrderService;
 import com.example.orderservice.service.ProductService;
-import com.example.orderservice.util.PageUtil;
+import com.example.servicefoundation.i18n.I18nService;
+import com.example.servicefoundation.util.PaginationUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -181,7 +181,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public PageDto<OrderDto> getAll(Integer page, Integer size, Date start, Date end, String status, List<String> sortColumns) throws Exception {
-        Pageable pageable = (sortColumns == null) ? PageUtil.getPage(page, size) : PageUtil.getPage(page, size, sortColumns.toArray(new String[0]));
+        Pageable pageable = (sortColumns == null) ? PaginationUtil.getPage(page, size) : PaginationUtil.getPage(page, size, sortColumns.toArray(new String[0]));
         OrderPredicate orderPredicate = new OrderPredicate()
                 .from(start)
                 .to(end)
@@ -208,7 +208,7 @@ public class OrderServiceImpl implements OrderService {
     public PageDto<OrderDto> getByCustomerId(Integer page, Integer size, String status, String id, List<String> sortColumns) throws NotFoundException {
         //check account exist
 
-        Pageable pageable = (sortColumns == null) ? PageUtil.getPage(page, size) : PageUtil.getPage(page, size, sortColumns.toArray(new String[0]));
+        Pageable pageable = (sortColumns == null) ? PaginationUtil.getPage(page, size) : PaginationUtil.getPage(page, size, sortColumns.toArray(new String[0]));
         OrderPredicate orderPredicate = new OrderPredicate()
                 .withCustomerId(id)
                 .withStatus(status);

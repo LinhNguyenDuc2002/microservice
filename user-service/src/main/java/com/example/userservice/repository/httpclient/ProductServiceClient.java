@@ -6,6 +6,9 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+/**
+ * test
+ */
 @FeignClient(name = "product-service", url = "${app.services.product}")
 public interface ProductServiceClient {
     @PostMapping(value = "/customer", produces = MediaType.APPLICATION_JSON_VALUE)

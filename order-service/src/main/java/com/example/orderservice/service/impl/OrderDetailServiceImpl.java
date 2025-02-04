@@ -15,7 +15,7 @@ import com.example.orderservice.repository.predicate.OrderDetailPredicate;
 import com.example.orderservice.security.SecurityUtil;
 import com.example.orderservice.service.OrderDetailService;
 import com.example.orderservice.service.ProductService;
-import com.example.orderservice.util.PageUtil;
+import com.example.servicefoundation.util.PaginationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -106,7 +106,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
 
     @Override
     public PageDto<OrderDetailDto> getAll(Integer page, Integer size, String customerId, String status) throws Exception {
-        Pageable pageable = PageUtil.getPage(page, size);
+        Pageable pageable = PaginationUtil.getPage(page, size);
 
         OrderDetailStatus orderDetailStatus = null;
         try {

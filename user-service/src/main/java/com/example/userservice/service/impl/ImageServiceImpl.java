@@ -1,7 +1,6 @@
 package com.example.userservice.service.impl;
 
 import com.example.userservice.constant.I18nMessage;
-import com.example.userservice.entity.Image;
 import com.example.userservice.entity.User;
 import com.example.userservice.exception.InvalidationException;
 import com.example.userservice.exception.NotFoundException;
@@ -11,7 +10,6 @@ import com.example.userservice.repository.UserRepository;
 import com.example.userservice.security.util.SecurityUtils;
 import com.example.userservice.service.CloudinaryService;
 import com.example.userservice.service.ImageService;
-import com.example.userservice.util.DateUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -48,7 +46,7 @@ public class ImageServiceImpl implements ImageService {
                     return new UnauthorizedException(I18nMessage.ERROR_USER_UNKNOWN);
                 });
 
-        if(file == null || file.isEmpty()) {
+        if (file == null || file.isEmpty()) {
             throw new InvalidationException("");
         }
 
@@ -57,7 +55,7 @@ public class ImageServiceImpl implements ImageService {
         images.put(id, file);
 
         String imageId = user.getImageId();
-        if(StringUtils.hasText(imageId)) {
+        if (StringUtils.hasText(imageId)) {
             imageRepository.deleteById(imageId);
             cloudinaryService.destroy(imageId);
         }
@@ -80,7 +78,7 @@ public class ImageServiceImpl implements ImageService {
                     return new NotFoundException(I18nMessage.ERROR_USER_NOT_FOUND);
                 });
         String imageId = user.getImageId();
-        if(StringUtils.hasText(imageId)) {
+        if (StringUtils.hasText(imageId)) {
             imageRepository.deleteById(imageId);
             cloudinaryService.destroy(imageId);
             user.setImageId(null);

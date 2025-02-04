@@ -1,5 +1,8 @@
 package com.example.userservice.controller;
 
+import com.example.servicefoundation.base.response.Response;
+import com.example.servicefoundation.i18n.I18nService;
+import com.example.servicefoundation.util.ResponseUtil;
 import com.example.userservice.constant.I18nMessage;
 import com.example.userservice.dto.BasicUserInfoDto;
 import com.example.userservice.dto.UserAddressDTO;
@@ -9,12 +12,9 @@ import com.example.userservice.dto.request.UpdateInfo;
 import com.example.userservice.dto.request.UserRegistration;
 import com.example.userservice.dto.request.UserRegistrationHasRole;
 import com.example.userservice.dto.request.UserRequest;
-import com.example.userservice.dto.response.Response;
 import com.example.userservice.exception.InvalidationException;
 import com.example.userservice.exception.NotFoundException;
-import com.example.userservice.i18n.I18nService;
 import com.example.userservice.service.UserService;
-import com.example.userservice.util.ResponseUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
