@@ -100,7 +100,7 @@ public class OrderDetailPredicate extends BasePredicate {
      */
     public OrderDetailPredicate withBillStatus(OrderStatus orderStatus) {
         if (orderStatus != null && EnumSet.allOf(OrderStatus.class).contains(orderStatus)) {
-            criteria.and(qOrderDetail.order.status.eq(orderStatus));
+            criteria.and(qOrderDetail.purchaseOrder.status.eq(orderStatus));
         }
 
         return this;

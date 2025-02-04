@@ -1,11 +1,11 @@
 package com.example.orderservice.exception;
 
 import com.example.orderservice.constant.I18nMessage;
-import com.example.orderservice.constant.Status;
 import com.example.orderservice.dto.Error;
-import com.example.orderservice.dto.response.Response;
-import com.example.orderservice.i18n.I18nService;
-import com.example.orderservice.util.StringUtil;
+import com.example.servicefoundation.base.response.Response;
+import com.example.servicefoundation.constant.Status;
+import com.example.servicefoundation.i18n.I18nService;
+import com.example.servicefoundation.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;

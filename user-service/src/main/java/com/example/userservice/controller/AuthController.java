@@ -1,14 +1,14 @@
 package com.example.userservice.controller;
 
+import com.example.servicefoundation.base.response.Response;
+import com.example.servicefoundation.i18n.I18nService;
+import com.example.servicefoundation.util.ResponseUtil;
 import com.example.userservice.constant.I18nMessage;
 import com.example.userservice.constant.SecurityConstant;
 import com.example.userservice.dto.request.PasswordRequest;
-import com.example.userservice.dto.response.Response;
 import com.example.userservice.exception.InvalidationException;
 import com.example.userservice.exception.NotFoundException;
-import com.example.userservice.i18n.I18nService;
 import com.example.userservice.service.AuthService;
-import com.example.userservice.util.ResponseUtil;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;

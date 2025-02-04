@@ -36,6 +36,13 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!--		base -->
+		<dependency>
+			<groupId>com.example</groupId>
+			<artifactId>service-foundation</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+
 		<!--		lombok-->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -48,6 +55,22 @@
 			<groupId>com.mysql</groupId>
 			<artifactId>mysql-connector-j</artifactId>
 			<scope>runtime</scope>
+		</dependency>
+
+		<!-- support the configuration and use beans of email like JavaMailSender or MimeMessageHelper -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context-support</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
 		</dependency>
 
 		<!--		jpa-->

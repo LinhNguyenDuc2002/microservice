@@ -23,7 +23,7 @@ spring:
 
   # A option in springboot framework is used to define Hibernate behavior in creating and updating database
   # Hibernate will create and update tables in database, corresponding to object in your app.
-  # if table dont exist, Hibernate will create it. Else, Hibernate will update changes
+  # if table don't exist, Hibernate will create it. Else, Hibernate will update changes
   jpa:
     generate-ddl: true
     properties:
@@ -56,14 +56,27 @@ spring:
         assignment:
           strategy: org.apache.kafka.clients.consumer.RangeAssignor
 
-# Mail
+  mail:
+    from-address: ${message.email.from}
+    username: ${message.email.username}
+    password: ${message.email.password}
+    host: ${message.email.host}
+    port: ${message.email.port}
+    properties:
+      mail:
+        protocol: ${message.email.protocol}
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 message:
   email:
     protocol: smtp
     from:
     username:
     password:
-    host: smtp-mail.outlook.com
+    host: smtp.gmail.com
     port: 587
 
 product-service:

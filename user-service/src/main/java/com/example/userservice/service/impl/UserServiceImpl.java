@@ -1,5 +1,8 @@
 package com.example.userservice.service.impl;
 
+import com.example.servicefoundation.mail.message.EmailConstant;
+import com.example.servicefoundation.mail.message.EmailMessage;
+import com.example.servicefoundation.util.OTPUtil;
 import com.example.userservice.cache.UserCacheManager;
 import com.example.userservice.config.ApplicationConfig;
 import com.example.userservice.constant.I18nMessage;
@@ -23,8 +26,6 @@ import com.example.userservice.exception.NotFoundException;
 import com.example.userservice.exception.UnauthorizedException;
 import com.example.userservice.mapper.AddressMapper;
 import com.example.userservice.mapper.UserMapper;
-import com.example.userservice.message.email.EmailConstant;
-import com.example.userservice.message.email.EmailMessage;
 import com.example.userservice.redis.model.UserCache;
 import com.example.userservice.repository.AddressRepository;
 import com.example.userservice.repository.ImageRepository;
@@ -32,7 +33,6 @@ import com.example.userservice.repository.RoleRepository;
 import com.example.userservice.repository.UserRepository;
 import com.example.userservice.security.util.SecurityUtils;
 import com.example.userservice.service.UserService;
-import com.example.userservice.util.OTPUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -192,7 +192,7 @@ public class UserServiceImpl implements UserService {
         List<User> users = userRepository.findAllById(ids);
 
         List<BasicUserInfoDto> response = new ArrayList<>();
-        for(User user : users) {
+        for (User user : users) {
             BasicUserInfoDto basicUserInfoDto = BasicUserInfoDto.builder()
                     .id(user.getId())
                     .firstName(user.getFirstName())

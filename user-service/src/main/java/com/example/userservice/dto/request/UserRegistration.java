@@ -1,7 +1,7 @@
 package com.example.userservice.dto.request;
 
-import com.example.userservice.annotation.email.ValidEmail;
-import com.example.userservice.annotation.password.ValidPassword;
+import com.example.servicefoundation.annotation.email.ValidEmail;
+import com.example.servicefoundation.annotation.password.ValidPassword;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;

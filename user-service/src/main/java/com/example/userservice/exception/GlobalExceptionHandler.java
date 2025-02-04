@@ -1,11 +1,11 @@
 package com.example.userservice.exception;
 
+import com.example.servicefoundation.base.response.Response;
+import com.example.servicefoundation.constant.Status;
+import com.example.servicefoundation.i18n.I18nService;
+import com.example.servicefoundation.util.StringUtil;
 import com.example.userservice.constant.I18nMessage;
-import com.example.userservice.constant.Status;
 import com.example.userservice.dto.Error;
-import com.example.userservice.dto.response.Response;
-import com.example.userservice.i18n.I18nService;
-import com.example.userservice.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
