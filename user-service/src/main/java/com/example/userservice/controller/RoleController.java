@@ -1,12 +1,12 @@
 package com.example.userservice.controller;
 
 import com.example.servicefoundation.base.response.Response;
+import com.example.servicefoundation.exception.I18nException;
 import com.example.servicefoundation.i18n.I18nService;
 import com.example.servicefoundation.util.ResponseUtil;
 import com.example.userservice.constant.I18nMessage;
 import com.example.userservice.dto.RoleDto;
 import com.example.userservice.dto.request.RoleRequest;
-import com.example.userservice.exception.NotFoundException;
 import com.example.userservice.service.RoleService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +42,7 @@ public class RoleController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Response<RoleDto>> get(@PathVariable String id) throws NotFoundException {
+    public ResponseEntity<Response<RoleDto>> get(@PathVariable String id) throws I18nException {
         return ResponseUtil.wrapResponse(
                 roleService.get(id),
                 i18nService.getMessage(I18nMessage.INFO_GET_ROLE, LocaleContextHolder.getLocale())
@@ -50,7 +50,7 @@ public class RoleController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Response<RoleDto>> update(@PathVariable String id, @Valid @RequestBody RoleRequest roleRequest) throws NotFoundException {
+    public ResponseEntity<Response<RoleDto>> update(@PathVariable String id, @Valid @RequestBody RoleRequest roleRequest) throws I18nException {
         return ResponseUtil.wrapResponse(
                 roleService.update(id, roleRequest),
                 i18nService.getMessage(I18nMessage.INFO_UPDATE_ROLE, LocaleContextHolder.getLocale())
@@ -60,7 +60,7 @@ public class RoleController {
     @PatchMapping("/mapping")
     public ResponseEntity<Response<Void>> assignRole(
             @RequestParam("role") String roleName,
-            @RequestParam("user") String userId) throws NotFoundException {
+            @RequestParam("user") String userId) throws I18nException {
         roleService.assignRole(roleName, userId);
         return ResponseUtil.wrapResponse(I18nMessage.INFO_ASSIGN_ROLE);
     }
@@ -68,7 +68,7 @@ public class RoleController {
     @DeleteMapping("/mapping")
     public ResponseEntity<Response<Void>> unassignRole(
             @RequestParam("role") String roleName,
-            @RequestParam("user") String userId) throws NotFoundException {
+            @RequestParam("user") String userId) throws I18nException {
         roleService.unassignRole(roleName, userId);
         return ResponseUtil.wrapResponse(I18nMessage.INFO_UNASSIGN_ROLE);
     }

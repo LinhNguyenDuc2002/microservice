@@ -2,7 +2,6 @@ package com.example.orderservice.service.impl;
 
 import com.example.orderservice.config.ProductConfiguration;
 import com.example.orderservice.constant.SecurityConstant;
-import com.example.orderservice.exception.NotFoundException;
 import com.example.orderservice.payload.productservice.request.ProductCheckingReq;
 import com.example.orderservice.payload.productservice.response.ProductCheckingResponse;
 import com.example.orderservice.payload.productservice.response.ProductListCheckingResponse;

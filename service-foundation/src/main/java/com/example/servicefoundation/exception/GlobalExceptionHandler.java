@@ -1,7 +1,6 @@
-package com.example.orderservice.exception;
+package com.example.servicefoundation.exception;
 
-import com.example.orderservice.constant.I18nMessage;
-import com.example.orderservice.dto.Error;
+import com.example.servicefoundation.base.response.Error;
 import com.example.servicefoundation.base.response.Response;
 import com.example.servicefoundation.constant.Status;
 import com.example.servicefoundation.i18n.I18nService;
@@ -32,9 +31,6 @@ public class GlobalExceptionHandler {
         Response<Object> response = Response.builder()
                 .status(Status.FAIL.getMessage())
                 .code(HttpStatus.BAD_REQUEST.value())
-                .message(
-                        i18nService.getMessage(I18nMessage.ERROR_DATA_INVALID, LocaleContextHolder.getLocale())
-                )
                 .build();
 
         if (ex.hasFieldErrors()) {
@@ -65,47 +61,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
-    @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<Object> handleNotFoundException(NotFoundException ex) {
+    @ExceptionHandler(I18nException.class)
+    public ResponseEntity<Object> handleNotFoundException(I18nException ex) {
         Response<Object> response = Response.builder()
                 .status(Status.FAIL.getMessage())
-                .code(HttpStatus.NOT_FOUND.value())
+                .code(ex.getCode().value())
                 .message(
                         i18nService.getMessage(ex.getMessage(), LocaleContextHolder.getLocale())
                 )
                 .build();
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-    }
-
-    @ExceptionHandler(InvalidationException.class)
-    public ResponseEntity<Object> handleInvalidationException(InvalidationException ex) {
-        Response response = Response.builder()
-                .status(Status.FAIL.getMessage())
-                .code(HttpStatus.BAD_REQUEST.value())
-                .message(
-                        i18nService.getMessage(ex.getMessage(), LocaleContextHolder.getLocale())
-                )
-                .build();
-        response.setData(ex.getErrorObject());
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-    }
-
-    /**
-     * Handle the Access Denied Exception
-     *
-     * @param ex
-     * @return
-     */
-    @ExceptionHandler(UnauthorizedException.class)
-    public final ResponseEntity<Object> handleUnauthorizedException(UnauthorizedException ex) {
-        Response response = Response.builder()
-                .status(Status.FAIL.getMessage())
-                .code(HttpStatus.UNAUTHORIZED.value())
-                .message(
-                        i18nService.getMessage(ex.getMessage(), LocaleContextHolder.getLocale())
-                )
-                .build();
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        return ResponseEntity.status(ex.getCode()).body(response);
     }
 }

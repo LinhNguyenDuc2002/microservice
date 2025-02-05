@@ -1,10 +1,8 @@
 package com.example.userservice.service.impl;
 
+import com.example.servicefoundation.exception.I18nException;
 import com.example.userservice.constant.I18nMessage;
 import com.example.userservice.entity.User;
-import com.example.userservice.exception.InvalidationException;
-import com.example.userservice.exception.NotFoundException;
-import com.example.userservice.exception.UnauthorizedException;
 import com.example.userservice.repository.ImageRepository;
 import com.example.userservice.repository.UserRepository;
 import com.example.userservice.security.util.SecurityUtils;
@@ -12,6 +10,7 @@ import com.example.userservice.service.CloudinaryService;
 import com.example.userservice.service.ImageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,19 +34,27 @@ public class ImageServiceImpl implements ImageService {
     private CloudinaryService cloudinaryService;
 
     @Override
-    public String setAvatar(MultipartFile file) throws IOException, InvalidationException {
+    public String setAvatar(MultipartFile file) throws IOException, I18nException {
         Optional<String> userId = SecurityUtils.getLoggedInUserId();
         if (userId.isEmpty()) {
-            throw new UnauthorizedException(I18nMessage.ERROR_USER_UNKNOWN);
+            throw I18nException.builder()
+                    .code(HttpStatus.UNAUTHORIZED)
+                    .message(I18nMessage.ERROR_USER_UNKNOWN)
+                    .build();
         }
 
         User user = userRepository.findById(userId.get())
                 .orElseThrow(() -> {
-                    return new UnauthorizedException(I18nMessage.ERROR_USER_UNKNOWN);
+                    return I18nException.builder()
+                            .code(HttpStatus.UNAUTHORIZED)
+                            .message(I18nMessage.ERROR_USER_UNKNOWN)
+                            .build();
                 });
 
         if (file == null || file.isEmpty()) {
-            throw new InvalidationException("");
+            throw I18nException.builder()
+                    .message("")
+                    .build();
         }
 
         String id = UUID.randomUUID().toString();
@@ -67,15 +74,21 @@ public class ImageServiceImpl implements ImageService {
     }
 
     @Override
-    public void deleteAvatar() throws NotFoundException, IOException {
+    public void deleteAvatar() throws IOException, I18nException {
         Optional<String> userId = SecurityUtils.getLoggedInUserId();
         if (userId.isEmpty()) {
-            throw new UnauthorizedException(I18nMessage.ERROR_USER_UNKNOWN);
+            throw I18nException.builder()
+                    .code(HttpStatus.UNAUTHORIZED)
+                    .message(I18nMessage.ERROR_USER_UNKNOWN)
+                    .build();
         }
 
         User user = userRepository.findById(userId.get())
                 .orElseThrow(() -> {
-                    return new NotFoundException(I18nMessage.ERROR_USER_NOT_FOUND);
+                    return I18nException.builder()
+                            .code(HttpStatus.NOT_FOUND)
+                            .message(I18nMessage.ERROR_USER_NOT_FOUND)
+                            .build();
                 });
         String imageId = user.getImageId();
         if (StringUtils.hasText(imageId)) {

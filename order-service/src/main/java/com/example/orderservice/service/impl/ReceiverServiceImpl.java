@@ -5,15 +5,14 @@ import com.example.orderservice.dto.ReceiverDto;
 import com.example.orderservice.dto.request.ReceiverRequest;
 import com.example.orderservice.entity.Address;
 import com.example.orderservice.entity.Receiver;
-import com.example.orderservice.exception.InvalidationException;
-import com.example.orderservice.exception.NotFoundException;
-import com.example.orderservice.exception.UnauthorizedException;
 import com.example.orderservice.mapper.ReceiverMapper;
 import com.example.orderservice.repository.ReceiverRepository;
 import com.example.orderservice.repository.predicate.ReceiverPredicate;
 import com.example.orderservice.security.SecurityUtil;
 import com.example.orderservice.service.ReceiverService;
+import com.example.servicefoundation.exception.I18nException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,18 +27,24 @@ public class ReceiverServiceImpl implements ReceiverService {
     private ReceiverMapper receiverMapper;
 
     @Override
-    public ReceiverDto add(ReceiverRequest receiverRequest) throws InvalidationException {
+    public ReceiverDto add(ReceiverRequest receiverRequest) throws I18nException {
         ReceiverPredicate receiverPredicate = new ReceiverPredicate()
                 .withStatus(true)
                 .withNameOrPhoneNumber(receiverRequest.getName(), receiverRequest.getPhoneNumber());
         boolean check = receiverRepository.exists(receiverPredicate.getCriteria());
         if (check) {
-            throw new InvalidationException(I18nMessage.ERROR_RECEIVER_INFO_EXIST);
+            throw I18nException.builder()
+                    .code(HttpStatus.BAD_REQUEST)
+                    .message(I18nMessage.ERROR_RECEIVER_INFO_EXIST)
+                    .build();
         }
 
         Optional<String> userId = SecurityUtil.getLoggedInUserId();
         if (!userId.isPresent()) {
-            throw new UnauthorizedException(I18nMessage.ERROR_UNAUTHORIZED);
+            throw I18nException.builder()
+                    .code(HttpStatus.UNAUTHORIZED)
+                    .message(I18nMessage.ERROR_UNAUTHORIZED)
+                    .build();
         }
 
         Address address = Address.builder()
@@ -62,13 +67,16 @@ public class ReceiverServiceImpl implements ReceiverService {
     }
 
     @Override
-    public ReceiverDto update(String id, ReceiverRequest receiverRequest) throws NotFoundException, InvalidationException {
+    public ReceiverDto update(String id, ReceiverRequest receiverRequest) throws I18nException {
         ReceiverPredicate receiverPredicate = new ReceiverPredicate()
                 .withId(id)
                 .withStatus(true);
         Receiver receiver = receiverRepository.findOne(receiverPredicate.getCriteria())
                 .orElseThrow(() -> {
-                    return new NotFoundException(I18nMessage.ERROR_RECEIVER_NOT_FOUND);
+                    return I18nException.builder()
+                            .code(HttpStatus.NOT_FOUND)
+                            .message(I18nMessage.ERROR_RECEIVER_NOT_FOUND)
+                            .build();
                 });
 
         receiverPredicate = new ReceiverPredicate()
@@ -76,7 +84,10 @@ public class ReceiverServiceImpl implements ReceiverService {
                 .withNameOrPhoneNumber(receiverRequest.getName(), receiverRequest.getPhoneNumber());
         boolean check = receiverRepository.exists(receiverPredicate.getCriteria());
         if (check) {
-            throw new InvalidationException(I18nMessage.ERROR_RECEIVER_INFO_EXIST);
+            throw I18nException.builder()
+                    .code(HttpStatus.BAD_REQUEST)
+                    .message(I18nMessage.ERROR_RECEIVER_INFO_EXIST)
+                    .build();
         }
 
         Address address = receiver.getAddress();
@@ -98,13 +109,16 @@ public class ReceiverServiceImpl implements ReceiverService {
     }
 
     @Override
-    public ReceiverDto get(String id) throws NotFoundException {
+    public ReceiverDto get(String id) throws I18nException {
         ReceiverPredicate receiverPredicate = new ReceiverPredicate()
                 .withId(id)
                 .withStatus(true);
         Optional<Receiver> check = receiverRepository.findOne(receiverPredicate.getCriteria());
         if (check.isPresent()) {
-            throw new NotFoundException(I18nMessage.ERROR_RECEIVER_NOT_FOUND);
+            throw I18nException.builder()
+                    .code(HttpStatus.NOT_FOUND)
+                    .message(I18nMessage.ERROR_RECEIVER_NOT_FOUND)
+                    .build();
         }
 
         return receiverMapper.toDto(check.get());
@@ -121,10 +135,13 @@ public class ReceiverServiceImpl implements ReceiverService {
     }
 
     @Override
-    public void delete(String id) throws NotFoundException {
+    public void delete(String id) throws I18nException {
         Receiver receiver = receiverRepository.findById(id)
                 .orElseThrow(() -> {
-                    return new NotFoundException(I18nMessage.ERROR_RECEIVER_NOT_FOUND);
+                    return I18nException.builder()
+                            .code(HttpStatus.NOT_FOUND)
+                            .message(I18nMessage.ERROR_RECEIVER_NOT_FOUND)
+                            .build();
                 });
 
         receiver.setStatus(false);

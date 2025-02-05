@@ -1,12 +1,11 @@
 package com.example.userservice.service;
 
+import com.example.servicefoundation.exception.I18nException;
 import com.example.userservice.dto.AddressDto;
 import com.example.userservice.dto.request.AddressRequest;
-import com.example.userservice.exception.NotFoundException;
-import com.example.userservice.exception.InvalidationException;
 
 public interface AddressService {
-    AddressDto update(AddressRequest addressRequest, String id) throws InvalidationException, NotFoundException;
+    AddressDto update(AddressRequest addressRequest, String id) throws I18nException;
 
-    AddressDto get(String id) throws NotFoundException;
+    AddressDto get(String id) throws I18nException;
 }

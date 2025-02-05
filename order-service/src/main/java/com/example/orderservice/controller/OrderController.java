@@ -6,10 +6,9 @@ import com.example.orderservice.dto.OrderDto;
 import com.example.orderservice.dto.PageDto;
 import com.example.orderservice.dto.request.OrderProductRequest;
 import com.example.orderservice.dto.request.OrderRequest;
-import com.example.orderservice.exception.InvalidationException;
-import com.example.orderservice.exception.NotFoundException;
 import com.example.orderservice.service.OrderService;
 import com.example.servicefoundation.base.response.Response;
+import com.example.servicefoundation.exception.I18nException;
 import com.example.servicefoundation.i18n.I18nService;
 import com.example.servicefoundation.util.ResponseUtil;
 import jakarta.validation.Valid;
@@ -59,7 +58,7 @@ public class OrderController {
     @PutMapping("/{orderId}/receiver/{receiverId}")
     public ResponseEntity<Response<OrderDto>> update(
             @PathVariable String orderId,
-            @PathVariable String receiverId) throws NotFoundException, InvalidationException {
+            @PathVariable String receiverId) throws I18nException {
         return ResponseUtil.wrapResponse(
                 orderService.update(orderId, receiverId),
                 i18nService.getMessage(I18nMessage.INFO_UPDATE_DELIVERY_INFO, LocaleContextHolder.getLocale())
@@ -82,7 +81,7 @@ public class OrderController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Response<OrderDto>> get(@PathVariable String id) throws NotFoundException {
+    public ResponseEntity<Response<OrderDto>> get(@PathVariable String id) throws I18nException {
         return ResponseUtil.wrapResponse(
                 orderService.get(id),
                 i18nService.getMessage(I18nMessage.INFO_GET_ORDER, LocaleContextHolder.getLocale())
@@ -96,7 +95,7 @@ public class OrderController {
             @RequestParam(name = ParameterConstant.Page.PAGE, defaultValue = ParameterConstant.Page.DEFAULT_PAGE) Integer page,
             @RequestParam(name = ParameterConstant.Page.SIZE, defaultValue = ParameterConstant.Page.DEFAULT_SIZE) Integer size,
             @RequestParam(name = "status", required = false) String status,
-            @RequestParam(name = "sort-columns") List<String> sortColumns) throws NotFoundException {
+            @RequestParam(name = "sort-columns") List<String> sortColumns) {
         return ResponseUtil.wrapResponse(
                 orderService.getByCustomerId(page, size, status, id, sortColumns),
                 i18nService.getMessage(I18nMessage.INFO_GET_ORDER, LocaleContextHolder.getLocale())
@@ -107,7 +106,7 @@ public class OrderController {
     @PreAuthorize("hasAnyRole('EMPLOYEE')")
     public ResponseEntity<Response<OrderDto>> changeStatus(
             @PathVariable String id,
-            @RequestParam(name = "status") String status) throws NotFoundException, InvalidationException {
+            @RequestParam(name = "status") String status) throws I18nException {
         return ResponseUtil.wrapResponse(
                 orderService.changeStatus(id, status),
                 i18nService.getMessage(I18nMessage.INFO_GET_ORDER, LocaleContextHolder.getLocale())
@@ -115,7 +114,7 @@ public class OrderController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Response<Void>> delete(@PathVariable String id) throws NotFoundException, InvalidationException {
+    public ResponseEntity<Response<Void>> delete(@PathVariable String id) throws I18nException {
         orderService.delete(id);
         return ResponseUtil.wrapResponse(
                 i18nService.getMessage(I18nMessage.INFO_DELETE_ORDER, LocaleContextHolder.getLocale())

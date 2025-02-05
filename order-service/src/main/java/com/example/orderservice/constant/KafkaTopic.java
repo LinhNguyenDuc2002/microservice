@@ -8,6 +8,4 @@ public class KafkaTopic {
     public final static String CREATE_CUSTOMER = "create-customer";
 
     public final static String UPDATE_UNIT_PRICE_DETAIL = "update-detail";
-
-    public final static String SEND_EMAIL = "send-email";
 }
