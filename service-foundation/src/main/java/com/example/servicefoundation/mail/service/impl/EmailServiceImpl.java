@@ -27,9 +27,7 @@ public class EmailServiceImpl implements EmailService<EmailMessage> {
     private SpringTemplateEngine templateEngine;
 
     @Override
-    public void sendMessage(String payload) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        EmailMessage message = mapper.readValue(payload, EmailMessage.class);
+    public void send(EmailMessage message) {
         Map<String, String> args = message.getArgs();
 
         try {

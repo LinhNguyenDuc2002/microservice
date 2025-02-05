@@ -1,13 +1,12 @@
 package com.example.userservice.controller;
 
 import com.example.servicefoundation.base.response.Response;
+import com.example.servicefoundation.exception.I18nException;
 import com.example.servicefoundation.i18n.I18nService;
 import com.example.servicefoundation.util.ResponseUtil;
 import com.example.userservice.constant.I18nMessage;
 import com.example.userservice.constant.SecurityConstant;
 import com.example.userservice.dto.request.PasswordRequest;
-import com.example.userservice.exception.InvalidationException;
-import com.example.userservice.exception.NotFoundException;
 import com.example.userservice.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +43,7 @@ public class AuthController {
      * @return
      */
     @PutMapping("/password")
-    public ResponseEntity<Response<Void>> changePassword(@Valid @RequestBody PasswordRequest pwd) throws InvalidationException, NotFoundException {
+    public ResponseEntity<Response<Void>> changePassword(@Valid @RequestBody PasswordRequest pwd) throws I18nException {
         authService.changePwd(pwd);
         return ResponseUtil.wrapResponse(
                 i18nService.getMessage(I18nMessage.INFO_CHANGE_PASSWORD, LocaleContextHolder.getLocale())
@@ -54,7 +53,7 @@ public class AuthController {
     @PostMapping("/password")
     public ResponseEntity<Response<Void>> forgetPassword(
             @RequestParam(name = "password") String password,
-            @PathVariable String id) throws InvalidationException, NotFoundException {
+            @PathVariable String id) throws I18nException {
         authService.resetPwd(id, password);
         return ResponseUtil.wrapResponse(
                 i18nService.getMessage(I18nMessage.INFO_RESET_PASSWORD, LocaleContextHolder.getLocale())
@@ -65,7 +64,7 @@ public class AuthController {
     @Secured({SecurityConstant.ADMIN, SecurityConstant.EMPLOYEE})
     public ResponseEntity<Response<Void>> resetPassword(
             @RequestParam(name = "password") String password,
-            @PathVariable String id) throws InvalidationException, NotFoundException {
+            @PathVariable String id) throws I18nException {
         authService.resetPwd(id, password);
         return ResponseUtil.wrapResponse(
                 i18nService.getMessage(I18nMessage.INFO_RESET_PASSWORD, LocaleContextHolder.getLocale())

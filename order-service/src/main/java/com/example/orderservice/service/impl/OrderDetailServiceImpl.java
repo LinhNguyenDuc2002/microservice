@@ -5,9 +5,6 @@ import com.example.orderservice.constant.OrderDetailStatus;
 import com.example.orderservice.dto.OrderDetailDto;
 import com.example.orderservice.dto.PageDto;
 import com.example.orderservice.entity.OrderDetail;
-import com.example.orderservice.exception.InvalidationException;
-import com.example.orderservice.exception.NotFoundException;
-import com.example.orderservice.exception.UnauthorizedException;
 import com.example.orderservice.mapper.OrderDetailMapper;
 import com.example.orderservice.payload.productservice.response.ProductCheckingResponse;
 import com.example.orderservice.repository.OrderDetailRepository;
@@ -15,10 +12,12 @@ import com.example.orderservice.repository.predicate.OrderDetailPredicate;
 import com.example.orderservice.security.SecurityUtil;
 import com.example.orderservice.service.OrderDetailService;
 import com.example.orderservice.service.ProductService;
+import com.example.servicefoundation.exception.I18nException;
 import com.example.servicefoundation.util.PaginationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -40,7 +39,10 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     public OrderDetailDto create(String productDetailId, Integer quantity) throws Exception {
         Optional<String> userId = SecurityUtil.getLoggedInUserId();
         if (!userId.isPresent()) {
-            throw new UnauthorizedException(I18nMessage.ERROR_UNAUTHORIZED);
+            throw I18nException.builder()
+                    .code(HttpStatus.UNAUTHORIZED)
+                    .message(I18nMessage.ERROR_UNAUTHORIZED)
+                    .build();
         }
 
         OrderDetailPredicate orderDetailPredicate = new OrderDetailPredicate()
@@ -48,7 +50,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                 .withCustomerId(userId.get())
                 .withStatus(OrderDetailStatus.IN_CART);
         List<OrderDetail> check = orderDetailRepository.findAll(orderDetailPredicate.getCriteria());
-        if(!check.isEmpty()) {
+        if (!check.isEmpty()) {
             OrderDetail existOrderDetail = check.get(0);
             ProductCheckingResponse productCheckingResponse = productService.checkProductExist(productDetailId, quantity + existOrderDetail.getQuantity());
             if (productCheckingResponse.isExist()) {
@@ -61,12 +63,18 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         }
 
         if (quantity <= 0) {
-            throw new InvalidationException(I18nMessage.ERROR_QUANTITY_MIN);
+            throw I18nException.builder()
+                    .code(HttpStatus.BAD_REQUEST)
+                    .message(I18nMessage.ERROR_QUANTITY_MIN)
+                    .build();
         }
 
         ProductCheckingResponse productCheckingResponse = productService.checkProductExist(productDetailId, quantity);
         if (!productCheckingResponse.isExist()) {
-            throw new NotFoundException(productCheckingResponse.getInfo());
+            throw I18nException.builder()
+                    .code(HttpStatus.NOT_FOUND)
+                    .object(productCheckingResponse.getInfo())
+                    .build();
         }
 
         OrderDetail orderDetail = OrderDetail.builder()
@@ -86,16 +94,25 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     public OrderDetailDto update(String id, Integer quantity) throws Exception {
         OrderDetail orderDetail = orderDetailRepository.findById(id)
                 .orElseThrow(() -> {
-                    return new NotFoundException(I18nMessage.ERROR_ORDER_DETAIL_NOT_FOUND);
+                    return I18nException.builder()
+                            .code(HttpStatus.NOT_FOUND)
+                            .message(I18nMessage.ERROR_ORDER_DETAIL_NOT_FOUND)
+                            .build();
                 });
 
         if (quantity <= 0) {
-            throw new InvalidationException(I18nMessage.ERROR_QUANTITY_MIN);
+            throw I18nException.builder()
+                    .code(HttpStatus.BAD_REQUEST)
+                    .message(I18nMessage.ERROR_QUANTITY_MIN)
+                    .build();
         }
 
         ProductCheckingResponse productCheckingResponse = productService.checkProductExist(orderDetail.getProductDetailId(), quantity);
         if (!productCheckingResponse.isExist()) {
-            throw new NotFoundException(productCheckingResponse.getInfo());
+            throw I18nException.builder()
+                    .code(HttpStatus.NOT_FOUND)
+                    .object(productCheckingResponse.getInfo())
+                    .build();
         }
 
         orderDetail.setQuantity(quantity);
@@ -110,7 +127,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
 
         OrderDetailStatus orderDetailStatus = null;
         try {
-            if(StringUtils.hasText(status)) {
+            if (StringUtils.hasText(status)) {
                 orderDetailStatus = OrderDetailStatus.valueOf(status);
             }
         } catch (IllegalArgumentException e) {
@@ -129,24 +146,33 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     }
 
     @Override
-    public OrderDetailDto get(String id) throws NotFoundException {
+    public OrderDetailDto get(String id) throws I18nException {
         OrderDetail orderDetail = orderDetailRepository.findById(id)
                 .orElseThrow(() -> {
-                    return new NotFoundException(I18nMessage.ERROR_ORDER_DETAIL_NOT_FOUND);
+                    return I18nException.builder()
+                            .code(HttpStatus.NOT_FOUND)
+                            .message(I18nMessage.ERROR_ORDER_DETAIL_NOT_FOUND)
+                            .build();
                 });
 
         return orderDetailMapper.toDto(orderDetail);
     }
 
     @Override
-    public void delete(String id) throws NotFoundException, InvalidationException {
+    public void delete(String id) throws I18nException {
         OrderDetail orderDetail = orderDetailRepository.findById(id)
                 .orElseThrow(() -> {
-                    return new NotFoundException(I18nMessage.ERROR_ORDER_DETAIL_NOT_FOUND);
+                    return I18nException.builder()
+                            .code(HttpStatus.NOT_FOUND)
+                            .message(I18nMessage.ERROR_ORDER_DETAIL_NOT_FOUND)
+                            .build();
                 });
 
         if (orderDetail.getStatus().equals(OrderDetailStatus.PURCHASED)) {
-            throw new InvalidationException(I18nMessage.ERROR_ORDER_CAN_NOT_DELETE);
+            throw I18nException.builder()
+                    .code(HttpStatus.BAD_REQUEST)
+                    .message(I18nMessage.ERROR_ORDER_CAN_NOT_DELETE)
+                    .build();
         }
         orderDetailRepository.deleteById(id);
     }

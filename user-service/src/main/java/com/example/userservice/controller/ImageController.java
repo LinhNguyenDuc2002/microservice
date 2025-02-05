@@ -1,11 +1,10 @@
 package com.example.userservice.controller;
 
 import com.example.servicefoundation.base.response.Response;
+import com.example.servicefoundation.exception.I18nException;
 import com.example.servicefoundation.i18n.I18nService;
 import com.example.servicefoundation.util.ResponseUtil;
 import com.example.userservice.constant.I18nMessage;
-import com.example.userservice.exception.InvalidationException;
-import com.example.userservice.exception.NotFoundException;
 import com.example.userservice.service.ImageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -30,7 +29,7 @@ public class ImageController {
     private I18nService i18nService;
 
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<Response<String>> setAvatar(@RequestParam("avatar") MultipartFile file) throws IOException, InvalidationException {
+    public ResponseEntity<Response<String>> setAvatar(@RequestParam("avatar") MultipartFile file) throws IOException, I18nException {
         return ResponseUtil.wrapResponse(
                 imageService.setAvatar(file),
                 i18nService.getMessage(I18nMessage.INFO_SET_AVATAR, LocaleContextHolder.getLocale())
@@ -38,7 +37,7 @@ public class ImageController {
     }
 
     @DeleteMapping
-    public ResponseEntity<Response<String>> deleteAvatar() throws NotFoundException, IOException {
+    public ResponseEntity<Response<String>> deleteAvatar() throws IOException, I18nException {
         imageService.deleteAvatar();
         return ResponseUtil.wrapResponse(
                 i18nService.getMessage(I18nMessage.INFO_DELETE_AVATAR, LocaleContextHolder.getLocale())

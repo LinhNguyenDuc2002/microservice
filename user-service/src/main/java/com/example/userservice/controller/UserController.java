@@ -1,6 +1,7 @@
 package com.example.userservice.controller;
 
 import com.example.servicefoundation.base.response.Response;
+import com.example.servicefoundation.exception.I18nException;
 import com.example.servicefoundation.i18n.I18nService;
 import com.example.servicefoundation.util.ResponseUtil;
 import com.example.userservice.constant.I18nMessage;
@@ -12,8 +13,6 @@ import com.example.userservice.dto.request.UpdateInfo;
 import com.example.userservice.dto.request.UserRegistration;
 import com.example.userservice.dto.request.UserRegistrationHasRole;
 import com.example.userservice.dto.request.UserRequest;
-import com.example.userservice.exception.InvalidationException;
-import com.example.userservice.exception.NotFoundException;
 import com.example.userservice.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.validation.Valid;
@@ -44,7 +43,7 @@ public class UserController {
     private I18nService i18nService;
 
     @GetMapping("/me")
-    public ResponseEntity<Response<UserDto>> getLoggedInUser() throws NotFoundException {
+    public ResponseEntity<Response<UserDto>> getLoggedInUser() throws I18nException {
         return ResponseUtil.wrapResponse(
                 userService.getLoggedInUser(),
                 i18nService.getMessage(I18nMessage.INFO_GET_USER, LocaleContextHolder.getLocale())
@@ -52,7 +51,7 @@ public class UserController {
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<Response<UserDto>> verifyOTPToCreateUser(@RequestBody OTPAuthenticationRequest request) throws InvalidationException, NotFoundException, JsonProcessingException {
+    public ResponseEntity<Response<UserDto>> verifyOTPToCreateUser(@RequestBody OTPAuthenticationRequest request) throws JsonProcessingException, I18nException {
         return ResponseUtil.wrapResponse(
                 userService.createUser(request),
                 i18nService.getMessage(I18nMessage.INFO_CREATE_ACCOUNT, LocaleContextHolder.getLocale())
@@ -60,7 +59,7 @@ public class UserController {
     }
 
     @PostMapping("/customer")
-    public ResponseEntity<Response<Object>> createTempUser(@Valid @RequestBody UserRegistration userRegistration) throws InvalidationException, JsonProcessingException, NoSuchAlgorithmException, InvalidKeyException {
+    public ResponseEntity<Response<Object>> createTempUser(@Valid @RequestBody UserRegistration userRegistration) throws JsonProcessingException, NoSuchAlgorithmException, InvalidKeyException, I18nException {
         return ResponseUtil.wrapResponse(
                 userService.createTempUser(userRegistration),
                 i18nService.getMessage(I18nMessage.INFO_WAIT_OTP, LocaleContextHolder.getLocale())
@@ -68,7 +67,7 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<Response<Object>> createUser(@Valid @RequestBody UserRegistrationHasRole userRegistration) throws InvalidationException, JsonProcessingException, NoSuchAlgorithmException, InvalidKeyException {
+    public ResponseEntity<Response<Object>> createUser(@Valid @RequestBody UserRegistrationHasRole userRegistration) {
         return ResponseUtil.wrapResponse(
                 userService.createUser(userRegistration),
                 i18nService.getMessage(I18nMessage.INFO_WAIT_OTP, LocaleContextHolder.getLocale())
@@ -76,7 +75,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Response<UserDto>> delete(@PathVariable String id) throws NotFoundException {
+    public ResponseEntity<Response<UserDto>> delete(@PathVariable String id) throws I18nException {
         userService.delete(id);
         return ResponseUtil.wrapResponse(
                 i18nService.getMessage(I18nMessage.INFO_DELETE_ACCOUNT, LocaleContextHolder.getLocale())
@@ -93,7 +92,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Response<UserDto>> get(@PathVariable String id) throws NotFoundException {
+    public ResponseEntity<Response<UserDto>> get(@PathVariable String id) throws I18nException {
         return ResponseUtil.wrapResponse(
                 userService.get(id),
                 i18nService.getMessage(I18nMessage.INFO_GET_USER, LocaleContextHolder.getLocale())
@@ -103,7 +102,7 @@ public class UserController {
     @PatchMapping("/{id}")
     public ResponseEntity<Response<UserAddressDTO>> update(
             @PathVariable String id,
-            @Valid @RequestBody UpdateInfo updateInfo) throws NotFoundException, InvalidationException {
+            @Valid @RequestBody UpdateInfo updateInfo) throws I18nException {
         return ResponseUtil.wrapResponse(
                 userService.update(id, updateInfo),
                 i18nService.getMessage(I18nMessage.INFO_UPDATE_USER, LocaleContextHolder.getLocale())
@@ -113,7 +112,7 @@ public class UserController {
     @PutMapping("/{id}")
     public ResponseEntity<Response<UserAddressDTO>> update(
             @PathVariable String id,
-            @Valid @RequestBody UserRequest userRequest) throws NotFoundException, InvalidationException {
+            @Valid @RequestBody UserRequest userRequest) throws I18nException {
         return ResponseUtil.wrapResponse(
                 userService.update(id, userRequest),
                 i18nService.getMessage(I18nMessage.INFO_UPDATE_USER, LocaleContextHolder.getLocale())
@@ -121,7 +120,7 @@ public class UserController {
     }
 
     @PostMapping("/ìnfo")
-    public ResponseEntity<List<BasicUserInfoDto>> getUserInfo(@RequestBody List<String> ids) throws NotFoundException, InvalidationException {
+    public ResponseEntity<List<BasicUserInfoDto>> getUserInfo(@RequestBody List<String> ids) {
         return ResponseEntity.ok(userService.getUserInfo(ids));
     }
 }

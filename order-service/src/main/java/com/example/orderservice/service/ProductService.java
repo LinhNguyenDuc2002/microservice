@@ -1,6 +1,5 @@
 package com.example.orderservice.service;
 
-import com.example.orderservice.exception.NotFoundException;
 import com.example.orderservice.payload.productservice.request.ProductCheckingReq;
 import com.example.orderservice.payload.productservice.response.ProductCheckingResponse;
 import com.example.orderservice.payload.productservice.response.ProductListCheckingResponse;

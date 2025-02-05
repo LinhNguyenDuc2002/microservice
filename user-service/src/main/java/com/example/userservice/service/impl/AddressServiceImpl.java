@@ -1,16 +1,17 @@
 package com.example.userservice.service.impl;
 
+import com.example.servicefoundation.exception.I18nException;
 import com.example.userservice.constant.I18nMessage;
 import com.example.userservice.dto.AddressDto;
 import com.example.userservice.dto.request.AddressRequest;
 import com.example.userservice.entity.Address;
 import com.example.userservice.entity.User;
-import com.example.userservice.exception.NotFoundException;
 import com.example.userservice.mapper.AddressMapper;
 import com.example.userservice.repository.AddressRepository;
 import com.example.userservice.repository.UserRepository;
 import com.example.userservice.service.AddressService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -26,10 +27,11 @@ public class AddressServiceImpl implements AddressService {
     private AddressRepository addressRepository;
 
     @Override
-    public AddressDto update(AddressRequest addressRequest, String id) throws NotFoundException {
+    public AddressDto update(AddressRequest addressRequest, String id) throws I18nException {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> {
-                    return NotFoundException.builder()
+                    return I18nException.builder()
+                            .code(HttpStatus.NOT_FOUND)
                             .message(I18nMessage.ERROR_USER_NOT_FOUND)
                             .build();
                 });
@@ -63,10 +65,11 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
-    public AddressDto get(String id) throws NotFoundException {
+    public AddressDto get(String id) throws I18nException {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> {
-                    return NotFoundException.builder()
+                    return I18nException.builder()
+                            .code(HttpStatus.NOT_FOUND)
                             .message(I18nMessage.ERROR_USER_NOT_FOUND)
                             .build();
                 });

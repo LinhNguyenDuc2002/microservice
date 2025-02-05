@@ -1,6 +1,7 @@
 package com.example.servicefoundation.mail.service;
 
 import com.example.servicefoundation.mail.message.BaseMessage;
+import com.example.servicefoundation.mail.message.EmailMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
@@ -9,5 +10,5 @@ import com.fasterxml.jackson.core.JsonProcessingException;
  * @param <T>
  */
 public interface EmailService<T extends BaseMessage> {
-    void sendMessage(String payload) throws JsonProcessingException;
+    void send(EmailMessage emailMessage);
 }

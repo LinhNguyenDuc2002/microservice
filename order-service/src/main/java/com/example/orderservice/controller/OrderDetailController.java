@@ -4,10 +4,9 @@ import com.example.orderservice.constant.I18nMessage;
 import com.example.orderservice.constant.ParameterConstant;
 import com.example.orderservice.dto.OrderDetailDto;
 import com.example.orderservice.dto.PageDto;
-import com.example.orderservice.exception.InvalidationException;
-import com.example.orderservice.exception.NotFoundException;
 import com.example.orderservice.service.OrderDetailService;
 import com.example.servicefoundation.base.response.Response;
+import com.example.servicefoundation.exception.I18nException;
 import com.example.servicefoundation.i18n.I18nService;
 import com.example.servicefoundation.util.ResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,7 +63,7 @@ public class OrderDetailController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Response<OrderDetailDto>> get(@PathVariable String id) throws NotFoundException {
+    public ResponseEntity<Response<OrderDetailDto>> get(@PathVariable String id) throws I18nException {
         return ResponseUtil.wrapResponse(
                 orderDetailService.get(id),
                 i18nService.getMessage(I18nMessage.INFO_GET_ORDER_DETAIL, LocaleContextHolder.getLocale())
@@ -72,7 +71,7 @@ public class OrderDetailController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Response<Void>> delete(@PathVariable String id) throws NotFoundException, InvalidationException {
+    public ResponseEntity<Response<Void>> delete(@PathVariable String id) throws I18nException {
         orderDetailService.delete(id);
         return ResponseUtil.wrapResponse(
                 i18nService.getMessage(I18nMessage.INFO_DELETE_ORDER_DETAIL, LocaleContextHolder.getLocale())

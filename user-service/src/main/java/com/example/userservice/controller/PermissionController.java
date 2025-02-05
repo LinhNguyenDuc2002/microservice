@@ -1,13 +1,12 @@
 package com.example.userservice.controller;
 
 import com.example.servicefoundation.base.response.Response;
+import com.example.servicefoundation.exception.I18nException;
 import com.example.servicefoundation.i18n.I18nService;
 import com.example.servicefoundation.util.ResponseUtil;
 import com.example.userservice.constant.I18nMessage;
 import com.example.userservice.dto.PermissionDto;
 import com.example.userservice.dto.request.PermissionRequest;
-import com.example.userservice.exception.InvalidationException;
-import com.example.userservice.exception.NotFoundException;
 import com.example.userservice.service.PermissionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +39,7 @@ public class PermissionController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Response<PermissionDto>> get(@PathVariable String id) throws NotFoundException {
+    public ResponseEntity<Response<PermissionDto>> get(@PathVariable String id) throws I18nException {
         return ResponseUtil.wrapResponse(
                 permissionService.get(id),
                 i18nService.getMessage(I18nMessage.INFO_GET_PERMISSION, LocaleContextHolder.getLocale())
@@ -48,7 +47,7 @@ public class PermissionController {
     }
 
     @GetMapping("/role/{id}")
-    public ResponseEntity<Response<List<PermissionDto>>> getByRoleId(@PathVariable String id) throws NotFoundException {
+    public ResponseEntity<Response<List<PermissionDto>>> getByRoleId(@PathVariable String id) throws I18nException {
         return ResponseUtil.wrapResponse(
                 permissionService.getByRoleId(id),
                 i18nService.getMessage(I18nMessage.INFO_GET_ALL_PERMISSION, LocaleContextHolder.getLocale())
@@ -56,7 +55,7 @@ public class PermissionController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Response<PermissionDto>> update(@PathVariable String id, @Valid @RequestBody PermissionRequest permissionRequest) throws NotFoundException, InvalidationException {
+    public ResponseEntity<Response<PermissionDto>> update(@PathVariable String id, @Valid @RequestBody PermissionRequest permissionRequest) throws I18nException {
         return ResponseUtil.wrapResponse(
                 permissionService.update(id, permissionRequest),
                 i18nService.getMessage(I18nMessage.INFO_UPDATE_PERMISSION, LocaleContextHolder.getLocale())

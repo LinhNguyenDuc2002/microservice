@@ -1,12 +1,13 @@
 package com.example.userservice.service.impl;
 
+import com.example.servicefoundation.exception.I18nException;
 import com.example.servicefoundation.mail.message.EmailConstant;
 import com.example.servicefoundation.mail.message.EmailMessage;
+import com.example.servicefoundation.mail.service.EmailService;
 import com.example.servicefoundation.util.OTPUtil;
 import com.example.userservice.cache.UserCacheManager;
 import com.example.userservice.config.ApplicationConfig;
 import com.example.userservice.constant.I18nMessage;
-import com.example.userservice.constant.KafkaTopic;
 import com.example.userservice.constant.RoleType;
 import com.example.userservice.dto.BasicUserInfoDto;
 import com.example.userservice.dto.UserAddressDTO;
@@ -21,9 +22,6 @@ import com.example.userservice.entity.Address;
 import com.example.userservice.entity.Image;
 import com.example.userservice.entity.Role;
 import com.example.userservice.entity.User;
-import com.example.userservice.exception.InvalidationException;
-import com.example.userservice.exception.NotFoundException;
-import com.example.userservice.exception.UnauthorizedException;
 import com.example.userservice.mapper.AddressMapper;
 import com.example.userservice.mapper.UserMapper;
 import com.example.userservice.redis.model.UserCache;
@@ -33,11 +31,11 @@ import com.example.userservice.repository.RoleRepository;
 import com.example.userservice.repository.UserRepository;
 import com.example.userservice.security.util.SecurityUtils;
 import com.example.userservice.service.UserService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -85,26 +83,39 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private ImageRepository imageRepository;
 
+    @Autowired
+    private EmailService emailService;
+
     private ObjectMapper mapper = new ObjectMapper();
 
     @Override
-    public UserDto getLoggedInUser() {
+    public UserDto getLoggedInUser() throws I18nException {
         Optional<String> userId = SecurityUtils.getLoggedInUserId();
         if (userId.isEmpty()) {
-            throw new UnauthorizedException(I18nMessage.ERROR_USER_UNKNOWN);
+            throw I18nException.builder()
+                    .code(HttpStatus.UNAUTHORIZED)
+                    .message(I18nMessage.ERROR_USER_UNKNOWN)
+                    .build();
         }
 
         User user = userRepository.findById(userId.get())
                 .orElseThrow(() -> {
-                    return new UnauthorizedException(I18nMessage.ERROR_USER_UNKNOWN);
+                    return I18nException.builder()
+                            .code(HttpStatus.UNAUTHORIZED)
+                            .message(I18nMessage.ERROR_USER_UNKNOWN)
+                            .build();
                 });
         return userMapper.toDto(user);
     }
 
     @Override
-    public Map<String, String> createTempUser(UserRegistration userRegistration) throws InvalidationException, NoSuchAlgorithmException, InvalidKeyException, JsonProcessingException {
+    public Map<String, String> createTempUser(UserRegistration userRegistration) throws NoSuchAlgorithmException, InvalidKeyException, I18nException {
         if (userRepository.existsByEmail(userRegistration.getEmail())) {
-            throw new InvalidationException(userRegistration, I18nMessage.ERROR_EMAIL_EXISTED);
+            throw I18nException.builder()
+                    .code(HttpStatus.BAD_REQUEST)
+                    .message(I18nMessage.ERROR_EMAIL_EXISTED)
+                    .object(userRegistration)
+                    .build();
         }
 
         String otp = OTPUtil.generateOTP();
@@ -125,7 +136,7 @@ public class UserServiceImpl implements UserService {
                 .locale(LocaleContextHolder.getLocale())
                 .build();
         log.info("Sending OTP to authenticate ...");
-        messagingService.sendMessage(KafkaTopic.SEND_EMAIL, mapper.writeValueAsString(email));
+        emailService.send(email);
         log.info("OTP code is sent successfully");
 
         userCacheManager.storeUserCache(userCache);
@@ -135,13 +146,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto createUser(OTPAuthenticationRequest request) throws InvalidationException, NotFoundException, JsonProcessingException {
+    public UserDto createUser(OTPAuthenticationRequest request) throws I18nException {
         UserCache userCache = userCacheManager.getUserCache(request.getSecret())
                 .orElseThrow(() -> {
-                    return new NotFoundException(I18nMessage.ERROR_USER_CACHE_NOT_FOUND);
+                    return I18nException.builder()
+                            .code(HttpStatus.NOT_FOUND)
+                            .message(I18nMessage.ERROR_USER_CACHE_NOT_FOUND)
+                            .build();
                 });
         if (!userCache.getOtp().equals(request.getOtp())) {
-            throw new InvalidationException(request.getOtp(), I18nMessage.ERROR_INVALID_OTP);
+            throw I18nException.builder()
+                    .code(HttpStatus.BAD_REQUEST)
+                    .message(I18nMessage.ERROR_INVALID_OTP)
+                    .object(request.getOtp())
+                    .build();
         }
 
         User user = convertToUser(userCache);
@@ -211,10 +229,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void delete(String id) throws NotFoundException {
+    public void delete(String id) throws I18nException {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> {
-                    return NotFoundException.builder()
+                    return I18nException.builder()
+                            .code(HttpStatus.NOT_FOUND)
                             .message(I18nMessage.ERROR_USER_NOT_FOUND)
                             .build();
                 });
@@ -230,13 +249,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto get(String id) throws NotFoundException {
+    public UserDto get(String id) throws I18nException {
         log.info("Get user {}", id);
 
         User user = userRepository.findById(id)
                 .orElseThrow(() -> {
                     log.error("User {} don't exist", id);
-                    return NotFoundException.builder()
+                    return I18nException.builder()
+                            .code(HttpStatus.NOT_FOUND)
                             .message(I18nMessage.ERROR_USER_NOT_FOUND)
                             .build();
                 });
@@ -246,10 +266,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserAddressDTO update(String id, UserRequest userRequest) throws NotFoundException, InvalidationException {
+    public UserAddressDTO update(String id, UserRequest userRequest) throws I18nException {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> {
-                    return NotFoundException.builder()
+                    return I18nException.builder()
+                            .code(HttpStatus.NOT_FOUND)
                             .message(I18nMessage.ERROR_USER_NOT_FOUND)
                             .build();
                 });
@@ -257,7 +278,11 @@ public class UserServiceImpl implements UserService {
         if (!user.getUsername().equals(userRequest.getUsername())) {
             boolean checkUsername = userRepository.existsByUsername(userRequest.getUsername());
             if (checkUsername) {
-                throw new InvalidationException(userRequest, I18nMessage.ERROR_USERNAME_EXISTED);
+                throw I18nException.builder()
+                        .code(HttpStatus.BAD_REQUEST)
+                        .message(I18nMessage.ERROR_USERNAME_EXISTED)
+                        .object(userRequest)
+                        .build();
             }
             user.setUsername(userRequest.getUsername());
         }
@@ -295,10 +320,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserAddressDTO update(String id, UpdateInfo updateInfo) throws NotFoundException {
+    public UserAddressDTO update(String id, UpdateInfo updateInfo) throws I18nException {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> {
-                    return NotFoundException.builder()
+                    return I18nException.builder()
+                            .code(HttpStatus.NOT_FOUND)
                             .message(I18nMessage.ERROR_USER_NOT_FOUND)
                             .build();
                 });
