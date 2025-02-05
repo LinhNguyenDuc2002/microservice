@@ -11,8 +11,6 @@ import com.example.productservice.entity.Category;
 import com.example.productservice.entity.Image;
 import com.example.productservice.entity.Product;
 import com.example.productservice.entity.ProductDetail;
-import com.example.productservice.exception.InvalidationException;
-import com.example.productservice.exception.NotFoundException;
 import com.example.productservice.mapper.ProductDetailMapper;
 import com.example.productservice.mapper.ProductMapper;
 import com.example.productservice.repository.CategoryRepository;
@@ -24,8 +22,9 @@ import com.example.productservice.repository.predicate.ProductPredicate;
 import com.example.productservice.security.SecurityUtils;
 import com.example.productservice.service.CloudinaryService;
 import com.example.productservice.service.ProductService;
-import com.example.productservice.util.PageUtil;
-import com.example.productservice.util.StringUtil;
+import com.example.servicefoundation.exception.I18nException;
+import com.example.servicefoundation.util.PaginationUtil;
+import com.example.servicefoundation.util.StringUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +32,7 @@ import org.apache.kafka.common.security.oauthbearer.internals.secured.ValidateEx
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -85,17 +85,23 @@ public class ProductServiceImpl implements ProductService {
     private KafkaOrderService orderService;
 
     @Override
-    public ProductDTO add(ProductRequest productRequest) throws InvalidationException, NotFoundException, IOException {
+    public ProductDTO add(ProductRequest productRequest) throws IOException, I18nException {
         Optional<String> userId = SecurityUtils.getLoggedInUserId();
 
         boolean check = productRepository.existsByName(productRequest.getName());
         if (check) {
-            throw new InvalidationException(I18nMessage.ERROR_PRODUCT_NAME_EXISTED);
+            throw I18nException.builder()
+                    .code(HttpStatus.BAD_REQUEST)
+                    .message(I18nMessage.ERROR_PRODUCT_NAME_EXISTED)
+                    .build();
         }
 
         Category category = categoryRepository.findById(productRequest.getCategoryId())
                 .orElseThrow(() -> {
-                    return new NotFoundException(I18nMessage.ERROR_CATEGORY_NOT_FOUND);
+                    return I18nException.builder()
+                            .code(HttpStatus.NOT_FOUND)
+                            .message(I18nMessage.ERROR_CATEGORY_NOT_FOUND)
+                            .build();
                 });
 
         Product product = Product.builder()
@@ -141,21 +147,30 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductDTO update(String id, BasicProductRequest productRequest) throws InvalidationException, NotFoundException, IOException {
+    public ProductDTO update(String id, BasicProductRequest productRequest) throws IOException, I18nException {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> {
-                    return new NotFoundException(I18nMessage.ERROR_PRODUCT_NOT_FOUND);
+                    return I18nException.builder()
+                            .code(HttpStatus.NOT_FOUND)
+                            .message(I18nMessage.ERROR_PRODUCT_NOT_FOUND)
+                            .build();
                 });
         if (!productRequest.getName().equals(product.getName())) {
             boolean check = productRepository.existsByName(productRequest.getName());
             if (check) {
-                throw new InvalidationException(I18nMessage.ERROR_PRODUCT_NAME_EXISTED);
+                throw I18nException.builder()
+                        .code(HttpStatus.BAD_REQUEST)
+                        .message(I18nMessage.ERROR_PRODUCT_NAME_EXISTED)
+                        .build();
             }
         }
 
         Category category = categoryRepository.findById(productRequest.getCategoryId())
                 .orElseThrow(() -> {
-                    return new NotFoundException(I18nMessage.ERROR_CATEGORY_NOT_FOUND);
+                    return I18nException.builder()
+                            .code(HttpStatus.NOT_FOUND)
+                            .message(I18nMessage.ERROR_CATEGORY_NOT_FOUND)
+                            .build();
                 });
 
         if (productRequest.getImages() != null && !productRequest.getImages().isEmpty()) {
@@ -187,11 +202,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public PageDTO<ProductDTO> getAll(Integer page, Integer size, String search, String category, List<String> sortColumns) throws NotFoundException, JsonProcessingException {
+    public PageDTO<ProductDTO> getAll(Integer page, Integer size, String search, String category, List<String> sortColumns) throws JsonProcessingException {
 //        PageDTO<ProductDTO> productCache = productCacheManager.getAllProducts(page, size, category);
 //        if (productCache != null) return productCache;
 
-        Pageable pageable = (sortColumns == null) ? PageUtil.getPage(page, size) : PageUtil.getPage(page, size, sortColumns.toArray(new String[0]));
+        Pageable pageable = (sortColumns == null) ? PaginationUtil.getPage(page, size) : PaginationUtil.getPage(page, size, sortColumns.toArray(new String[0]));
 
         ProductPredicate productPredicate = new ProductPredicate()
                 .withCategoryId(category)
@@ -240,10 +255,13 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductDTO get(String id) throws NotFoundException {
+    public ProductDTO get(String id) throws I18nException {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> {
-                    return new NotFoundException(I18nMessage.ERROR_PRODUCT_NOT_FOUND);
+                    return I18nException.builder()
+                            .code(HttpStatus.NOT_FOUND)
+                            .message(I18nMessage.ERROR_PRODUCT_NOT_FOUND)
+                            .build();
                 });
 
         ProductDTO productDTO = productMapper.toDto(product);
@@ -277,10 +295,13 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public void delete(String id) throws NotFoundException {
+    public void delete(String id) throws I18nException {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> {
-                    return new NotFoundException(I18nMessage.ERROR_PRODUCT_NOT_FOUND);
+                    return I18nException.builder()
+                            .code(HttpStatus.NOT_FOUND)
+                            .message(I18nMessage.ERROR_PRODUCT_NOT_FOUND)
+                            .build();
                 });
         product.setStatus(false);
         productRepository.save(product);

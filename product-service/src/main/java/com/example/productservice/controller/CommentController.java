@@ -5,12 +5,11 @@ import com.example.productservice.constant.ParameterConstant;
 import com.example.productservice.dto.CommentDTO;
 import com.example.productservice.dto.PageDTO;
 import com.example.productservice.dto.request.CommentRequest;
-import com.example.productservice.dto.response.Response;
-import com.example.productservice.exception.InvalidationException;
-import com.example.productservice.exception.NotFoundException;
-import com.example.productservice.i18n.I18nService;
 import com.example.productservice.service.CommentService;
-import com.example.productservice.util.ResponseUtil;
+import com.example.servicefoundation.base.response.Response;
+import com.example.servicefoundation.exception.I18nException;
+import com.example.servicefoundation.i18n.I18nService;
+import com.example.servicefoundation.util.ResponseUtil;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -61,9 +60,9 @@ public class CommentController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Response<PageDTO<CommentDTO>>> getAllChild(@PathVariable String id,
-            @RequestParam(name = ParameterConstant.Page.PAGE, defaultValue = ParameterConstant.Page.DEFAULT_PAGE) Integer page,
-            @RequestParam(name = ParameterConstant.Page.SIZE, defaultValue = ParameterConstant.Page.DEFAULT_SIZE) Integer size,
-            @RequestParam(name = "sort-columns") List<String> sortColumns) throws Exception {
+                                                                     @RequestParam(name = ParameterConstant.Page.PAGE, defaultValue = ParameterConstant.Page.DEFAULT_PAGE) Integer page,
+                                                                     @RequestParam(name = ParameterConstant.Page.SIZE, defaultValue = ParameterConstant.Page.DEFAULT_SIZE) Integer size,
+                                                                     @RequestParam(name = "sort-columns") List<String> sortColumns) throws Exception {
         return ResponseUtil.wrapResponse(
                 commentService.getAllChild(id, page, size, sortColumns),
                 i18nService.getMessage(I18nMessage.INFO_GET_COMMENT, LocaleContextHolder.getLocale())
@@ -73,7 +72,7 @@ public class CommentController {
     @PutMapping("/{id}")
     public ResponseEntity<Response<CommentDTO>> update(
             @PathVariable String id,
-            @Valid @RequestBody CommentRequest commentRequest) throws NotFoundException, InvalidationException, IOException {
+            @Valid @RequestBody CommentRequest commentRequest) throws IOException, I18nException {
         return ResponseUtil.wrapResponse(
                 commentService.update(id, commentRequest),
                 i18nService.getMessage(I18nMessage.INFO_UPDATE_COMMENT, LocaleContextHolder.getLocale())
@@ -81,7 +80,7 @@ public class CommentController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Response<Void>> delete(@PathVariable String id) throws NotFoundException, InvalidationException, IOException {
+    public ResponseEntity<Response<Void>> delete(@PathVariable String id) throws IOException, I18nException {
         commentService.delete(id);
         return ResponseUtil.wrapResponse(
                 i18nService.getMessage(I18nMessage.INFO_DELETE_COMMENT, LocaleContextHolder.getLocale())

@@ -4,7 +4,6 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.example.productservice.constant.CloudinaryConstant;
 import com.example.productservice.entity.Image;
-import com.example.productservice.exception.NotFoundException;
 import com.example.productservice.repository.ImageRepository;
 import com.example.productservice.service.CloudinaryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +40,7 @@ public class CloudinaryServiceImpl implements CloudinaryService {
     }
 
     @Override
-    public void destroy(String id) throws NotFoundException, IOException {
+    public void destroy(String id) throws IOException {
         if (StringUtils.hasText(id)) {
             cloudinary.uploader().destroy(
                     id,
@@ -79,7 +78,7 @@ public class CloudinaryServiceImpl implements CloudinaryService {
     }
 
     @Override
-    public void destroy(List<String> ids) throws NotFoundException, IOException {
+    public void destroy(List<String> ids) {
         ids.stream().forEach(id -> {
             if (StringUtils.hasText(id)) {
                 try {

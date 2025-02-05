@@ -6,12 +6,11 @@ import com.example.productservice.dto.PageDTO;
 import com.example.productservice.dto.ProductDTO;
 import com.example.productservice.dto.request.BasicProductRequest;
 import com.example.productservice.dto.request.ProductRequest;
-import com.example.productservice.dto.response.Response;
-import com.example.productservice.exception.InvalidationException;
-import com.example.productservice.exception.NotFoundException;
-import com.example.productservice.i18n.I18nService;
 import com.example.productservice.service.ProductService;
-import com.example.productservice.util.ResponseUtil;
+import com.example.servicefoundation.base.response.Response;
+import com.example.servicefoundation.exception.I18nException;
+import com.example.servicefoundation.i18n.I18nService;
+import com.example.servicefoundation.util.ResponseUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +41,7 @@ public class ProductController {
 
     @PostMapping
 //    @PreAuthorize("hasAnyRole('SELLER')")
-    public ResponseEntity<Response<ProductDTO>> add(@Valid @ModelAttribute ProductRequest productRequest) throws InvalidationException, NotFoundException, IOException {
+    public ResponseEntity<Response<ProductDTO>> add(@Valid @ModelAttribute ProductRequest productRequest) throws IOException, I18nException {
         return ResponseUtil.wrapResponse(
                 productService.add(productRequest),
                 i18nService.getMessage(I18nMessage.INFO_CREATE_PRODUCT, LocaleContextHolder.getLocale())
@@ -53,7 +52,7 @@ public class ProductController {
 //    @PreAuthorize("hasAnyRole('SELLER')")
     public ResponseEntity<Response<ProductDTO>> update(
             @PathVariable String id,
-            @Valid @ModelAttribute BasicProductRequest productRequest) throws InvalidationException, NotFoundException, IOException {
+            @Valid @ModelAttribute BasicProductRequest productRequest) throws IOException, I18nException {
         return ResponseUtil.wrapResponse(
                 productService.update(id, productRequest),
                 i18nService.getMessage(I18nMessage.INFO_UPDATE_PRODUCT, LocaleContextHolder.getLocale())
@@ -66,7 +65,7 @@ public class ProductController {
             @RequestParam(name = ParameterConstant.Page.SIZE, defaultValue = ParameterConstant.Page.DEFAULT_SIZE) Integer size,
             @RequestParam(name = "search", required = false) String search,
             @RequestParam(name = "category", required = false) String category,
-            @RequestParam(name = "sort-columns", required = false) List<String> sortColumns) throws NotFoundException, JsonProcessingException {
+            @RequestParam(name = "sort-columns", required = false) List<String> sortColumns) throws JsonProcessingException {
         return ResponseUtil.wrapResponse(
                 productService.getAll(page, size, search, category, sortColumns),
                 i18nService.getMessage(I18nMessage.INFO_GET_ALL_PRODUCT, LocaleContextHolder.getLocale())
@@ -74,7 +73,7 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Response<ProductDTO>> get(@PathVariable String id) throws NotFoundException {
+    public ResponseEntity<Response<ProductDTO>> get(@PathVariable String id) throws I18nException {
         return ResponseUtil.wrapResponse(
                 productService.get(id),
                 i18nService.getMessage(I18nMessage.INFO_GET_PRODUCT, LocaleContextHolder.getLocale())
@@ -83,7 +82,7 @@ public class ProductController {
 
     @DeleteMapping("/{id}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
-    public ResponseEntity<Response<Void>> delete(@PathVariable String id) throws NotFoundException {
+    public ResponseEntity<Response<Void>> delete(@PathVariable String id) throws I18nException {
         productService.delete(id);
         return ResponseUtil.wrapResponse(
                 i18nService.getMessage(I18nMessage.INFO_DELETE_PRODUCT, LocaleContextHolder.getLocale())

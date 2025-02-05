@@ -3,21 +3,18 @@ package com.example.productservice.service.impl;
 import com.example.productservice.constant.I18nMessage;
 import com.example.productservice.dto.CategoryDTO;
 import com.example.productservice.dto.PageDTO;
-import com.example.productservice.dto.ProductDTO;
-import com.example.productservice.entity.Category;
-import com.example.productservice.entity.Product;
-import com.example.productservice.exception.InvalidationException;
-import com.example.productservice.exception.NotFoundException;
-import com.example.productservice.mapper.CategoryMapper;
 import com.example.productservice.dto.request.CategoryRequest;
+import com.example.productservice.entity.Category;
+import com.example.productservice.mapper.CategoryMapper;
 import com.example.productservice.repository.CategoryRepository;
 import com.example.productservice.repository.predicate.CategoryPredicate;
-import com.example.productservice.repository.predicate.ProductPredicate;
 import com.example.productservice.service.CategoryService;
-import com.example.productservice.util.PageUtil;
+import com.example.servicefoundation.exception.I18nException;
+import com.example.servicefoundation.util.PaginationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -33,7 +30,7 @@ public class CategoryServiceImpl implements CategoryService {
     private CategoryMapper categoryMapper;
 
     @Override
-    public CategoryDTO add(CategoryRequest categoryRequest) throws InvalidationException {
+    public CategoryDTO add(CategoryRequest categoryRequest) {
         Category category = Category.builder()
                 .name(categoryRequest.getName())
                 .description(categoryRequest.getDescription())
@@ -45,10 +42,13 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public CategoryDTO update(String id, CategoryRequest categoryRequest) throws InvalidationException, NotFoundException {
+    public CategoryDTO update(String id, CategoryRequest categoryRequest) throws I18nException {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> {
-                    return new NotFoundException(I18nMessage.ERROR_CATEGORY_NOT_FOUND);
+                    return I18nException.builder()
+                            .code(HttpStatus.NOT_FOUND)
+                            .message(I18nMessage.ERROR_CATEGORY_NOT_FOUND)
+                            .build();
                 });
 
         category.setName(categoryRequest.getName());
@@ -60,7 +60,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public PageDTO<CategoryDTO> getAll(Integer page, Integer size, String search, List<String> sortColumns) {
-        Pageable pageable = (sortColumns == null) ? PageUtil.getPage(page, size) : PageUtil.getPage(page, size, sortColumns.toArray(new String[0]));
+        Pageable pageable = (sortColumns == null) ? PaginationUtil.getPage(page, size) : PaginationUtil.getPage(page, size, sortColumns.toArray(new String[0]));
 
         CategoryPredicate categoryPredicate = new CategoryPredicate().search(search);
         Page<Category> categories = categoryRepository.findAll(categoryPredicate.getCriteria(), pageable);
@@ -89,20 +89,26 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public CategoryDTO get(String id) throws NotFoundException {
+    public CategoryDTO get(String id) throws I18nException {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> {
-                    return new NotFoundException(I18nMessage.ERROR_CATEGORY_NOT_FOUND);
+                    return I18nException.builder()
+                            .code(HttpStatus.NOT_FOUND)
+                            .message(I18nMessage.ERROR_CATEGORY_NOT_FOUND)
+                            .build();
                 });
 
         return categoryMapper.toDto(category);
     }
 
     @Override
-    public void delete(String id) throws NotFoundException {
+    public void delete(String id) throws I18nException {
         Optional<Category> check = categoryRepository.findById(id);
         if (!check.isPresent()) {
-            throw new NotFoundException(I18nMessage.ERROR_CATEGORY_NOT_FOUND);
+            throw I18nException.builder()
+                    .code(HttpStatus.NOT_FOUND)
+                    .message(I18nMessage.ERROR_CATEGORY_NOT_FOUND)
+                    .build();
         }
 
         categoryRepository.deleteById(id);

@@ -60,6 +60,13 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!--		base -->
+		<dependency>
+			<groupId>com.example</groupId>
+			<artifactId>service-foundation</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+
 		<!--		lombok-->
 		<dependency>
 			<groupId>org.projectlombok</groupId>

@@ -69,12 +69,35 @@ spring:
       partition:
         assignment:
           strategy: org.apache.kafka.clients.consumer.RangeAssignor
+  # Config for JavaMailSender
+  mail:
+    from-address: ${message.email.from}
+    username: ${message.email.username}
+    password: ${message.email.password}
+    host: ${message.email.host}
+    port: ${message.email.port}
+    properties:
+      mail:
+        protocol: ${message.email.protocol}
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+message:
+  email:
+    protocol: smtp
+    from:
+    username:
+    password:
+    host: smtp.gmail.com
+    port: 587
 
 # Cloudinary
 cloudinary:
-  cloudName:
-  apiKey:
-  apiSecret:
+  cloudName: dwlokgoam
+  apiKey: 976349327572747
+  apiSecret: xMr3J7-geMUqeQNpcwHTZD4Aook
 
 # Keycloak settings
 #keycloak:

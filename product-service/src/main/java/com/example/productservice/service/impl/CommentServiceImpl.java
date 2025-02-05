@@ -7,8 +7,6 @@ import com.example.productservice.dto.request.CommentRequest;
 import com.example.productservice.entity.Comment;
 import com.example.productservice.entity.Image;
 import com.example.productservice.entity.Product;
-import com.example.productservice.exception.InvalidationException;
-import com.example.productservice.exception.NotFoundException;
 import com.example.productservice.mapper.CommentMapper;
 import com.example.productservice.payload.orderservice.response.CheckingDetailResponse;
 import com.example.productservice.payload.userservice.response.CustomerInfoResponse;
@@ -21,13 +19,15 @@ import com.example.productservice.service.CloudinaryService;
 import com.example.productservice.service.CommentService;
 import com.example.productservice.service.OrderService;
 import com.example.productservice.service.UserService;
-import com.example.productservice.util.PageUtil;
-import com.example.productservice.util.StringUtil;
+import com.example.servicefoundation.exception.I18nException;
+import com.example.servicefoundation.util.PaginationUtil;
+import com.example.servicefoundation.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.security.oauthbearer.internals.secured.ValidateException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -95,22 +95,31 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public CommentDTO create(String id, CommentRequest commentRequest) throws Exception {
         Comment parentComment = null;
-        if(StringUtils.hasText(commentRequest.getParentId())) {
+        if (StringUtils.hasText(commentRequest.getParentId())) {
             parentComment = commentRepository.findById(commentRequest.getParentId())
                     .orElseThrow(() -> {
-                        return new NotFoundException(I18nMessage.ERROR_COMMENT_NOT_FOUND);
+                        return I18nException.builder()
+                                .code(HttpStatus.NOT_FOUND)
+                                .message(I18nMessage.ERROR_COMMENT_NOT_FOUND)
+                                .build();
                     });
         }
         CheckingDetailResponse checkingDetailResponse = orderService.checkDetailExist(id);
 
         Optional<String> userId = SecurityUtils.getLoggedInUserId();
         if (userId.isEmpty() || !userId.get().equals(checkingDetailResponse.getAccountId())) {
-            throw new InvalidationException("");
+            throw I18nException.builder()
+                    .code(HttpStatus.BAD_REQUEST)
+                    .message("")
+                    .build();
         }
 
         Product product = productRepository.findById(checkingDetailResponse.getProductId())
                 .orElseThrow(() -> {
-                    return new NotFoundException(I18nMessage.ERROR_PRODUCT_NOT_FOUND);
+                    return I18nException.builder()
+                            .code(HttpStatus.NOT_FOUND)
+                            .message(I18nMessage.ERROR_PRODUCT_NOT_FOUND)
+                            .build();
                 });
 
         Map<String, MultipartFile> images = new HashMap<>();
@@ -135,7 +144,7 @@ public class CommentServiceImpl implements CommentService {
                 .customerId(userId.get())
                 .product(product)
                 .build();
-        if(parentComment != null) {
+        if (parentComment != null) {
             comment.setParentComment(parentComment);
         }
 
@@ -148,17 +157,20 @@ public class CommentServiceImpl implements CommentService {
     public PageDTO<CommentDTO> getAll(String id, Integer page, Integer size, List<String> sortColumns) throws Exception {
         boolean checkProduct = productRepository.existsById(id);
         if (!checkProduct) {
-            throw new NotFoundException(I18nMessage.ERROR_PRODUCT_NOT_FOUND);
+            throw I18nException.builder()
+                    .code(HttpStatus.NOT_FOUND)
+                    .message(I18nMessage.ERROR_PRODUCT_NOT_FOUND)
+                    .build();
         }
 
-        Pageable pageable = (sortColumns == null) ? PageUtil.getPage(page, size) : PageUtil.getPage(page, size, sortColumns.toArray(new String[0]));
+        Pageable pageable = (sortColumns == null) ? PaginationUtil.getPage(page, size) : PaginationUtil.getPage(page, size, sortColumns.toArray(new String[0]));
         CommentPredicate commentPredicate = new CommentPredicate().withProductId(id);
         Page<Comment> comments = commentRepository.findAll(commentPredicate.getCriteria(), pageable);
         List<String> ids = comments.getContent().stream().map(Comment::getCustomerId).distinct().toList();
         Map<String, CustomerInfoResponse> customerResponses = userService.getUserInfo(ids);
 
         List<CommentDTO> commentDTOS = new ArrayList<>();
-        for(Comment comment : comments) {
+        for (Comment comment : comments) {
             CommentDTO commentDTO = commentMapper.toDto(comment);
             List<Image> images = imageRepository.findAllById(Collections.singleton(comment.getImageIds()));
             List<String> urls = images.stream().map(Image::getSecureUrl).toList();
@@ -176,14 +188,14 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public PageDTO<CommentDTO> getAllChild(String id, Integer page, Integer size, List<String> sortColumns) throws Exception {
-        Pageable pageable = (sortColumns == null) ? PageUtil.getPage(page, size) : PageUtil.getPage(page, size, sortColumns.toArray(new String[0]));
+        Pageable pageable = (sortColumns == null) ? PaginationUtil.getPage(page, size) : PaginationUtil.getPage(page, size, sortColumns.toArray(new String[0]));
         CommentPredicate commentPredicate = new CommentPredicate().withParentId(id);
         Page<Comment> comments = commentRepository.findAll(commentPredicate.getCriteria(), pageable);
         List<String> ids = comments.getContent().stream().map(Comment::getCustomerId).distinct().toList();
         Map<String, CustomerInfoResponse> customerResponses = userService.getUserInfo(ids);
 
         List<CommentDTO> commentDTOS = new ArrayList<>();
-        for(Comment comment : comments) {
+        for (Comment comment : comments) {
             CommentDTO commentDTO = commentMapper.toDto(comment);
             List<Image> images = imageRepository.findAllById(Collections.singleton(comment.getImageIds()));
             List<String> urls = images.stream().map(Image::getSecureUrl).toList();
@@ -200,14 +212,20 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public CommentDTO update(String id, CommentRequest commentRequest) throws NotFoundException, InvalidationException, IOException {
+    public CommentDTO update(String id, CommentRequest commentRequest) throws IOException, I18nException {
         Comment comment = commentRepository.findById(id)
                 .orElseThrow(() -> {
-                    return new NotFoundException(I18nMessage.ERROR_COMMENT_NOT_FOUND);
+                    return I18nException.builder()
+                            .code(HttpStatus.NOT_FOUND)
+                            .message(I18nMessage.ERROR_COMMENT_NOT_FOUND)
+                            .build();
                 });
 
         if (!comment.isAllowEdit()) {
-            throw new InvalidationException(I18nMessage.ERROR_COMMENT_EDIT);
+            throw I18nException.builder()
+                    .code(HttpStatus.BAD_REQUEST)
+                    .message(I18nMessage.ERROR_COMMENT_EDIT)
+                    .build();
         }
 
         Map<String, MultipartFile> images = new HashMap<>();
@@ -234,14 +252,20 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public void delete(String id) throws NotFoundException, InvalidationException, IOException {
+    public void delete(String id) throws IOException, I18nException {
         Comment comment = commentRepository.findById(id)
                 .orElseThrow(() -> {
-                    return new NotFoundException(I18nMessage.ERROR_COMMENT_NOT_FOUND);
+                    return I18nException.builder()
+                            .code(HttpStatus.NOT_FOUND)
+                            .message(I18nMessage.ERROR_COMMENT_NOT_FOUND)
+                            .build();
                 });
 
         if (!comment.isAllowEdit()) {
-            throw new InvalidationException(I18nMessage.ERROR_COMMENT_EDIT);
+            I18nException.builder()
+                    .code(HttpStatus.BAD_REQUEST)
+                    .message(I18nMessage.ERROR_COMMENT_EDIT)
+                    .build();
         }
 
         List<String> ids = comment.getChildComments().stream().map(Comment::getId).toList();
