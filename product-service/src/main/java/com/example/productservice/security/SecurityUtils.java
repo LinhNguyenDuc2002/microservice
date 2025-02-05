@@ -2,8 +2,9 @@ package com.example.productservice.security;
 
 import com.example.productservice.constant.I18nMessage;
 import com.example.productservice.constant.SecurityConstant;
-import com.example.productservice.exception.NotFoundException;
+import com.example.servicefoundation.exception.I18nException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -57,7 +58,7 @@ public class SecurityUtils {
         }
     }
 
-    public static String getCurrentJWT() throws NotFoundException {
+    public static String getCurrentJWT() throws I18nException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null
                 && authentication.isAuthenticated()
@@ -66,7 +67,10 @@ public class SecurityUtils {
         }
 
         log.error("error at getCurrentJWT: cannot get current JWT");
-        throw new NotFoundException(I18nMessage.ERROR_TOKEN_NOT_FOUND);
+        throw I18nException.builder()
+                .code(HttpStatus.NOT_FOUND)
+                .message(I18nMessage.ERROR_TOKEN_NOT_FOUND)
+                .build();
     }
 
     private static Optional<String> resolveUserIdFromJwt(Jwt jwt) {

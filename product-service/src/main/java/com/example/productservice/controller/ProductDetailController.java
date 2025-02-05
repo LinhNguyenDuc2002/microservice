@@ -3,16 +3,14 @@ package com.example.productservice.controller;
 import com.example.productservice.constant.I18nMessage;
 import com.example.productservice.constant.ParameterConstant;
 import com.example.productservice.dto.PageDTO;
+import com.example.productservice.dto.ProductDetailCheckingDto;
 import com.example.productservice.dto.ProductDetailDTO;
 import com.example.productservice.dto.request.ProductDetailRequest;
-import com.example.productservice.dto.response.Response;
-import com.example.productservice.exception.InvalidationException;
-import com.example.productservice.exception.NotFoundException;
-import com.example.productservice.i18n.I18nService;
-import com.example.productservice.dto.ProductDetailCheckingDto;
 import com.example.productservice.service.ProductDetailService;
-import com.example.productservice.util.ResponseUtil;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.example.servicefoundation.base.response.Response;
+import com.example.servicefoundation.exception.I18nException;
+import com.example.servicefoundation.i18n.I18nService;
+import com.example.servicefoundation.util.ResponseUtil;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -42,7 +40,7 @@ public class ProductDetailController {
     @PostMapping("/product/{id}")
     public ResponseEntity<Response<ProductDetailDTO>> add(
             @PathVariable String id,
-            @Valid @RequestBody ProductDetailRequest productDetailRequest) throws NotFoundException, InvalidationException, IOException {
+            @Valid @RequestBody ProductDetailRequest productDetailRequest) throws IOException, I18nException {
         return ResponseUtil.wrapResponse(
                 productDetailService.add(id, productDetailRequest),
                 i18nService.getMessage(I18nMessage.INFO_ADD_PRODUCT_DETAIL, LocaleContextHolder.getLocale())
@@ -55,7 +53,7 @@ public class ProductDetailController {
             @RequestParam(name = ParameterConstant.Page.PAGE, defaultValue = ParameterConstant.Page.DEFAULT_PAGE) Integer page,
             @RequestParam(name = ParameterConstant.Page.SIZE, defaultValue = ParameterConstant.Page.DEFAULT_SIZE) Integer size,
             @RequestParam(name = "search", required = false) String search,
-            @RequestParam(name = "sort-columns", required = false) List<String> sortColumns) throws NotFoundException, InvalidationException {
+            @RequestParam(name = "sort-columns", required = false) List<String> sortColumns) throws I18nException {
         return ResponseUtil.wrapResponse(
                 productDetailService.getAll(id, page, size, search, sortColumns),
                 i18nService.getMessage(I18nMessage.INFO_GET_ALL_PRODUCT_DETAIL, LocaleContextHolder.getLocale())
@@ -63,7 +61,7 @@ public class ProductDetailController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Response<ProductDetailDTO>> get(@PathVariable String id) throws NotFoundException, InvalidationException {
+    public ResponseEntity<Response<ProductDetailDTO>> get(@PathVariable String id) throws I18nException {
         return ResponseUtil.wrapResponse(
                 productDetailService.get(id),
                 i18nService.getMessage(I18nMessage.INFO_GET_PRODUCT_DETAIL, LocaleContextHolder.getLocale())
@@ -73,7 +71,7 @@ public class ProductDetailController {
     @PutMapping("/{id}")
     public ResponseEntity<Response<ProductDetailDTO>> update(
             @PathVariable String id,
-            @Valid @RequestBody ProductDetailRequest productDetailRequest) throws NotFoundException, InvalidationException, IOException {
+            @Valid @RequestBody ProductDetailRequest productDetailRequest) throws IOException, I18nException {
         return ResponseUtil.wrapResponse(
                 productDetailService.update(id, productDetailRequest),
                 i18nService.getMessage(I18nMessage.INFO_UPDATE_PRODUCT_DETAIL, LocaleContextHolder.getLocale())
@@ -81,7 +79,7 @@ public class ProductDetailController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Response<Void>> delete(@PathVariable String id) throws NotFoundException, InvalidationException {
+    public ResponseEntity<Response<Void>> delete(@PathVariable String id) throws I18nException {
         productDetailService.delete(id);
         return ResponseUtil.wrapResponse(
                 i18nService.getMessage(I18nMessage.INFO_DELETE_PRODUCT_DETAIL, LocaleContextHolder.getLocale())

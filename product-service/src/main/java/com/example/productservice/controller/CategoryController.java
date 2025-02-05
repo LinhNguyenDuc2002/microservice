@@ -5,12 +5,11 @@ import com.example.productservice.constant.ParameterConstant;
 import com.example.productservice.dto.CategoryDTO;
 import com.example.productservice.dto.PageDTO;
 import com.example.productservice.dto.request.CategoryRequest;
-import com.example.productservice.dto.response.Response;
-import com.example.productservice.exception.InvalidationException;
-import com.example.productservice.exception.NotFoundException;
-import com.example.productservice.i18n.I18nService;
 import com.example.productservice.service.CategoryService;
-import com.example.productservice.util.ResponseUtil;
+import com.example.servicefoundation.base.response.Response;
+import com.example.servicefoundation.exception.I18nException;
+import com.example.servicefoundation.i18n.I18nService;
+import com.example.servicefoundation.util.ResponseUtil;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -38,7 +37,7 @@ public class CategoryController {
 
     @PostMapping
 //    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
-    public ResponseEntity<Response<CategoryDTO>> add(@Valid @RequestBody CategoryRequest categoryRequest) throws InvalidationException {
+    public ResponseEntity<Response<CategoryDTO>> add(@Valid @RequestBody CategoryRequest categoryRequest) {
         return ResponseUtil.wrapResponse(
                 categoryService.add(categoryRequest),
                 i18nService.getMessage(I18nMessage.INFO_CREATE_CATEGORY, LocaleContextHolder.getLocale())
@@ -49,7 +48,7 @@ public class CategoryController {
 //    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
     public ResponseEntity<Response<CategoryDTO>> update(
             @PathVariable String id,
-            @Valid @RequestBody CategoryRequest categoryRequest) throws InvalidationException, NotFoundException {
+            @Valid @RequestBody CategoryRequest categoryRequest) throws I18nException {
         return ResponseUtil.wrapResponse(
                 categoryService.update(id, categoryRequest),
                 i18nService.getMessage(I18nMessage.INFO_UPDATE_CATEGORY, LocaleContextHolder.getLocale())
@@ -77,7 +76,7 @@ public class CategoryController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Response<CategoryDTO>> get(@PathVariable String id) throws NotFoundException {
+    public ResponseEntity<Response<CategoryDTO>> get(@PathVariable String id) throws I18nException {
         return ResponseUtil.wrapResponse(
                 categoryService.get(id),
                 i18nService.getMessage(I18nMessage.INFO_GET_CATEGORY, LocaleContextHolder.getLocale())
@@ -86,7 +85,7 @@ public class CategoryController {
 
     @DeleteMapping("/{id}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
-    public ResponseEntity<Response<Void>> delete(@PathVariable String id) throws NotFoundException {
+    public ResponseEntity<Response<Void>> delete(@PathVariable String id) throws I18nException {
         categoryService.delete(id);
         return ResponseUtil.wrapResponse(
                 i18nService.getMessage(I18nMessage.INFO_DELETE_CATEGORY, LocaleContextHolder.getLocale())

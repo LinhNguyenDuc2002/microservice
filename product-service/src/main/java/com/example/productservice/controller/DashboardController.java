@@ -2,10 +2,10 @@ package com.example.productservice.controller;
 
 import com.example.productservice.constant.ParameterConstant;
 import com.example.productservice.dto.PageDTO;
-import com.example.productservice.dto.response.Response;
 import com.example.productservice.dto.statistic.ProductStatisticsDTO;
 import com.example.productservice.service.DashboardService;
-import com.example.productservice.util.ResponseUtil;
+import com.example.servicefoundation.base.response.Response;
+import com.example.servicefoundation.util.ResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -3,8 +3,7 @@ package com.example.productservice.service;
 import com.example.productservice.dto.CommentDTO;
 import com.example.productservice.dto.PageDTO;
 import com.example.productservice.dto.request.CommentRequest;
-import com.example.productservice.exception.InvalidationException;
-import com.example.productservice.exception.NotFoundException;
+import com.example.servicefoundation.exception.I18nException;
 
 import java.io.IOException;
 import java.util.List;
@@ -16,7 +15,7 @@ public interface CommentService {
 
     PageDTO<CommentDTO> getAllChild(String id, Integer page, Integer size, List<String> sortColumns) throws Exception;
 
-    CommentDTO update(String id, CommentRequest commentRequest) throws NotFoundException, InvalidationException, IOException;
+    CommentDTO update(String id, CommentRequest commentRequest) throws IOException, I18nException;
 
-    void delete(String id) throws NotFoundException, InvalidationException, IOException;
+    void delete(String id) throws IOException, I18nException;
 }

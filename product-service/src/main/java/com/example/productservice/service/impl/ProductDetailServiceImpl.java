@@ -10,9 +10,6 @@ import com.example.productservice.dto.request.ProductDetailRequest;
 import com.example.productservice.entity.Image;
 import com.example.productservice.entity.Product;
 import com.example.productservice.entity.ProductDetail;
-import com.example.productservice.exception.InvalidationException;
-import com.example.productservice.exception.NotFoundException;
-import com.example.productservice.i18n.I18nService;
 import com.example.productservice.mapper.ProductDetailMapper;
 import com.example.productservice.payload.orderservice.request.UpdateOrderDetailReq;
 import com.example.productservice.repository.ImageRepository;
@@ -21,11 +18,14 @@ import com.example.productservice.repository.ProductRepository;
 import com.example.productservice.repository.predicate.ProductDetailPredicate;
 import com.example.productservice.service.CloudinaryService;
 import com.example.productservice.service.ProductDetailService;
-import com.example.productservice.util.PageUtil;
+import com.example.servicefoundation.exception.I18nException;
+import com.example.servicefoundation.i18n.I18nService;
+import com.example.servicefoundation.util.PaginationUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -61,10 +61,13 @@ public class ProductDetailServiceImpl implements ProductDetailService {
     private ImageRepository imageRepository;
 
     @Override
-    public ProductDetailDTO add(String id, ProductDetailRequest productDetailRequest) throws NotFoundException, InvalidationException, IOException {
+    public ProductDetailDTO add(String id, ProductDetailRequest productDetailRequest) throws IOException, I18nException {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> {
-                    return new NotFoundException(I18nMessage.ERROR_PRODUCT_NOT_FOUND);
+                    return I18nException.builder()
+                            .code(HttpStatus.NOT_FOUND)
+                            .message(I18nMessage.ERROR_PRODUCT_NOT_FOUND)
+                            .build();
                 });
 
         String imageId = UUID.randomUUID().toString();
@@ -88,13 +91,16 @@ public class ProductDetailServiceImpl implements ProductDetailService {
     }
 
     @Override
-    public PageDTO<ProductDetailDTO> getAll(String id, Integer page, Integer size, String search, List<String> sortColumns) throws NotFoundException, InvalidationException {
+    public PageDTO<ProductDetailDTO> getAll(String id, Integer page, Integer size, String search, List<String> sortColumns) throws I18nException {
         boolean check = productRepository.existsById(id);
-        if(!check) {
-            throw new NotFoundException(I18nMessage.ERROR_PRODUCT_NOT_FOUND);
+        if (!check) {
+            throw I18nException.builder()
+                    .code(HttpStatus.NOT_FOUND)
+                    .message(I18nMessage.ERROR_PRODUCT_NOT_FOUND)
+                    .build();
         }
 
-        Pageable pageable = (sortColumns == null) ? PageUtil.getPage(page, size) : PageUtil.getPage(page, size, sortColumns.toArray(new String[0]));
+        Pageable pageable = (sortColumns == null) ? PaginationUtil.getPage(page, size) : PaginationUtil.getPage(page, size, sortColumns.toArray(new String[0]));
         ProductDetailPredicate productDetailPredicate = new ProductDetailPredicate()
                 .withProductId(id)
                 .search(search);
@@ -122,10 +128,13 @@ public class ProductDetailServiceImpl implements ProductDetailService {
     }
 
     @Override
-    public ProductDetailDTO get(String id) throws NotFoundException, InvalidationException {
+    public ProductDetailDTO get(String id) throws I18nException {
         ProductDetail productDetail = productDetailRepository.findById(id)
                 .orElseThrow(() -> {
-                    return new NotFoundException(I18nMessage.ERROR_PRODUCT_DETAIL_NOT_FOUND);
+                    return I18nException.builder()
+                            .code(HttpStatus.NOT_FOUND)
+                            .message(I18nMessage.ERROR_PRODUCT_DETAIL_NOT_FOUND)
+                            .build();
                 });
 
         ProductDetailDTO productDetailDTO = productDetailMapper.toDto(productDetail);
@@ -139,10 +148,13 @@ public class ProductDetailServiceImpl implements ProductDetailService {
     }
 
     @Override
-    public ProductDetailDTO update(String id, ProductDetailRequest productDetailRequest) throws NotFoundException, InvalidationException, IOException {
+    public ProductDetailDTO update(String id, ProductDetailRequest productDetailRequest) throws IOException, I18nException {
         ProductDetail productDetail = productDetailRepository.findById(id)
                 .orElseThrow(() -> {
-                    return new NotFoundException(I18nMessage.ERROR_PRODUCT_DETAIL_NOT_FOUND);
+                    return I18nException.builder()
+                            .code(HttpStatus.NOT_FOUND)
+                            .message(I18nMessage.ERROR_PRODUCT_DETAIL_NOT_FOUND)
+                            .build();
                 });
 
         if (productDetailRequest.getImage() != null) {
@@ -177,15 +189,21 @@ public class ProductDetailServiceImpl implements ProductDetailService {
     }
 
     @Override
-    public void delete(String id) throws NotFoundException, InvalidationException {
+    public void delete(String id) throws I18nException {
         ProductDetail productDetail = productDetailRepository.findById(id)
                 .orElseThrow(() -> {
-                    return new NotFoundException(I18nMessage.ERROR_PRODUCT_DETAIL_NOT_FOUND);
+                    return I18nException.builder()
+                            .code(HttpStatus.NOT_FOUND)
+                            .message(I18nMessage.ERROR_PRODUCT_DETAIL_NOT_FOUND)
+                            .build();
                 });
 
         Product product = productDetail.getProduct();
         if (product.getProductDetails().size() == 1) {
-            throw new InvalidationException(I18nMessage.ERROR_PRODUCT_DETAIL_ONLY_ONE);
+            throw I18nException.builder()
+                    .code(HttpStatus.BAD_REQUEST)
+                    .message(I18nMessage.ERROR_PRODUCT_DETAIL_ONLY_ONE)
+                    .build();
         }
 
         productDetail.setStatus(false);
