@@ -61,4 +61,10 @@ public class ProductDetailPredicate extends BasePredicate {
 
         return this;
     }
+
+    public ProductDetailPredicate withQuantityGreater(int quantity) {
+        criteria.and(qProductDetail.quantity.goe(quantity));
+
+        return this;
+    }
 }

@@ -1,4 +1,4 @@
-package com.example.orderservice.payload.productservice.response;
+package com.example.productservice.dto;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -16,8 +16,8 @@ import java.util.List;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 @Builder
-public class ProductListCheckingResponse {
-    private String status;
+public class ProductDetailsCheckingDto {
+    private boolean status;
 
     private List<ProductDetailItem> productDetailItems;
 

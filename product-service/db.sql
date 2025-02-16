@@ -1,3 +1,16 @@
+CREATE TABLE address (
+    id VARCHAR(255) PRIMARY KEY,
+    detail VARCHAR(255),
+    ward VARCHAR(255),
+    district VARCHAR(255),
+    city VARCHAR(255),
+    country VARCHAR(255),
+    updated_by VARCHAR(255),
+    created_by VARCHAR(255),
+    created_date DATE,
+    last_modified_date DATE
+);
+
 INSERT INTO category(id, name) VALUES('afac4c93-a175-4210-8dcb-64c5a4c0352d', 'Điện thoại - Máy tính bảng');
 INSERT INTO category(id, name) VALUES('d1e6f3a3-9394-4c7c-9428-ecb215b93e59', 'TV');
 INSERT INTO category(id, name) VALUES('c53a4ea0-8f4a-42e8-b9be-e424eb23a5ae', 'Điện gia dụng');

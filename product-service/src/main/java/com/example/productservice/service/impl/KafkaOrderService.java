@@ -1,6 +1,7 @@
 package com.example.productservice.service.impl;
 
 import com.example.productservice.constant.KafkaTopic;
+import com.example.productservice.payload.message.OrderMessageResponse;
 import com.example.productservice.payload.orderservice.request.UpdateOrderDetailReq;
 import com.example.productservice.service.OrderMessagingService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -23,11 +24,9 @@ public class KafkaOrderService implements OrderMessagingService {
     public void updateOrderDetail(UpdateOrderDetailReq request) throws JsonProcessingException {
         kafkaTemplate.send(KafkaTopic.UPDATE_ORDER_DETAIL, mapper.writeValueAsString(request));
     }
-//
-//    @KafkaListener(topics = KafkaTopic.CREATE_CUSTOMER)
-//    @Override
-//    public void createCustomer(String customerRequest) throws JsonProcessingException, InvalidationException {
-//        CustomerRequest customer = mapper.readValue(customerRequest, CustomerRequest.class);
-//        customerService.create(customer);
-//    }
+
+    @Override
+    public void updateOrderStatus(OrderMessageResponse orderMessageResponse) throws JsonProcessingException {
+        kafkaTemplate.send(KafkaTopic.ORDER_UPDATE, mapper.writeValueAsString(orderMessageResponse));
+    }
 }

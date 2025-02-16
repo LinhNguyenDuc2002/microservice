@@ -28,7 +28,7 @@ public class Receiver {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "phoneNumber")
+    @Column(name = "phone_number")
     private String phoneNumber;
 
     @Column(name = "account_id")
