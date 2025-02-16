@@ -39,10 +39,10 @@ public class JwtConfig {
     @Value("${jwt.keypair.public}")
     private String publicKey;
 
-    @Value("classpath:keypair/key.pem")
+    @Value("classpath:keypair/private_key.pem")
     Resource privateKeyResource;
 
-    @Value("classpath:keypair/cert.pem")
+    @Value("classpath:keypair/public_key.pem")
     Resource publicKeyResource;
 
     @Autowired

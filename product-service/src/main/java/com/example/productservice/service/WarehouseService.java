@@ -1,13 +1,13 @@
 package com.example.productservice.service;
 
 import com.example.productservice.dto.ProductDetailCheckingDto;
-import com.example.productservice.dto.WareHouseCheckingDto;
-import com.example.productservice.payload.orderservice.request.WareHouseCheckingReq;
+import com.example.productservice.dto.ProductDetailsCheckingDto;
+import com.example.productservice.payload.orderservice.request.ProductCheckingRequest;
 
 import java.util.List;
 
 public interface WarehouseService {
-    WareHouseCheckingDto checkListProduct(List<WareHouseCheckingReq> request);
+    ProductDetailsCheckingDto checkListProduct(List<ProductCheckingRequest> request);
 
-    ProductDetailCheckingDto checkProduct(WareHouseCheckingReq request);
+    ProductDetailCheckingDto checkProduct(ProductCheckingRequest request);
 }

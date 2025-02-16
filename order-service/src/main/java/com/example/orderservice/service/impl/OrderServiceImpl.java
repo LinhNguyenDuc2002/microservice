@@ -3,7 +3,6 @@ package com.example.orderservice.service.impl;
 import com.example.orderservice.constant.I18nMessage;
 import com.example.orderservice.constant.OrderDetailStatus;
 import com.example.orderservice.constant.OrderStatus;
-import com.example.orderservice.constant.ProductStatus;
 import com.example.orderservice.dto.OrderDto;
 import com.example.orderservice.dto.PageDto;
 import com.example.orderservice.dto.request.OrderProductRequest;
@@ -14,7 +13,7 @@ import com.example.orderservice.entity.Receiver;
 import com.example.orderservice.mapper.OrderMapper;
 import com.example.orderservice.payload.productservice.request.ProductCheckingReq;
 import com.example.orderservice.payload.productservice.response.ProductCheckingResponse;
-import com.example.orderservice.payload.productservice.response.ProductListCheckingResponse;
+import com.example.orderservice.payload.productservice.response.ProductDetailsCheckingRes;
 import com.example.orderservice.repository.OrderDetailRepository;
 import com.example.orderservice.repository.OrderRepository;
 import com.example.orderservice.repository.ReceiverRepository;
@@ -73,7 +72,7 @@ public class OrderServiceImpl implements OrderService {
         List<OrderDetail> orderDetails = orderDetailRepository.findAllById(orderRequest.getDetails());
         if (orderDetails.isEmpty()) {
             throw I18nException.builder()
-                    .code(HttpStatus.UNAUTHORIZED)
+                    .code(HttpStatus.NOT_FOUND)
                     .message(I18nMessage.ERROR_ORDER_DETAIL_NOT_FOUND)
                     .build();
         }
@@ -88,12 +87,12 @@ public class OrderServiceImpl implements OrderService {
             );
         });
 
-        ProductListCheckingResponse response = productService.checkWarehouse(productCheckingReqs);
-        List<ProductListCheckingResponse.ProductDetailItem> productDetailItems = response.getProductDetailItems();
-        if (response.getStatus().equals(ProductStatus.PRODUCT_NOT_FOUND)) {
-            //
-        } else if (response.getStatus().equals(ProductStatus.PRODUCT_NOT_FOUND)) {
-            //
+        ProductDetailsCheckingRes response = productService.checkProductDetails(productCheckingReqs);
+        if (!response.isStatus()) {
+            throw I18nException.builder()
+                    .code(HttpStatus.BAD_REQUEST)
+                    .object(response.getProductDetailItems())
+                    .build();
         }
 
         Receiver receiver = receiverRepository.findById(orderRequest.getReceiverId())
@@ -116,9 +115,6 @@ public class OrderServiceImpl implements OrderService {
                 });
         purchaseOrder.setOrderDetails(orderDetails);
         orderRepository.save(purchaseOrder);
-
-        // send mail to confirm order created
-
         return orderMapper.toDto(purchaseOrder);
     }
 

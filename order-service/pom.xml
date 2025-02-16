@@ -73,7 +73,7 @@
 			<artifactId>spring-boot-starter-thymeleaf</artifactId>
 		</dependency>
 
-		<!--		jpa-->
+		<!--		JPA		-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -85,7 +85,14 @@
 			<version>8.0.0.Final</version>
 		</dependency>
 
-		<!--		modelmapper-->
+		<!--		Mybatis		-->
+<!--		<dependency>-->
+<!--			<groupId>org.mybatis.spring.boot</groupId>-->
+<!--			<artifactId>mybatis-spring-boot-starter</artifactId>-->
+<!--			<version>2.3.1</version>-->
+<!--		</dependency>-->
+
+		<!--		Modelmapper		-->
 		<dependency>
 			<groupId>org.modelmapper</groupId>
 			<artifactId>modelmapper</artifactId>

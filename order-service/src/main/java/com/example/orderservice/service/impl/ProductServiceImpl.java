@@ -4,7 +4,7 @@ import com.example.orderservice.config.ProductConfiguration;
 import com.example.orderservice.constant.SecurityConstant;
 import com.example.orderservice.payload.productservice.request.ProductCheckingReq;
 import com.example.orderservice.payload.productservice.response.ProductCheckingResponse;
-import com.example.orderservice.payload.productservice.response.ProductListCheckingResponse;
+import com.example.orderservice.payload.productservice.response.ProductDetailsCheckingRes;
 import com.example.orderservice.security.SecurityUtil;
 import com.example.orderservice.service.ProductService;
 import com.example.orderservice.webclient.WebClientProcessor;
@@ -54,7 +54,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductListCheckingResponse checkWarehouse(List<ProductCheckingReq> productCheckingReqs) throws Exception {
+    public ProductDetailsCheckingRes checkProductDetails(List<ProductCheckingReq> productCheckingReqs) throws Exception {
         String url = productConfiguration.getCheckWarehouseUrl();
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(url);
 
@@ -66,7 +66,7 @@ public class ProductServiceImpl implements ProductService {
                 uriBuilder.toUriString(),
                 header,
                 productCheckingReqs,
-                ProductListCheckingResponse.class
+                ProductDetailsCheckingRes.class
         );
     }
 

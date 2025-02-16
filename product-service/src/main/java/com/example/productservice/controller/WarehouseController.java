@@ -1,8 +1,8 @@
 package com.example.productservice.controller;
 
 import com.example.productservice.dto.ProductDetailCheckingDto;
-import com.example.productservice.dto.WareHouseCheckingDto;
-import com.example.productservice.payload.orderservice.request.WareHouseCheckingReq;
+import com.example.productservice.dto.ProductDetailsCheckingDto;
+import com.example.productservice.payload.orderservice.request.ProductCheckingRequest;
 import com.example.productservice.service.WarehouseService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,12 +22,12 @@ public class WarehouseController {
     private WarehouseService warehouseService;
 
     @PatchMapping
-    public ResponseEntity<WareHouseCheckingDto> checkListProduct(@RequestBody List<WareHouseCheckingReq> request) {
+    public ResponseEntity<ProductDetailsCheckingDto> checkListProduct(@RequestBody List<ProductCheckingRequest> request) {
         return ResponseEntity.ok(warehouseService.checkListProduct(request));
     }
 
     @PatchMapping("/product")
-    public ResponseEntity<ProductDetailCheckingDto> checkProduct(@RequestBody WareHouseCheckingReq request) {
+    public ResponseEntity<ProductDetailCheckingDto> checkProduct(@RequestBody ProductCheckingRequest request) {
         return ResponseEntity.ok(warehouseService.checkProduct(request));
     }
 
