@@ -1,0 +1,43 @@
+#server
+server:
+  port: 8082
+  servlet:
+    context-path: /api
+
+#spring:
+#  autoconfigure:
+#    exclude: # exclude: the security configuration, oauth2 configuration
+#      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+##      - org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration
+#      - org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
+
+## Database
+#  datasource:
+#    url: jdbc:mysql://localhost:3306/product_service
+#    username: root
+#    password: 16042002
+#
+#  cache:
+#    type: redis
+#  data:
+#    redis:
+#      host: localhost
+#      port: 6379
+#
+#  # A option in springboot framework is used to define Hibernate behavior in creating and updating database
+#  # Hibernate will create and update tables in database, corresponding to object in your app.
+#  # if table dont exist, Hibernate will create it. Else, Hibernate will update changes
+  jpa:
+    generate-ddl: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+  lombok:
+    enabled: true
+
+# Cloudinary
+cloudinary:
+  cloudName:
+  apiKey:
+  apiSecret:

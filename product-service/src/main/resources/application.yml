@@ -1,0 +1,129 @@
+#server
+server:
+  port: 8082
+  servlet:
+    context-path: /api/product-service
+
+# Database
+spring:
+  application:
+    name: product-service
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/product_service
+    username: root
+    password:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari: # connection pooling library
+      maximum-pool-size: 5 # maximum number of connection pooling at the same time
+      minimum-idle: 1 # minimum number of connection pooling
+      idle-timeout: 300000 # free time before canceled
+      max-lifetime: 1800000
+      validation-timeout: 5000
+      connection-test-query: SELECT 1
+
+  cache:
+    type: redis
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  # A option in springboot framework is used to define Hibernate behavior in creating and updating database
+  # Hibernate will create and update tables in database, corresponding to object in your app.
+  # if table dont exist, Hibernate will create it. Else, Hibernate will update changes
+  jpa:
+    generate-ddl: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: update
+
+  lombok:
+    enabled: true
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8081/api/user-service
+          jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/oauth2/jwks
+  #      resourceserver:
+  #        jwt:
+  #          issuer-uri: http://localhost:8080/realms/blue_shop
+  #          jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
+
+  kafka:
+    bootstrap-servers: localhost:9094
+    template:
+      default-topic: update-detail
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      auto-offset-reset: earliest
+      group-id: create-customer-service
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      partition:
+        assignment:
+          strategy: org.apache.kafka.clients.consumer.RangeAssignor
+  # Config for JavaMailSender
+  mail:
+    from-address: ${message.email.from}
+    username: ${message.email.username}
+    password: ${message.email.password}
+    host: ${message.email.host}
+    port: ${message.email.port}
+    properties:
+      mail:
+        protocol: ${message.email.protocol}
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+message:
+  email:
+    protocol: smtp
+    from:
+    username:
+    password:
+    host: smtp.gmail.com
+    port: 587
+
+# Cloudinary
+cloudinary:
+  cloudName:
+  apiKey:
+  apiSecret:
+
+# Keycloak settings
+#keycloak:
+#  realm: blue_shop
+#  auth-server-url: http://localhost:8080/auth/ # authorization server url
+#  ssl-required: none # require SSL/TLS
+#  resource: client_id
+#  use-resource-role-mappings: true # use role mappings defined in Keycloak
+#  bearer-only: true # only accept token
+#  cors: true # support CORS
+#  principal-attribute: preferred_username # determine attribute used to authen
+#  enabled: true
+#  credentials:
+#    client-secret: 9WJsGoYoE10EhiBeSnbiZCLchGXJQSlI
+
+order-service:
+  endpoint: http://localhost:8083/api/order-service
+user-service:
+  endpoint: http://localhost:8081/api/user-service
+
+eureka:
+  client:
+    register-with-eureka: true # allow register with eureka
+    fetch-registry: true # allow get others from eureka
+    service-url:
+      defaultZone: http://localhost:8761/eureka/ # where services will be registered and found
+    instance:
+      hostname: localhost # hostname
+
