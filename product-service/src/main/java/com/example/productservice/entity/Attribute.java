@@ -9,16 +9,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Address extends Auditor {
+public class Attribute extends Auditor {
     private String id;
 
-    private String detail;
+    private String value;
 
-    private String ward;
-
-    private String district;
-
-    private String city;
-
-    private String country;
+    private String featureId;
 }

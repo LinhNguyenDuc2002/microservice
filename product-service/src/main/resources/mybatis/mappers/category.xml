@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.productservice.mybatis.mapper.CategoryMapper">
+    <resultMap id="CategoryResultMap" type="Category">
+        <id column="id" property="id" jdbcType="VARCHAR"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="description" property="description" jdbcType="TEXT"/>
+        <result column="status" property="status" jdbcType="BOOLEAN"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, name, description, status
+    </sql>
+
+    <select id="findAll" resultMap="CategoryResultMap">
+        SELECT <include refid="Base_Column_List"/> FROM category
+    </select>
+    <select id="existById" resultType="boolean" parameterType="String">
+        SELECT COUNT(*) > 0
+        FROM category
+        WHERE id = #{categoryId} AND status = true
+    </select>
+</mapper>

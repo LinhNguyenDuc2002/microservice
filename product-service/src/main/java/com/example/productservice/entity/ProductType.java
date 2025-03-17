@@ -2,28 +2,30 @@ package com.example.productservice.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.util.Collection;
-
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Comment extends Auditor {
+public class ProductType extends Auditor {
     private String id;
 
-    private String message;
+    private String name;
 
-    private String imageIds;
+    private String imageId;
 
-    private boolean allowEdit;
+    private String description;
 
-    private String customerId;
+    private Integer quantity;
 
-    private String parentId;
+    private Double price;
+
+    private Boolean status;
 
     private String productId;
 }

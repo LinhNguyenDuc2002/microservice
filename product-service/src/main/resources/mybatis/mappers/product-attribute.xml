@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.productservice.mybatis.mapper.ProductAttributeMapper">
+    <resultMap id="ProductAttributeResultMap" type="ProductAttribute">
+        <id column="product_id" property="productId" jdbcType="VARCHAR"/>
+        <id column="attribute_id" property="attributeId" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        product_id, attribute_id
+    </sql>
+
+    <select id="findAll" resultMap="ProductAttributeResultMap">
+        SELECT <include refid="Base_Column_List"/> FROM product_attribute
+    </select>
+</mapper>

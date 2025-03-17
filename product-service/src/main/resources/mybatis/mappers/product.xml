@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.productservice.mybatis.mapper.ProductMapper">
+    <resultMap id="ProductResultMap" type="Product">
+        <id column="id" property="id" jdbcType="VARCHAR"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="price" property="price" jdbcType="DOUBLE"/>
+        <result column="quantity" property="quantity" jdbcType="INT"/>
+        <result column="sold" property="sold" jdbcType="INT"/>
+        <result column="description" property="description" jdbcType="TEXT"/>
+        <result column="status" property="status" jdbcType="BOOLEAN"/>
+        <result column="image_ids" property="imageIds" jdbcType="TEXT"/>
+        <result column="category_id" property="categoryId" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, name, price, quantity, sold, description, status, image_ids, category_id
+    </sql>
+
+    <select id="findAll" resultMap="ProductResultMap">
+        SELECT <include refid="Base_Column_List"/> FROM product
+    </select>
+
+    <insert id="insert" parameterType="Product" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO product (id, name, price, quantity, sold, description, status, image_ids, category_id)
+        VALUES (UUID(), #{name}, #{price}, #{quantity}, #{sold}, #{description}, #{status}, #{imageIds}, #{categoryId})
+    </insert>
+
+<!--    <select id="findById" resultMap="EmployeeResultMap" parameterType="long">-->
+<!--        SELECT-->
+<!--        <include refid="Base_Column_List"/>-->
+<!--        FROM employees-->
+<!--        where id = #{id}-->
+<!--    </select>-->
+<!--    <update id="update" parameterType="Employee">-->
+<!--        Update employees-->
+<!--        set first_name=#{firstName},-->
+<!--            last_name=#{lastName},-->
+<!--            email_address=#{emailId}-->
+<!--        where id = #{id}-->
+<!--    </update>-->
+<!--    <delete id="deleteById" parameterType="long">-->
+<!--        DELETE-->
+<!--        FROM employees-->
+<!--        WHERE id = #{id}-->
+<!--    </delete>-->
+<!--    <delete id="deleteAll">-->
+<!--        DELETE-->
+<!--        FROM employees-->
+<!--    </delete>-->
+</mapper>

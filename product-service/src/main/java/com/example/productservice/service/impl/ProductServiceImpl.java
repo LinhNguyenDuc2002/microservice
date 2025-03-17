@@ -1,37 +1,21 @@
 package com.example.productservice.service.impl;
 
-import com.example.productservice.cache.ProductCacheManager;
 import com.example.productservice.constant.I18nMessage;
-import com.example.productservice.dto.PageDTO;
 import com.example.productservice.dto.ProductDTO;
-import com.example.productservice.dto.request.BasicProductRequest;
-import com.example.productservice.dto.request.ProductDetailRequest;
+import com.example.productservice.dto.request.ProductFormRequest;
 import com.example.productservice.dto.request.ProductRequest;
-import com.example.productservice.entity.Category;
-import com.example.productservice.entity.Image;
+import com.example.productservice.dto.request.TypeRequest;
+import com.example.productservice.entity.Feature;
 import com.example.productservice.entity.Product;
-import com.example.productservice.entity.ProductDetail;
-import com.example.productservice.mapper.ProductDetailMapper;
-import com.example.productservice.mapper.ProductMapper;
-import com.example.productservice.repository.CategoryRepository;
-import com.example.productservice.repository.ImageRepository;
-import com.example.productservice.repository.ProductDetailRepository;
-import com.example.productservice.repository.ProductRepository;
-import com.example.productservice.repository.ShopRepository;
-import com.example.productservice.repository.predicate.ProductPredicate;
-import com.example.productservice.security.SecurityUtils;
+import com.example.productservice.mybatis.mapper.CategoryMapper;
+import com.example.productservice.mybatis.mapper.ProductMapper;
 import com.example.productservice.service.CloudinaryService;
 import com.example.productservice.service.ProductService;
 import com.example.servicefoundation.exception.I18nException;
-import com.example.servicefoundation.util.PaginationUtil;
 import com.example.servicefoundation.util.StringUtil;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.security.oauthbearer.internals.secured.ValidateException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,9 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -52,258 +34,68 @@ public class ProductServiceImpl implements ProductService {
     private final Integer MAX_IMAGE_NUMBER = 4;
 
     @Autowired
-    private ProductDetailRepository productDetailRepository;
-
-    @Autowired
-    private ProductRepository productRepository;
-
-    @Autowired
     private ProductMapper productMapper;
 
     @Autowired
-    private ProductDetailMapper productDetailMapper;
+    private CategoryMapper categoryMapper;
 
     @Autowired
     private CloudinaryService cloudinaryService;
 
-    @Autowired
-    private ImageRepository imageRepository;
-
-    @Autowired
-    private ShopRepository shopRepository;
-
-    @Autowired
-    private CategoryRepository categoryRepository;
-
-    @Autowired
-    private ProductCacheManager productCacheManager;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
-    private KafkaOrderService orderService;
-
     @Override
-    public ProductDTO add(ProductRequest productRequest) throws IOException, I18nException {
-        Optional<String> userId = SecurityUtils.getLoggedInUserId();
+    public ProductDTO add(ProductFormRequest productFormRequest) throws IOException, I18nException {
+//        Optional<String> userId = SecurityUtils.getLoggedInUserId();
 
-        boolean check = productRepository.existsByName(productRequest.getName());
-        if (check) {
+        ProductRequest productRequest = productFormRequest.getProduct();
+        boolean checkCategory = categoryMapper.existById(productRequest.getCategoryId());
+        if (!checkCategory) {
             throw I18nException.builder()
-                    .code(HttpStatus.BAD_REQUEST)
-                    .message(I18nMessage.ERROR_PRODUCT_NAME_EXISTED)
+                    .code(HttpStatus.NOT_FOUND)
+                    .message(I18nMessage.ERROR_CATEGORY_NOT_FOUND)
                     .build();
         }
-
-        Category category = categoryRepository.findById(productRequest.getCategoryId())
-                .orElseThrow(() -> {
-                    return I18nException.builder()
-                            .code(HttpStatus.NOT_FOUND)
-                            .message(I18nMessage.ERROR_CATEGORY_NOT_FOUND)
-                            .build();
-                });
-
-        Product product = Product.builder()
-                .name(productRequest.getName())
-                .description(productRequest.getDescription())
-                .category(category)
-                .status(true)
-                .build();
 
         Map<String, MultipartFile> images = new HashMap<>();
         long totalSize = 0;
         for (MultipartFile file : productRequest.getImages()) {
+            if ((file.getSize() / (1024 * 1024)) > 2) {
+                throw new ValidateException(I18nMessage.ERROR_PRODUCT_DETAIL_NAME_DUPLICATED);
+            }
             totalSize += file.getSize();
             images.put(UUID.randomUUID().toString(), file);
         }
         double totalSizeInMB = totalSize / (1024 * 1024);
-        if (productRequest.getImages().size() > MAX_IMAGE_NUMBER || totalSizeInMB > 4) {
+        if (totalSizeInMB > 4) {
             throw new ValidateException(I18nMessage.ERROR_PRODUCT_DETAIL_NAME_DUPLICATED);
         }
-        product.setImageIds(StringUtil.joinDelimiter(images.keySet().stream().toList()));
 
-        List<ProductDetail> productDetails = new ArrayList<>();
-        for (ProductDetailRequest productDetailRequest : productRequest.getProductDetails()) {
-            String imageId = UUID.randomUUID().toString();
-            images.put(imageId, productDetailRequest.getImage());
-            ProductDetail productDetail = ProductDetail.builder()
-                    .name(productDetailRequest.getName())
-                    .description(productDetailRequest.getDescription())
-                    .quantity(productDetailRequest.getQuantity())
-                    .price(productDetailRequest.getPrice())
-                    .sold(0L)
-                    .status(true)
-                    .product(product)
-                    .imageId(imageId)
-                    .build();
-            productDetails.add(productDetail);
-        }
-        product.setProductDetails(productDetails);
-        cloudinaryService.upload(images);
-        productRepository.save(product);
-
-        return productMapper.toDto(product);
-    }
-
-    @Override
-    public ProductDTO update(String id, BasicProductRequest productRequest) throws IOException, I18nException {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> {
-                    return I18nException.builder()
-                            .code(HttpStatus.NOT_FOUND)
-                            .message(I18nMessage.ERROR_PRODUCT_NOT_FOUND)
-                            .build();
-                });
-        if (!productRequest.getName().equals(product.getName())) {
-            boolean check = productRepository.existsByName(productRequest.getName());
-            if (check) {
-                throw I18nException.builder()
-                        .code(HttpStatus.BAD_REQUEST)
-                        .message(I18nMessage.ERROR_PRODUCT_NAME_EXISTED)
-                        .build();
-            }
-        }
-
-        Category category = categoryRepository.findById(productRequest.getCategoryId())
-                .orElseThrow(() -> {
-                    return I18nException.builder()
-                            .code(HttpStatus.NOT_FOUND)
-                            .message(I18nMessage.ERROR_CATEGORY_NOT_FOUND)
-                            .build();
-                });
-
-        if (productRequest.getImages() != null && !productRequest.getImages().isEmpty()) {
-            Map<String, MultipartFile> images = new HashMap<>();
-            long totalSize = 0;
-            for (MultipartFile file : productRequest.getImages()) {
-                totalSize += file.getSize();
-                images.put(UUID.randomUUID().toString(), file);
-            }
-            double totalSizeInMB = totalSize / (1024 * 1024);
-
-            if (productRequest.getImages().size() > MAX_IMAGE_NUMBER || totalSizeInMB > 4) {
-                throw new ValidateException(I18nMessage.ERROR_IMAGE_NUMBER_EXCEEDED);
-            }
-
-            List<String> ids = StringUtil.splitDelimiter(product.getImageIds());
-            cloudinaryService.destroy(ids);
-            imageRepository.deleteAllById(ids);
-            product.setImageIds(StringUtil.joinDelimiter(images.keySet().stream().toList()));
-            cloudinaryService.upload(images);
-        }
-
-        product.setName(productRequest.getName());
-        product.setDescription(productRequest.getDescription());
-        product.setCategory(category);
-        productRepository.save(product);
-
-        return productMapper.toDto(product);
-    }
-
-    @Override
-    public PageDTO<ProductDTO> getAll(Integer page, Integer size, String search, String category, List<String> sortColumns) throws JsonProcessingException {
-//        PageDTO<ProductDTO> productCache = productCacheManager.getAllProducts(page, size, category);
-//        if (productCache != null) return productCache;
-
-        Pageable pageable = (sortColumns == null) ? PaginationUtil.getPage(page, size) : PaginationUtil.getPage(page, size, sortColumns.toArray(new String[0]));
-
-        ProductPredicate productPredicate = new ProductPredicate()
-                .withCategoryId(category)
-                .search(search);
-        Page<Product> products = productRepository.findAll(productPredicate.getCriteria(), pageable);
-
-        List<ProductDTO> productDTOS = products.getContent().stream()
-                .map(product -> {
-                    ProductDTO productDTO = productMapper.toDto(product);
-
-                    List<Image> image = imageRepository.findAllById(StringUtil.splitDelimiter(product.getImageIds()));
-                    productDTO.setImageUrls(image.stream().map(Image::getSecureUrl).toList());
-
-                    Long quantity = 0L;
-                    Long sold = 0L;
-                    Double maxPrice = 0.0;
-                    for (ProductDetail productDetail : product.getProductDetails()) {
-                        quantity += productDetail.getQuantity();
-                        sold += productDetail.getSold();
-                        if (productDetail.getPrice() > maxPrice) {
-                            maxPrice = productDetail.getPrice();
-                        }
-                    }
-
-                    Double minPrice = product.getProductDetails().stream()
-                            .map(ProductDetail::getPrice)
-                            .filter(price -> price != null)
-                            .min(Double::compareTo)
-                            .orElse(0.0);
-
-                    productDTO.setQuantity(quantity);
-                    productDTO.setSold(sold);
-                    productDTO.setMaxPrice(maxPrice);
-                    productDTO.setMinPrice(minPrice);
-                    return productDTO;
-                })
-                .collect(Collectors.toList());
-
-        PageDTO pageDTO = PageDTO.<ProductDTO>builder()
-                .index(products.getNumber())
-                .totalPage(products.getTotalPages())
-                .elements(productDTOS)
+        Product product = Product.builder()
+                .id(UUID.randomUUID().toString())
+                .name(productRequest.getName())
+                .description(productRequest.getDescription())
+                .status(true)
+                .sold(0)
+                .categoryId(productRequest.getCategoryId())
+                .imageIds(StringUtil.joinDelimiter(images.keySet().stream().toList()))
                 .build();
-//        productCacheManager.saveAllProducts(pageDTO, page, size, category);
-        return pageDTO;
-    }
-
-    @Override
-    public ProductDTO get(String id) throws I18nException {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> {
-                    return I18nException.builder()
-                            .code(HttpStatus.NOT_FOUND)
-                            .message(I18nMessage.ERROR_PRODUCT_NOT_FOUND)
-                            .build();
-                });
-
-        ProductDTO productDTO = productMapper.toDto(product);
-
-        List<Image> image = imageRepository.findAllById(StringUtil.splitDelimiter(product.getImageIds()));
-        productDTO.setImageUrls(image.stream().map(Image::getSecureUrl).toList());
-
-        Long quantity = 0L;
-        Long sold = 0L;
-        Double maxPrice = 0.0;
-        for (ProductDetail productDetail : product.getProductDetails()) {
-            quantity += productDetail.getQuantity();
-            sold += productDetail.getSold();
-            if (productDetail.getPrice() > maxPrice) {
-                maxPrice = productDetail.getPrice();
-            }
+        if (productFormRequest.getTypes().isEmpty()) {
+            product.setPrice(productRequest.getPrice());
+            product.setQuantity(productRequest.getQuantity());
+            productMapper.insert(product);
+            cloudinaryService.upload(images);
+            return null;
         }
 
-        Double minPrice = product.getProductDetails().stream()
-                .map(ProductDetail::getPrice)
-                .filter(price -> price != null)
-                .min(Double::compareTo)
-                .orElse(0.0);
+        List<Feature> features = new ArrayList<>();
+        for (TypeRequest typeRequest : productFormRequest.getTypes()) {
+            Feature feature = Feature.builder()
+                    .id(UUID.randomUUID().toString())
+                    .name(typeRequest.getName())
+                    .build();
 
-        productDTO.setQuantity(quantity);
-        productDTO.setSold(sold);
-        productDTO.setMaxPrice(maxPrice);
-        productDTO.setMinPrice(minPrice);
+            features.add(feature);
+        }
 
-        return productDTO;
-    }
-
-    @Override
-    public void delete(String id) throws I18nException {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> {
-                    return I18nException.builder()
-                            .code(HttpStatus.NOT_FOUND)
-                            .message(I18nMessage.ERROR_PRODUCT_NOT_FOUND)
-                            .build();
-                });
-        product.setStatus(false);
-        productRepository.save(product);
+        return null;
     }
 }

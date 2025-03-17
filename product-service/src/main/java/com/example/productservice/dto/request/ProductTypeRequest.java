@@ -2,6 +2,8 @@ package com.example.productservice.dto.request;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -20,22 +22,19 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class ProductRequest {
+public class ProductTypeRequest {
+    @NotNull(message = "{error.not-null}")
     @NotBlank(message = "{error.not-blank}")
     private String name;
 
     @NotNull(message = "{error.not-null}")
-    @NotEmpty(message = "{error.not-empty}")
-    private List<MultipartFile> images;
-
-    private Double price;
-
-    private Integer quantity;
+    private MultipartFile image;
 
     private String description;
 
-    @NotBlank(message = "{error.not-blank}")
-    private String categoryId;
+    private Integer quantity;
 
-    private List<ProductTypeRequest> productTypes;
+    private Double price;
+
+    private List<SubTypeRequest> types;
 }

@@ -4,7 +4,6 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.example.productservice.constant.CloudinaryConstant;
 import com.example.productservice.entity.Image;
-import com.example.productservice.repository.ImageRepository;
 import com.example.productservice.service.CloudinaryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,9 +22,6 @@ public class CloudinaryServiceImpl implements CloudinaryService {
     @Autowired
     private Cloudinary cloudinary;
 
-    @Autowired
-    private ImageRepository imageRepository;
-
     @Override
     public void upload(MultipartFile file, Map<String, String> args) throws IOException {
         Map<String, String> result = cloudinary.uploader().upload(file.getBytes(), args);
@@ -36,7 +32,7 @@ public class CloudinaryServiceImpl implements CloudinaryService {
                 .secureUrl(result.get(CloudinaryConstant.SECURE_URL))
                 .build();
 
-        imageRepository.save(image);
+//        imageRepository.save(image);
     }
 
     @Override
@@ -74,7 +70,7 @@ public class CloudinaryServiceImpl implements CloudinaryService {
             );
         });
 
-        imageRepository.saveAll(imageEntities);
+//        imageRepository.saveAll(imageEntities);
     }
 
     @Override
