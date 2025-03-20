@@ -18,7 +18,6 @@ import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.util.Collection;
-import java.util.List;
 
 @Entity
 @Getter
@@ -37,6 +36,15 @@ public class Product extends Auditor {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "price")
+    private Double price;
+
+    @Column(name = "quantity")
+    private Integer quantity;
+
+    @Column(name = "sold")
+    private Integer sold;
+
     @Column(name = "description", columnDefinition = "text")
     private String description;
 
@@ -53,9 +61,10 @@ public class Product extends Auditor {
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @EqualsAndHashCode.Exclude
-    private Collection<ProductDetail> productDetails;
+    private Collection<ProductType> productTypes;
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @EqualsAndHashCode.Exclude
     private Collection<Comment> comments;
+
 }

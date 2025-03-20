@@ -1,8 +1,9 @@
-package com.example.productservice.dto;
+package com.example.productservice.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.example.productservice.annotation.product.ValidProductRequest;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,22 +17,11 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class ProductDTO {
-    private String id;
+//@ValidProductRequest
+public class ProductFormRequest {
+    @NotNull(message = "{error.not-null}")
+    private ProductRequest product;
 
-    private String name;
-
-    private Integer quantity;
-
-    private Integer sold;
-
-    private Double minPrice;
-
-    private Double maxPrice;
-
-    private List<String> imageUrls;
-
-    private CategoryDTO category;
+    private List<TypeRequest> types;
 }

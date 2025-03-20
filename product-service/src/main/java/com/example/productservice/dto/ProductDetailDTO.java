@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @Builder
@@ -25,7 +27,11 @@ public class ProductDetailDTO {
 
     private Double price;
 
-    private Long sold;
+    private Integer sold;
 
-    private String imageUrl;
+    private List<String> imageUrls;
+
+    private List<ProductTypeDTO> productTypes;
+
+    private List<FeatureDTO> features;
 }

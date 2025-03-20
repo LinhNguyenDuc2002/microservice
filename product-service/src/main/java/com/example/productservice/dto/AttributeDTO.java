@@ -9,8 +9,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 @Getter
 @Setter
 @Builder
@@ -18,20 +16,8 @@ import java.util.List;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class ProductDTO {
+public class AttributeDTO {
     private String id;
 
-    private String name;
-
-    private Integer quantity;
-
-    private Integer sold;
-
-    private Double minPrice;
-
-    private Double maxPrice;
-
-    private List<String> imageUrls;
-
-    private CategoryDTO category;
+    private String value;
 }

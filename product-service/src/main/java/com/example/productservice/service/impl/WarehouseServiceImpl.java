@@ -3,10 +3,10 @@ package com.example.productservice.service.impl;
 import com.example.productservice.constant.I18nMessage;
 import com.example.productservice.dto.ProductDetailCheckingDto;
 import com.example.productservice.dto.ProductDetailsCheckingDto;
-import com.example.productservice.entity.ProductDetail;
+import com.example.productservice.entity.ProductType;
 import com.example.productservice.payload.orderservice.request.ProductCheckingRequest;
-import com.example.productservice.repository.ProductDetailRepository;
-import com.example.productservice.repository.predicate.ProductDetailPredicate;
+import com.example.productservice.repository.ProductTypeRepository;
+import com.example.productservice.repository.predicate.ProductTypePredicate;
 import com.example.productservice.service.WarehouseService;
 import com.example.servicefoundation.i18n.I18nService;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class WarehouseServiceImpl implements WarehouseService {
     @Autowired
-    private ProductDetailRepository productDetailRepository;
+    private ProductTypeRepository productTypeRepository;
 
     @Autowired
     private I18nService i18nService;
@@ -40,15 +40,14 @@ public class WarehouseServiceImpl implements WarehouseService {
         ProductDetailsCheckingDto response = new ProductDetailsCheckingDto();
         List<ProductDetailsCheckingDto.ProductDetailItem> productDetailItems = new ArrayList<>();
 
-        ProductDetailPredicate productDetailPredicate = new ProductDetailPredicate()
-                .inIds(requestMap.keySet().stream().toList())
-                .withStatus(true);
-        List<ProductDetail> productDetails = productDetailRepository.findAll(productDetailPredicate.getCriteria());
-        List<String> productDetailKeys = productDetails.stream().map(ProductDetail::getId).toList();
+        ProductTypePredicate productTypePredicate = new ProductTypePredicate()
+                .inIds(requestMap.keySet().stream().toList());
+        List<ProductType> productTypes = productTypeRepository.findAll(productTypePredicate.getCriteria());
+        List<String> productDetailKeys = productTypes.stream().map(ProductType::getId).toList();
 
-        for (ProductDetail productDetail : productDetails) {
-            String id = productDetail.getId();
-            if (productDetail.getQuantity() < requestMap.get(id)) {
+        for (ProductType productType : productTypes) {
+            String id = productType.getId();
+            if (productType.getQuantity() < requestMap.get(id)) {
                 productDetailItems.add(
                         new ProductDetailsCheckingDto.ProductDetailItem(
                                 false,
@@ -79,10 +78,9 @@ public class WarehouseServiceImpl implements WarehouseService {
 
     @Override
     public ProductDetailCheckingDto checkProduct(ProductCheckingRequest request) {
-        ProductDetailPredicate productDetailPredicate = new ProductDetailPredicate()
-                .withStatus(true)
+        ProductTypePredicate productTypePredicate = new ProductTypePredicate()
                 .withProductId(request.getProductDetailId());
-        Optional<ProductDetail> check = productDetailRepository.findOne(productDetailPredicate.getCriteria());
+        Optional<ProductType> check = productTypeRepository.findOne(productTypePredicate.getCriteria());
 
         ProductDetailCheckingDto response = new ProductDetailCheckingDto();
         if (!check.isPresent()) {
@@ -91,17 +89,17 @@ public class WarehouseServiceImpl implements WarehouseService {
             return response;
         }
 
-        ProductDetail productDetail = check.get();
-        if (productDetail.getQuantity() < request.getQuantity()) {
+        ProductType productType = check.get();
+        if (productType.getQuantity() < request.getQuantity()) {
             response.setExist(false);
             response.setInfo(I18nMessage.ERROR_PRODUCT_QUANTITY_NOT_ENOUGH);
             return response;
         }
 
         response.setExist(true);
-        response.setPrice(productDetail.getPrice());
-        productDetail.setQuantity(productDetail.getQuantity() - request.getQuantity());
-        productDetailRepository.save(productDetail);
+        response.setPrice(productType.getPrice());
+        productType.setQuantity(productType.getQuantity() - request.getQuantity());
+        productTypeRepository.save(productType);
         return response;
     }
 }
