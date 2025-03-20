@@ -4,7 +4,9 @@ import com.example.productservice.constant.I18nMessage;
 import com.example.productservice.constant.ParameterConstant;
 import com.example.productservice.dto.PageDTO;
 import com.example.productservice.dto.ProductDTO;
+import com.example.productservice.dto.ProductDetailDTO;
 import com.example.productservice.dto.request.BasicProductRequest;
+import com.example.productservice.dto.request.ProductFormRequest;
 import com.example.productservice.dto.request.ProductRequest;
 import com.example.productservice.service.ProductService;
 import com.example.servicefoundation.base.response.Response;
@@ -41,9 +43,9 @@ public class ProductController {
 
     @PostMapping
 //    @PreAuthorize("hasAnyRole('SELLER')")
-    public ResponseEntity<Response<ProductDTO>> add(@Valid @ModelAttribute ProductRequest productRequest) throws IOException, I18nException {
+    public ResponseEntity<Response<ProductDTO>> add(@Valid @ModelAttribute ProductFormRequest productFormRequest) throws IOException, I18nException {
         return ResponseUtil.wrapResponse(
-                productService.add(productRequest),
+                productService.add(productFormRequest),
                 i18nService.getMessage(I18nMessage.INFO_CREATE_PRODUCT, LocaleContextHolder.getLocale())
         );
     }
@@ -73,7 +75,7 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Response<ProductDTO>> get(@PathVariable String id) throws I18nException {
+    public ResponseEntity<Response<ProductDetailDTO>> get(@PathVariable String id) throws I18nException {
         return ResponseUtil.wrapResponse(
                 productService.get(id),
                 i18nService.getMessage(I18nMessage.INFO_GET_PRODUCT, LocaleContextHolder.getLocale())

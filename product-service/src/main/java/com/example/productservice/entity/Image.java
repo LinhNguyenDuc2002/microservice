@@ -25,6 +25,9 @@ public class Image extends Auditor {
     @Id
     private String id;
 
+    @Column(name = "public_id")
+    private String publicId;
+
     @Column(name = "format")
     private String format;
 
@@ -34,15 +37,15 @@ public class Image extends Auditor {
     @Column(name = "secure_url")
     private String secureUrl;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
-    private Product product;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "comment_id")
-    private Comment comment;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_detail_id")
-    private ProductDetail productDetail;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "product_id")
+//    private Product product;
+//
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "comment_id")
+//    private Comment comment;
+//
+//    @OneToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "product_type_id")
+//    private ProductType productType;
 }

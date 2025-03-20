@@ -18,20 +18,16 @@ import java.util.List;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class ProductDTO {
+public class ProductTypeDTO {
     private String id;
 
     private String name;
 
     private Integer quantity;
 
-    private Integer sold;
+    private Double price;
 
-    private Double minPrice;
+    private String imageUrl;
 
-    private Double maxPrice;
-
-    private List<String> imageUrls;
-
-    private CategoryDTO category;
+    private List<ProductTypeDTO> types;
 }

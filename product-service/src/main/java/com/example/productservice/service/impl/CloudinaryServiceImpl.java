@@ -66,7 +66,8 @@ public class CloudinaryServiceImpl implements CloudinaryService {
 
             imageEntities.add(
                     Image.builder()
-                            .id(result.get(CloudinaryConstant.PUBLIC_ID))
+                            .id(image.getKey())
+                            .publicId(result.get(CloudinaryConstant.PUBLIC_ID))
                             .format(result.get(CloudinaryConstant.FORMAT))
                             .resourceType(result.get(CloudinaryConstant.RESOURCE_TYPE))
                             .secureUrl(result.get(CloudinaryConstant.SECURE_URL))
