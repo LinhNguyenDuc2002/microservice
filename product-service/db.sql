@@ -11,8 +11,6 @@ CREATE TABLE address (
     last_modified_date DATE
 );
 
-
-
 INSERT INTO category(id, name) VALUES('afac4c93-a175-4210-8dcb-64c5a4c0352d', 'Điện thoại - Máy tính bảng');
 INSERT INTO category(id, name) VALUES('d1e6f3a3-9394-4c7c-9428-ecb215b93e59', 'TV');
 INSERT INTO category(id, name) VALUES('c53a4ea0-8f4a-42e8-b9be-e424eb23a5ae', 'Điện gia dụng');
@@ -35,3 +33,17 @@ INSERT INTO category(id, name) VALUES('d9ad2068-a488-4ca0-bec0-31827395a9f9', '�
 INSERT INTO category(id, name) VALUES('ddf88122-63d8-4216-9378-311f27a054b4', 'Sex toy');
 INSERT INTO category(id, name) VALUES('e1a5417b-9c7a-4fbb-9bb0-14889d053d37', 'Đồ chơi - Mẹ & bé');
 INSERT INTO category(id, name) VALUES('e689fbd3-4c47-4507-ba72-ad550f34b00c', 'Điện tử - Điện lạnh');
+
+SELECT * FROM product_service.feature WHERE id IN (
+    SELECT feature_id FROM product_service.attribute WHERE id IN (
+        SELECT attribute_id FROM product_service.product_attribute WHERE product_type_id IN (
+            SELECT id FROM product_service.product_type WHERE product_id = "63187ed4-b674-47f1-a388-32af473ac204"
+        )
+    )
+);
+
+SELECT DISTINCT f.* FROM product_service.feature f
+JOIN product_service.attribute a ON a.feature_id = f.id
+JOIN product_service.product_attribute pa ON pa.attribute_id = a.id
+JOIN product_service.product_type pt ON pt.id = pa.product_type_id
+WHERE pt.product_id = '1161b5eb-fe02-40a1-8c34-3028417d5e70';

@@ -34,8 +34,4 @@ public class Attribute extends Auditor {
     @JoinColumn(name = "feature_id")
     @EqualsAndHashCode.Exclude
     private Feature feature;
-
-    @OneToMany(mappedBy = "attribute", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @EqualsAndHashCode.Exclude
-    private Collection<ProductAttribute> productAttributes;
 }

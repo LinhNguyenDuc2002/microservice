@@ -5,7 +5,6 @@ import com.example.productservice.dto.ProductDTO;
 import com.example.productservice.dto.ProductDetailDTO;
 import com.example.productservice.dto.request.BasicProductRequest;
 import com.example.productservice.dto.request.ProductFormRequest;
-import com.example.productservice.dto.request.ProductRequest;
 import com.example.servicefoundation.exception.I18nException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 

@@ -6,6 +6,7 @@ import com.example.productservice.dto.PageDTO;
 import com.example.productservice.dto.ProductDTO;
 import com.example.productservice.dto.ProductDetailDTO;
 import com.example.productservice.dto.ProductTypeDTO;
+import com.example.productservice.dto.request.AttributeRequest;
 import com.example.productservice.dto.request.BasicProductRequest;
 import com.example.productservice.dto.request.ProductFormRequest;
 import com.example.productservice.dto.request.ProductRequest;
@@ -17,8 +18,9 @@ import com.example.productservice.entity.Category;
 import com.example.productservice.entity.Feature;
 import com.example.productservice.entity.Image;
 import com.example.productservice.entity.Product;
-import com.example.productservice.entity.ProductAttribute;
+import com.example.productservice.entity.ProductFeature;
 import com.example.productservice.entity.ProductType;
+import com.example.productservice.mapper.AttributeMapper;
 import com.example.productservice.mapper.FeatureMapper;
 import com.example.productservice.mapper.ProductDetailMapper;
 import com.example.productservice.mapper.ProductMapper;
@@ -29,7 +31,6 @@ import com.example.productservice.repository.ImageRepository;
 import com.example.productservice.repository.ProductAttributeRepository;
 import com.example.productservice.repository.ProductRepository;
 import com.example.productservice.repository.ProductTypeRepository;
-import com.example.productservice.repository.ShopRepository;
 import com.example.productservice.repository.predicate.ProductPredicate;
 import com.example.productservice.service.CloudinaryService;
 import com.example.productservice.service.ProductService;
@@ -50,6 +51,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,6 +87,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Autowired
     private FeatureMapper featureMapper;
+
+    @Autowired
+    private AttributeMapper attributeMapper;
 
     @Autowired
     private CategoryRepository categoryRepository;
@@ -160,7 +165,10 @@ public class ProductServiceImpl implements ProductService {
         }
 
         // There are product types
+        product.setProductFeatures(new ArrayList<>());
         List<Feature> features = new ArrayList<>();
+        List<Map<String, Attribute>> tempList = new ArrayList<>();
+        int level = 1;
         for (TypeRequest type : types) {
             Feature feature = featureRepository.findById(type.getName())
                     .orElseGet(() -> Feature.builder()
@@ -168,12 +176,41 @@ public class ProductServiceImpl implements ProductService {
                             .attributes(new ArrayList<>())
                             .build()
                     );
+
+            product.getProductFeatures().add(
+                    ProductFeature.builder()
+                            .id(new ProductFeature.ProductFeatureId(product.getId(), feature.getId()))
+                            .product(product)
+                            .feature(feature)
+                            .level(level++)
+                            .build()
+            );
+
+            Map<String, Attribute> temp = new HashMap<>();
+            for (AttributeRequest attributeRequest : type.getAttributes()) {
+                String value = attributeRequest.getValue();
+                List<Attribute> attributes = attributeRepository.findByIdAndFeatureId(value, feature.getId());
+                Attribute attribute = null;
+                if (attributes.isEmpty()) {
+                    attribute = Attribute.builder()
+                            .value(value)
+                            .feature(feature)
+                            .build();
+                    feature.getAttributes().add(attribute);
+                } else {
+                    attribute = attributes.get(0);
+                }
+                temp.put(value, attribute);
+            }
+
+            tempList.add(temp);
             features.add(feature);
         }
 
         product.setProductTypes(new ArrayList<>());
         List<ProductTypeRequest> productTypeRequests = productRequest.getProductTypes();
         if (features.size() == 1 || productTypeRequests.get(0).getTypes().isEmpty()) {
+            Map<String, Attribute> map = tempList.get(0);
             for (ProductTypeRequest productTypeRequest : productTypeRequests) {
                 MultipartFile file = productTypeRequest.getImage();
                 if ((file.getSize() / (1024 * 1024)) > 2) {
@@ -187,30 +224,11 @@ public class ProductServiceImpl implements ProductService {
                         .quantity(productTypeRequest.getQuantity())
                         .imageId(id)
                         .product(product)
-                        .productAttributes(new ArrayList<>())
+                        .attributes(new ArrayList<>())
                         .build();
 
-                List<Attribute> attributes = attributeRepository.findByIdAndFeatureId(productTypeRequest.getName(), features.get(0).getId());
-                Attribute attribute = null;
-                if (attributes == null) {
-                    attribute = Attribute.builder()
-                            .value(productTypeRequest.getName())
-                            .feature(features.get(0))
-                            .build();
-                    features.get(0).getAttributes().add(attribute);
-                } else {
-                    attribute = attributes.get(0);
-                }
-
-                ProductAttribute productAttribute = ProductAttribute.builder()
-                        .id(
-                                new ProductAttribute.ProductAttributeId(productType.getId(), attribute.getId())
-                        )
-                        .productType(productType)
-                        .attribute(attribute)
-                        .level(1)
-                        .build();
-                productType.getProductAttributes().add(productAttribute);
+                Attribute attribute = map.get(productTypeRequest.getName());
+                productType.getAttributes().add(attribute);
                 product.getProductTypes().add(productType);
             }
 
@@ -229,62 +247,22 @@ public class ProductServiceImpl implements ProductService {
             String id = UUID.randomUUID().toString();
             images.put(id, file);
 
-            ProductType productType = ProductType.builder()
-                    .product(product)
-                    .imageId(id)
-                    .productAttributes(new ArrayList<>())
-                    .build();
-
-            List<Attribute> attributes = attributeRepository.findByIdAndFeatureId(productTypeRequest.getName(), features.get(0).getId());
-            Attribute attribute = null;
-            if (attributes.isEmpty()) {
-                attribute = Attribute.builder()
-                        .value(productTypeRequest.getName())
-                        .feature(features.get(0))
-                        .build();
-                features.get(0).getAttributes().add(attribute);
-            } else {
-                attribute = attributes.get(0);
-            }
-
-            ProductAttribute productAttribute = ProductAttribute.builder()
-                    .id(
-                            new ProductAttribute.ProductAttributeId(productType.getId(), attribute.getId())
-                    )
-                    .productType(productType)
-                    .attribute(attribute)
-                    .level(1)
-                    .build();
-            productType.getProductAttributes().add(productAttribute);
-
             List<SubTypeRequest> subTypeRequests = productTypeRequest.getTypes();
             for (SubTypeRequest subTypeRequest : subTypeRequests) {
-                productType.setQuantity(subTypeRequest.getQuantity());
-                productType.setPrice(subTypeRequest.getPrice());
-
-                List<Attribute> subAttributes = attributeRepository.findByIdAndFeatureId(productTypeRequest.getName(), features.get(1).getId());
-                Attribute subAttribute = null;
-                if (subAttributes.isEmpty()) {
-                    subAttribute = Attribute.builder()
-                            .value(subTypeRequest.getName())
-                            .feature(features.get(1))
-                            .build();
-                    features.get(1).getAttributes().add(subAttribute);
-                } else {
-                    subAttribute = subAttributes.get(0);
-                }
-
-                ProductAttribute subProductAttribute = ProductAttribute.builder()
-                        .id(
-                                new ProductAttribute.ProductAttributeId(productType.getId(), subAttribute.getId())
+                ProductType productType = ProductType.builder()
+                        .product(product)
+                        .imageId(id)
+                        .quantity(subTypeRequest.getQuantity())
+                        .price(subTypeRequest.getPrice())
+                        .attributes(
+                                Arrays.asList(
+                                        tempList.get(0).get(productTypeRequest.getName()),
+                                        tempList.get(1).get(subTypeRequest.getName())
+                                )
                         )
-                        .productType(productType)
-                        .attribute(subAttribute)
-                        .level(2)
                         .build();
-                productType.getProductAttributes().add(subProductAttribute);
+                product.getProductTypes().add(productType);
             }
-            product.getProductTypes().add(productType);
         }
 
         cloudinaryService.upload(images);
@@ -409,8 +387,8 @@ public class ProductServiceImpl implements ProductService {
                             .build();
                 });
 
+        List<Image> images = imageRepository.findAllById(StringUtil.splitDelimiter(product.getImageIds()));
         if (product.getProductTypes().isEmpty()) {
-            List<Image> images = imageRepository.findAllById(StringUtil.splitDelimiter(product.getImageIds()));
             return ProductDetailDTO.builder()
                     .id(product.getId())
                     .name(product.getName())
@@ -422,7 +400,6 @@ public class ProductServiceImpl implements ProductService {
                     .build();
         }
 
-        List<Image> images = imageRepository.findAllById(StringUtil.splitDelimiter(product.getImageIds()));
         Integer quantity = 0;
         ProductDetailDTO productDetail = ProductDetailDTO.builder()
                 .id(product.getId())
@@ -434,50 +411,20 @@ public class ProductServiceImpl implements ProductService {
                 .features(new ArrayList<>())
                 .build();
 
+        productDetail.setFeatures(featureMapper.toDtoList(featureRepository.findByProductId(product.getId())));
         for (ProductType productType : product.getProductTypes()) {
             Image image = imageRepository.findById(productType.getImageId()).get();
             quantity += productType.getQuantity();
             ProductTypeDTO productTypeDTO = ProductTypeDTO.builder()
                     .id(product.getId())
                     .imageUrl(image.getSecureUrl())
-                    .types(new ArrayList<>())
+                    .quantity(productType.getQuantity())
+                    .price(productType.getPrice())
+                    .types(attributeMapper.toDtoList((List<Attribute>) productType.getAttributes()))
                     .build();
-
-            List<ProductAttribute> productAttributes = (List<ProductAttribute>) productType.getProductAttributes();
-            int length = productAttributes.size();
-            if (length == 1) {
-                productTypeDTO.setName(productAttributes.get(0).getAttribute().getValue());
-                productTypeDTO.setQuantity(productType.getQuantity());
-                productTypeDTO.setPrice(productType.getPrice());
-            } else {
-                int checkFeature = 0;
-                for (ProductAttribute productAttribute : productAttributes) {
-                    int level = productAttribute.getLevel();
-                    if (checkFeature < level) {
-                        productDetail.getFeatures().add(featureMapper.toDto(productAttribute.getAttribute().getFeature()));
-                        checkFeature += 1;
-                    }
-
-                    if (level == productAttributes.size()) {
-                        productTypeDTO.getTypes().add(
-                                ProductTypeDTO.builder()
-                                        .name(productAttribute.getAttribute().getValue())
-                                        .price(productType.getPrice())
-                                        .quantity(productType.getQuantity())
-                                        .build()
-                        );
-                    }
-
-                    if (level == 1) {
-                        productTypeDTO.setName(productAttribute.getAttribute().getValue());
-                        continue;
-                    }
-                }
-            }
-
-            productDetail.setQuantity(quantity);
             productDetail.getProductTypes().add(productTypeDTO);
         }
+        productDetail.setQuantity(quantity);
 
         return productDetail;
     }

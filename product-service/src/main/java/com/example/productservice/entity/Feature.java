@@ -32,4 +32,8 @@ public class Feature extends Auditor {
     @OneToMany(mappedBy = "feature", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @EqualsAndHashCode.Exclude
     private Collection<Attribute> attributes;
+
+    @OneToMany(mappedBy = "feature", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @EqualsAndHashCode.Exclude
+    private Collection<ProductFeature> productFeatures;
 }

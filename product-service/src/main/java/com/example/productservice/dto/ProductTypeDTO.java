@@ -21,13 +21,11 @@ import java.util.List;
 public class ProductTypeDTO {
     private String id;
 
-    private String name;
-
     private Integer quantity;
 
     private Double price;
 
     private String imageUrl;
 
-    private List<ProductTypeDTO> types;
+    private List<AttributeDTO> types;
 }

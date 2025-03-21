@@ -1,8 +1,8 @@
 package com.example.productservice.repository;
 
-import com.example.productservice.entity.ProductAttribute;
+import com.example.productservice.entity.ProductFeature;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ProductAttributeRepository extends BaseRepository<ProductAttribute, ProductAttribute.ProductAttributeId> {
+public interface ProductAttributeRepository extends BaseRepository<ProductFeature, ProductFeature.ProductFeatureId> {
 }

@@ -67,4 +67,8 @@ public class Product extends Auditor {
     @EqualsAndHashCode.Exclude
     private Collection<Comment> comments;
 
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @EqualsAndHashCode.Exclude
+    private Collection<ProductFeature> productFeatures;
+
 }

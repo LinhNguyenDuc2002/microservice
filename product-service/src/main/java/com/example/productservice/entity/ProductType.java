@@ -34,6 +34,9 @@ public class ProductType extends Auditor {
     @Column(name = "id")
     private String id;
 
+    @Column(name = "image_id")
+    private String imageId;
+
     @Column(name = "price")
     private Double price;
 
@@ -48,9 +51,11 @@ public class ProductType extends Auditor {
     @EqualsAndHashCode.Exclude
     private Product product;
 
-    private String imageId;
-
-    @OneToMany(mappedBy = "productType", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @EqualsAndHashCode.Exclude
-    private Collection<ProductAttribute> productAttributes;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "product_type_attribute",
+            joinColumns = @JoinColumn(name = "product_type_id"),
+            inverseJoinColumns = @JoinColumn(name = "attribute_id")
+    )
+    private Collection<Attribute> attributes;
 }
