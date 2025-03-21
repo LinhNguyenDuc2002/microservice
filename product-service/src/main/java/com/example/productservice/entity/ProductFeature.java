@@ -1,6 +1,5 @@
 package com.example.productservice.entity;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
@@ -19,23 +18,23 @@ import java.io.Serializable;
 @Entity
 @Getter
 @Setter
-@Table(name = "product_attribute")
+@Table(name = "product_feature")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductAttribute {
+public class ProductFeature {
     @EmbeddedId
-    private ProductAttributeId id;
+    private ProductFeatureId id;
 
     @ManyToOne
-    @JoinColumn(name = "product_type_id")
-    @MapsId("productTypeId")
-    private ProductType productType;
+    @JoinColumn(name = "product_id")
+    @MapsId("productId")
+    private Product product;
 
     @ManyToOne
-    @JoinColumn(name = "attribute_id")
-    @MapsId("attributeId")
-    private Attribute attribute;
+    @JoinColumn(name = "feature_id")
+    @MapsId("featureId")
+    private Feature feature;
 
     private Integer level;
 
@@ -44,9 +43,9 @@ public class ProductAttribute {
     @Setter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class ProductAttributeId implements Serializable {
-        private String productTypeId;
+    public static class ProductFeatureId implements Serializable {
+        private String productId;
 
-        private String attributeId;
+        private String featureId;
     }
 }
