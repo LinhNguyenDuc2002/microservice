@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,18 +27,18 @@ public class AddressController {
     @Autowired
     private I18nService i18nService;
 
-    @GetMapping("/user/{id}")
-    public ResponseEntity<Response<AddressDto>> get(@PathVariable String id) throws I18nException {
+    @GetMapping
+    public ResponseEntity<Response<AddressDto>> get() throws I18nException {
         return ResponseUtil.wrapResponse(
-                addressService.get(id),
+                addressService.get(),
                 i18nService.getMessage(I18nMessage.INFO_GET_ADDRESS, LocaleContextHolder.getLocale())
         );
     }
 
-    @PutMapping("/user/{id}")
-    public ResponseEntity<Response<AddressDto>> update(@PathVariable String id, @Valid @RequestBody AddressRequest addressRequest) throws I18nException {
+    @PutMapping
+    public ResponseEntity<Response<AddressDto>> update(@Valid @RequestBody AddressRequest addressRequest) throws I18nException {
         return ResponseUtil.wrapResponse(
-                addressService.update(addressRequest, id),
+                addressService.update(addressRequest),
                 i18nService.getMessage(I18nMessage.INFO_UPDATE_ADDRESS, LocaleContextHolder.getLocale())
         );
     }

@@ -156,9 +156,9 @@ public class ProductServiceImpl implements ProductService {
                 .build();
 
         // No product type
-        if (types.isEmpty()) {
+        if (types == null || types.isEmpty()) {
             product.setPrice(productRequest.getPrice());
-            product.setQuantity(product.getQuantity());
+            product.setQuantity(productRequest.getQuantity());
             cloudinaryService.upload(images);
             productRepository.save(product);
             return productMapper.toDto(product);
@@ -344,6 +344,13 @@ public class ProductServiceImpl implements ProductService {
 
                     List<Image> image = imageRepository.findAllById(StringUtil.splitDelimiter(product.getImageIds()));
                     productDTO.setImageUrls(image.stream().map(Image::getSecureUrl).toList());
+
+                    if(product.getProductTypes() == null || product.getProductTypes().isEmpty()) {
+                        productDTO.setQuantity(product.getQuantity());
+                        productDTO.setMaxPrice(product.getPrice());
+                        productDTO.setMinPrice(product.getPrice());
+                        return productDTO;
+                    }
 
                     Integer quantity = 0;
                     Double maxPrice = 0.0;

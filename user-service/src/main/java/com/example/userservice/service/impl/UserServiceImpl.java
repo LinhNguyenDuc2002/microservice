@@ -30,6 +30,7 @@ import com.example.userservice.repository.ImageRepository;
 import com.example.userservice.repository.RoleRepository;
 import com.example.userservice.repository.UserRepository;
 import com.example.userservice.security.util.SecurityUtils;
+import com.example.userservice.service.CloudinaryService;
 import com.example.userservice.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +39,10 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -86,6 +90,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private CloudinaryService cloudinaryService;
+
     private ObjectMapper mapper = new ObjectMapper();
 
     @Override
@@ -105,7 +112,13 @@ public class UserServiceImpl implements UserService {
                             .message(I18nMessage.ERROR_USER_UNKNOWN)
                             .build();
                 });
-        return userMapper.toDto(user);
+
+        UserDto userDto = userMapper.toDto(user);
+        Optional<Image> avatar = imageRepository.findById(user.getImageId());
+        if(avatar.isPresent()) {
+            userDto.setAvatarUrl(avatar.get().getSecureUrl());
+        }
+        return userDto;
     }
 
     @Override
@@ -266,8 +279,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserAddressDTO update(String id, UserRequest userRequest) throws I18nException {
-        User user = userRepository.findById(id)
+    public UserDto update(UserRequest userRequest) throws I18nException, IOException {
+        Optional<String> userId = SecurityUtils.getLoggedInUserId();
+        if (userId.isEmpty()) {
+            throw I18nException.builder()
+                    .code(HttpStatus.UNAUTHORIZED)
+                    .message(I18nMessage.ERROR_USER_UNKNOWN)
+                    .build();
+        }
+
+        User user = userRepository.findById(userId.get())
                 .orElseThrow(() -> {
                     return I18nException.builder()
                             .code(HttpStatus.NOT_FOUND)
@@ -275,48 +296,40 @@ public class UserServiceImpl implements UserService {
                             .build();
                 });
 
-        if (!user.getUsername().equals(userRequest.getUsername())) {
-            boolean checkUsername = userRepository.existsByUsername(userRequest.getUsername());
-            if (checkUsername) {
-                throw I18nException.builder()
-                        .code(HttpStatus.BAD_REQUEST)
-                        .message(I18nMessage.ERROR_USERNAME_EXISTED)
-                        .object(userRequest)
-                        .build();
-            }
-            user.setUsername(userRequest.getUsername());
-        }
+//        if (!user.getUsername().equals(userRequest.getUsername())) {
+//            boolean checkUsername = userRepository.existsByUsername(userRequest.getUsername());
+//            if (checkUsername) {
+//                throw I18nException.builder()
+//                        .code(HttpStatus.BAD_REQUEST)
+//                        .message(I18nMessage.ERROR_USERNAME_EXISTED)
+//                        .object(userRequest)
+//                        .build();
+//            }
+//            user.setUsername(userRequest.getUsername());
+//        }
 
-        AddressRequest addressRequest = userRequest.getAddressRequest();
-        Address address = user.getAddress();
-        if (address == null) {
-            address = Address.builder()
-                    .detail(addressRequest.getSpecificAddress())
-                    .ward(addressRequest.getWard())
-                    .district(addressRequest.getDistrict())
-                    .city(addressRequest.getCity())
-                    .country(addressRequest.getCountry())
-                    .build();
-            addressRepository.save(address);
-            user.setAddress(address);
-        } else {
-            address.setDetail(addressRequest.getSpecificAddress());
-            address.setWard(addressRequest.getWard());
-            address.setDistrict(addressRequest.getDistrict());
-            address.setCity(addressRequest.getCity());
-            address.setCountry(addressRequest.getCountry());
-        }
         user.setFirstName(userRequest.getFirstName());
         user.setLastName(userRequest.getLastName());
         user.setDob(userRequest.getDob());
         user.setSex(userRequest.getSex());
         user.setPhone(userRequest.getPhone());
-        userRepository.save(user);
 
-        return UserAddressDTO.builder()
-                .user(userMapper.toDto(user))
-                .address(addressMapper.toDto(user.getAddress()))
-                .build();
+        if (userRequest.getAvatar() != null && !userRequest.getAvatar().isEmpty()) {
+            String id = UUID.randomUUID().toString();
+            Map<String, MultipartFile> images = new HashMap<>();
+
+            String imageId = user.getImageId();
+            if (StringUtils.hasText(imageId)) {
+                id = imageId;
+            }
+
+            images.put(id, userRequest.getAvatar());
+            user.setImageId(id);
+            cloudinaryService.upload(images);
+        }
+
+        userRepository.save(user);
+        return userMapper.toDto(user);
     }
 
     @Override
@@ -331,7 +344,7 @@ public class UserServiceImpl implements UserService {
 
         AddressRequest addressRequest = updateInfo.getAddressRequest();
         Address address = Address.builder()
-                .detail(addressRequest.getSpecificAddress())
+                .detail(addressRequest.getDetail())
                 .ward(addressRequest.getWard())
                 .district(addressRequest.getDistrict())
                 .city(addressRequest.getCity())

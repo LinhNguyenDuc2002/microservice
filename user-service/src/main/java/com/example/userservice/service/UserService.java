@@ -11,6 +11,7 @@ import com.example.userservice.dto.request.UserRegistrationHasRole;
 import com.example.userservice.dto.request.UserRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -27,7 +28,7 @@ public interface UserService {
 
     UserDto get(String id) throws I18nException;
 
-    UserAddressDTO update(String id, UserRequest userRequest) throws I18nException;
+    UserDto update(UserRequest userRequest) throws I18nException, IOException;
 
     UserAddressDTO update(String id, UpdateInfo updateInfo) throws I18nException;
 

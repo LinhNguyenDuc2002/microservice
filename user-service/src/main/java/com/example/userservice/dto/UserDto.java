@@ -42,7 +42,7 @@ public class UserDto {
     private String phone;
 
     @JsonProperty("sex")
-    private String sex;
+    private Boolean sex;
 
     @JsonProperty("first_login")
     private Boolean firstLogin;

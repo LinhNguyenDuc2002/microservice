@@ -9,11 +9,13 @@ import com.example.userservice.entity.User;
 import com.example.userservice.mapper.AddressMapper;
 import com.example.userservice.repository.AddressRepository;
 import com.example.userservice.repository.UserRepository;
+import com.example.userservice.security.util.SecurityUtils;
 import com.example.userservice.service.AddressService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
+
+import java.util.Optional;
 
 @Service
 public class AddressServiceImpl implements AddressService {
@@ -27,8 +29,16 @@ public class AddressServiceImpl implements AddressService {
     private AddressRepository addressRepository;
 
     @Override
-    public AddressDto update(AddressRequest addressRequest, String id) throws I18nException {
-        User user = userRepository.findById(id)
+    public AddressDto update(AddressRequest addressRequest) throws I18nException {
+        Optional<String> userId = SecurityUtils.getLoggedInUserId();
+        if (userId.isEmpty()) {
+            throw I18nException.builder()
+                    .code(HttpStatus.UNAUTHORIZED)
+                    .message(I18nMessage.ERROR_USER_UNKNOWN)
+                    .build();
+        }
+
+        User user = userRepository.findById(userId.get())
                 .orElseThrow(() -> {
                     return I18nException.builder()
                             .code(HttpStatus.NOT_FOUND)
@@ -36,37 +46,31 @@ public class AddressServiceImpl implements AddressService {
                             .build();
                 });
 
-        if (user.getAddress() == null) {
-            Address address = convertToAddress(addressRequest);
-            user.setAddress(address);
-            userRepository.save(user);
-        } else {
-            Address address = user.getAddress();
+        Address address = new Address();
+        if (user.getAddress() != null) address = user.getAddress();
+        else user.setAddress(address);
 
-            if (StringUtils.hasText(addressRequest.getCity())) {
-                address.setCity(address.getCity());
-            }
-            if (StringUtils.hasText(addressRequest.getDistrict())) {
-                address.setDistrict(addressRequest.getDistrict());
-            }
-            if (StringUtils.hasText(addressRequest.getWard())) {
-                address.setWard(addressRequest.getWard());
-            }
-            if (StringUtils.hasText(addressRequest.getCountry())) {
-                address.setCountry(addressRequest.getCountry());
-            }
-            if (StringUtils.hasText(addressRequest.getSpecificAddress())) {
-                address.setDetail(addressRequest.getSpecificAddress());
-            }
-            addressRepository.save(address);
-        }
+        address.setCity(address.getCity());
+        address.setDistrict(addressRequest.getDistrict());
+        address.setWard(addressRequest.getWard());
+        address.setCountry(addressRequest.getCountry());
+        address.setDetail(addressRequest.getDetail());
 
+        userRepository.save(user);
         return addressMapper.toDto(user.getAddress());
     }
 
     @Override
-    public AddressDto get(String id) throws I18nException {
-        User user = userRepository.findById(id)
+    public AddressDto get() throws I18nException {
+        Optional<String> userId = SecurityUtils.getLoggedInUserId();
+        if (userId.isEmpty()) {
+            throw I18nException.builder()
+                    .code(HttpStatus.UNAUTHORIZED)
+                    .message(I18nMessage.ERROR_USER_UNKNOWN)
+                    .build();
+        }
+
+        User user = userRepository.findById(userId.get())
                 .orElseThrow(() -> {
                     return I18nException.builder()
                             .code(HttpStatus.NOT_FOUND)
@@ -75,19 +79,5 @@ public class AddressServiceImpl implements AddressService {
                 });
 
         return addressMapper.toDto(user.getAddress());
-    }
-
-    private Address convertToAddress(AddressRequest addressRequest) {
-        if (addressRequest == null) {
-            return new Address();
-        }
-
-        return Address.builder()
-                .city(addressRequest.getCity())
-                .country(addressRequest.getCountry())
-                .district(addressRequest.getDistrict())
-                .ward(addressRequest.getWard())
-                .detail(addressRequest.getSpecificAddress())
-                .build();
     }
 }

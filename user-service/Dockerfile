@@ -1,0 +1,1 @@
+# Dockerfile thường để tạo ra image cho từng service trong app và sau đó sử dụng Docker Compose để triển khai các service đó cùng nhau

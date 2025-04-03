@@ -17,9 +17,11 @@ import lombok.Setter;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AddressRequest {
-    @JsonProperty("specific_address")
-    private String specificAddress;
+    @JsonProperty("detail")
+    private String detail;
 
+    @NotNull(message = "{error.not-null}")
+    @NotBlank(message = "{error.not-blank}")
     private String ward;
 
     @NotNull(message = "{error.not-null}")

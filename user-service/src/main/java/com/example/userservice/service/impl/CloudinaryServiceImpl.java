@@ -60,18 +60,19 @@ public class CloudinaryServiceImpl implements CloudinaryService {
             Map<String, String> result = null;
             try {
                 result = cloudinary.uploader().upload(image.getValue().getBytes(), args);
+
+                imageEntities.add(
+                        Image.builder()
+                                .id(image.getKey())
+                                .publicId(result.get(CloudinaryConstant.PUBLIC_ID))
+                                .format(result.get(CloudinaryConstant.FORMAT))
+                                .resourceType(result.get(CloudinaryConstant.RESOURCE_TYPE))
+                                .secureUrl(result.get(CloudinaryConstant.SECURE_URL))
+                                .build()
+                );
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-
-            imageEntities.add(
-                    Image.builder()
-                            .id(result.get(CloudinaryConstant.PUBLIC_ID))
-                            .format(result.get(CloudinaryConstant.FORMAT))
-                            .resourceType(result.get(CloudinaryConstant.RESOURCE_TYPE))
-                            .secureUrl(result.get(CloudinaryConstant.SECURE_URL))
-                            .build()
-            );
         });
 
         imageRepository.saveAll(imageEntities);

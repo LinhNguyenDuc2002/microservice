@@ -21,6 +21,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -109,12 +111,10 @@ public class UserController {
         );
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Response<UserAddressDTO>> update(
-            @PathVariable String id,
-            @Valid @RequestBody UserRequest userRequest) throws I18nException {
+    @PutMapping
+    public ResponseEntity<Response<UserDto>> update(@Valid @ModelAttribute UserRequest userRequest) throws I18nException, IOException {
         return ResponseUtil.wrapResponse(
-                userService.update(id, userRequest),
+                userService.update(userRequest),
                 i18nService.getMessage(I18nMessage.INFO_UPDATE_USER, LocaleContextHolder.getLocale())
         );
     }

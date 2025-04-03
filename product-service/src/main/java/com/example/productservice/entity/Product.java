@@ -45,7 +45,7 @@ public class Product extends Auditor {
     @Column(name = "sold")
     private Integer sold;
 
-    @Column(name = "description", columnDefinition = "text")
+    @Column(name = "description", columnDefinition = "LONGTEXT")
     private String description;
 
     @Column(name = "status")
