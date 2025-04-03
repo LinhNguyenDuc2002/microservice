@@ -17,8 +17,7 @@ import lombok.Setter;
 public class AddressDto {
     private String id;
 
-    @JsonProperty("specific_address")
-    private String specificAddress;
+    private String detail;
 
     private String ward;
 

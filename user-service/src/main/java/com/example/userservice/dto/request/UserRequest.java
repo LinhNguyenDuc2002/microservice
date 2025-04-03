@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
 
@@ -19,10 +20,10 @@ import java.util.Date;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserRequest {
-    @JsonProperty("username")
-    @Size(min = 1, message = "Username cannot be empty")
-    @NotNull(message = "Username cannot be null")
-    private String username;
+//    @JsonProperty("username")
+//    @Size(min = 1, message = "Username cannot be empty")
+//    @NotNull(message = "Username cannot be null")
+//    private String username;
 
     @JsonProperty("first_name")
     @Size(min = 1, message = "Nickname cannot be empty")
@@ -46,7 +47,6 @@ public class UserRequest {
     @JsonProperty("sex")
     private Boolean sex;
 
-    @JsonProperty("address")
-    @NotNull(message = "Address cannot be null")
-    private AddressRequest addressRequest;
+    @JsonProperty("avatar_url")
+    private MultipartFile avatar;
 }

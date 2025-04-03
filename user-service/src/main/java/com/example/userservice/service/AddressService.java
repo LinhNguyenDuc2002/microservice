@@ -5,7 +5,7 @@ import com.example.userservice.dto.AddressDto;
 import com.example.userservice.dto.request.AddressRequest;
 
 public interface AddressService {
-    AddressDto update(AddressRequest addressRequest, String id) throws I18nException;
+    AddressDto update(AddressRequest addressRequest) throws I18nException;
 
-    AddressDto get(String id) throws I18nException;
+    AddressDto get() throws I18nException;
 }

@@ -7,18 +7,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserMapper extends AbstractMapper<User, UserDto> {
     @Override
-    public UserDto toDto(User user) {
-        UserDto userDto = super.toDto(user);
-
-        if(user.getSex() == null) {
-            userDto.setSex("Other");
-        }
-        else {
-            userDto.setSex(user.getSex()?"Male":"Female");
-        }
-        return userDto;
-    }
-    @Override
     public Class<UserDto> getDtoClass() {
         return UserDto.class;
     }
