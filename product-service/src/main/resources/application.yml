@@ -84,13 +84,17 @@ spring:
           starttls:
             enable: true
 
+mybatis:
+  config-location: classpath:mybatis/mybatis-config.xml
+  mapper-locations: classpath:mybatis/mappers/*.xml
+
 message:
   email:
     protocol: smtp
     from:
     username:
     password:
-    host: smtp.gmail.com
+    host:
     port: 587
 
 # Cloudinary
@@ -123,7 +127,7 @@ eureka:
     register-with-eureka: true # allow register with eureka
     fetch-registry: true # allow get others from eureka
     service-url:
-      defaultZone: http://localhost:8761/eureka/ # where services will be registered and found
+      default-zone: http://localhost:8761/eureka/ # where services will be registered and found
     instance:
       hostname: localhost # hostname
 

@@ -83,7 +83,7 @@ message:
     from:
     username:
     password:
-    host: smtp.gmail.com
+    host:
     port: 587
 
 # JWT
